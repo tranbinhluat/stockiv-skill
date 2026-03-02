@@ -7,8 +7,10 @@ Configured to use GLM-4.7 from a.zai.
 
 import os
 from crewai import Agent, Crew, Process, Task, LLM
-from crewai.tools import SerperDevTool, ScrapeWebsiteTool
+from crewai_tools import SerperDevTool, ScrapeWebsiteTool
 from dotenv import load_dotenv
+
+from crewai_project.callbacks import LoggingCallback, ConsoleCallback
 
 load_dotenv()
 
@@ -97,6 +99,7 @@ def main():
         tasks=tasks,
         process=Process.sequential,
         verbose=True,
+        callbacks=[LoggingCallback(), ConsoleCallback()],
     )
 
     print("\n" + "=" * 60)
