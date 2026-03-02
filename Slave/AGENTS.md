@@ -9,11 +9,11 @@ If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out w
 ## Every Session
 
 Before doing anything else:
-1. Read `SOUL.md` — this is who you are
-2. Read `USER.md` — this is who you're helping
-3. Read `CLAUDE.md` — project-specific instructions
+1. Read `Slave/SOUL.md` — this is who you are
+2. Read `Slave/USER.md` — this is who you're helping
+3. Read `Slave/CLAUDE.md` — project-specific instructions
 4. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-5. **If in MAIN SESSION:** Also read `MEMORY.md`
+5. Read `Slave/MEMORY.md` for long-term curated memory
 
 Don't ask permission. Just do it.
 
@@ -21,9 +21,10 @@ Don't ask permission. Just do it.
 
 You wake up fresh each session. These files are your continuity:
 
-* **Daily notes:** `memory/YYYY-MM-DD.md` (create `memory/` if needed) — raw logs of what happened
-* **Long-term:** `MEMORY.md` — your curated memories, like a human's long-term memory
-* **Project-specific:** `CLAUDE.md` — CrewAI project instructions
+* **Daily notes:** `memory/YYYY-MM-DD.md` — raw logs of what happened
+* **Long-term:** `Slave/MEMORY.md` — your curated memories
+* **Identity:** `Slave/IDENTITY.md`, `Slave/SOUL.md` — who you are
+* **Context:** `Slave/USER.md`, `Slave/CLAUDE.md` — project knowledge
 
 Capture what matters. Decisions, context, things to remember. Skip the secrets unless asked to keep them.
 

@@ -56,7 +56,7 @@ uv run pre-commit run --all-files  # Run security hooks
 **Git Workflow:**
 - Pre-commit hooks automatically check for secrets
 - If hooks fail, fix issues and try again
-- Commit format: descriptive title + body with `Co-Authored-By: Claude`
+- Commit format: descriptive title + body with `By: Luat`
 
 **Code Style:**
 - ruff for linting, ruff-format for formatting
@@ -66,7 +66,6 @@ uv run pre-commit run --all-files  # Run security hooks
 
 ## Things to Remember
 
-- Luat changed AI name to "Slave" in IDENTITY.md
 - This is a learning/exploration project for CrewAI
 - Main agents currently: Research Analyst + Tech Content Writer
 - `tools/` directory exists for custom CrewAI tools
