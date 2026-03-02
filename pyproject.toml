@@ -1,0 +1,14 @@
+[project]
+name = "crewai-project"
+version = "0.1.0"
+description = "CrewAI project - AI agent orchestration framework"
+requires-python = ">=3.12"
+dependencies = [
+    "crewai>=1.9.3",
+    "crewai-tools>=1.9.3",
+    "python-dotenv>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
