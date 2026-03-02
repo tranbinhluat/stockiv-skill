@@ -17,18 +17,21 @@ A project demonstrating AI agent orchestration using [CrewAI](https://www.crewai
 
 3. **Run the example:**
    ```bash
-   uv run main.py
+   uv run crewai-run
+   # or
+   python -m crewai_project
    ```
 
 ## Project Structure
 
 ```
 crewai-project/
-├── src/              # CrewAI agents and crews
-├── tools/            # Custom tools
-├── main.py           # Entry point
-├── .env.example      # Environment variables template
-└── pyproject.toml    # Project dependencies
+├── src/
+│   └── crewai_project/   # Main package
+│       └── __init__.py   # Entry point with agents and crew
+├── tools/                # Custom tools
+├── .env.example          # Environment variables template
+└── pyproject.toml        # Project dependencies
 ```
 
 ## Requirements

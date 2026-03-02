@@ -519,16 +519,18 @@ wheels = [
 [[package]]
 name = "crewai-project"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "crewai" },
     { name = "crewai-tools" },
+    { name = "python-dotenv" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "crewai", specifier = ">=1.9.3" },
     { name = "crewai-tools", specifier = ">=1.9.3" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
 ]
 
 [[package]]
