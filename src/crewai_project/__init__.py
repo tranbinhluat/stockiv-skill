@@ -2,14 +2,22 @@
 CrewAI Project - Main Entry Point
 
 This example demonstrates a basic CrewAI setup with research and writing agents.
+Configured to use GLM-4.7 from a.zai.
 """
 
 import os
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, Process, Task, LLM
 from crewai.tools import SerperDevTool, ScrapeWebsiteTool
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Configure GLM-4.7 from a.zai
+glm_llm = LLM(
+    model="glm-4.7",
+    api_key=os.getenv("ZHIPUAI_API_KEY"),
+    base_url="https://api.z.ai/api/coding/paas/v4/",
+)
 
 
 def create_researcher() -> Agent:
@@ -21,6 +29,7 @@ def create_researcher() -> Agent:
         emerging trends in technology. You have a knack for finding relevant
         information and synthesizing complex topics.""",
         tools=[SerperDevTool(), ScrapeWebsiteTool()],
+        llm=glm_llm,
         verbose=True,
     )
 
@@ -33,6 +42,7 @@ def create_writer() -> Agent:
         backstory="""You are a skilled writer who transforms technical concepts
         into accessible, engaging content. Your readers love your clear explanations
         and real-world examples.""",
+        llm=glm_llm,
         verbose=True,
     )
 
@@ -63,9 +73,9 @@ def create_tasks(agents: dict) -> list[Task]:
 def main():
     """Run the CrewAI crew."""
     # Check for API keys
-    if not os.getenv("OPENAI_API_KEY"):
-        print("Error: OPENAI_API_KEY not found. Please set it in your .env file.")
-        print("Example: OPENAI_API_KEY=your-key-here")
+    if not os.getenv("ZHIPUAI_API_KEY"):
+        print("Error: ZHIPUAI_API_KEY not found. Please set it in your .env file.")
+        print("Example: ZHIPUAI_API_KEY=your-key-here")
         return
 
     if not os.getenv("SERPER_API_KEY"):
