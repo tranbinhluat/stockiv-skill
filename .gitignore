@@ -8,3 +8,23 @@ wheels/
 
 # Virtual environments
 .venv
+.env
+
+# Pre-commit
+.pre-commit-cache/
+
+# Secrets baseline (managed by detect-secrets)
+.secrets.baseline
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
