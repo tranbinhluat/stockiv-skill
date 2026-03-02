@@ -10,10 +10,10 @@ _Learn about the person you're helping. Update this as you go._
 
 ## Context
 
-Luat is a software engineer working on AI agent orchestration using CrewAI. He's setting up a new project with:
+Luat is a software engineer working on AI agent orchestration using CrewAI. He's setting up a stock analysis project with:
 
-* **Tech Stack:** Python 3.12, CrewAI, uv (package manager), git
-* **Current Project:** CrewAI agent framework for research and writing tasks
+* **Tech Stack:** Python 3.12, CrewAI, GLM-4.7, uv (package manager), git
+* **Current Project:** StockIV - Stock analysis with AI agents
 * **Tools:** VSCode, WSL2, pre-commit hooks for security
 * **Preferences:**
   * Uses uv for dependency management (not pip/poetry)
@@ -26,8 +26,8 @@ Luat is a software engineer working on AI agent orchestration using CrewAI. He's
 * Project uses `uv run` for executing commands
 * Pre-commit hooks are installed - they'll catch secrets before commits
 * `.env` file is gitignored - API keys stay local
-* Main entry point: `uv run crewai-run` or `python -m crewai_project`
+* Main entry point: `uv run stockiv-run` or `python -m stockiv`
 
 ---
 
-*The more you know, the better you can help. But remember — you're learning about a person, not building a dossier. Respect the difference.*
+_The more you know, the better you can help. But remember — you're learning about a person, not building a dossier. Respect the difference._

@@ -1,7 +1,7 @@
 [project]
-name = "crewai-project"
+name = "stockiv"
 version = "0.1.0"
-description = "CrewAI project - AI agent orchestration framework"
+description = "Stock analysis with AI agents"
 requires-python = ">=3.12"
 dependencies = [
     "crewai>=1.9.3",
@@ -15,7 +15,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/crewai_project"]
+packages = ["src/stockiv"]
 
 [dependency-groups]
 dev = [
@@ -24,4 +24,4 @@ dev = [
 ]
 
 [project.scripts]
-crewai-run = "crewai_project:main"
+stockiv-run = "stockiv:main"

@@ -1,14 +1,15 @@
-# CLAUDE.md - Working on This CrewAI Project
+# CLAUDE.md - Working on This Project
 
-This file tells Claude (me) how to help with this CrewAI project.
+This file tells Claude (me) how to help with this StockIV project.
 
 ## Project Overview
 
-**CrewAI Project** - An AI agent orchestration framework using CrewAI to create research and writing agents.
+**StockIV** - Stock analysis using AI agent orchestration with CrewAI.
 
 ### Tech Stack
 * **Language:** Python 3.12+
 * **Framework:** CrewAI 1.9.3
+* **LLM:** GLM-4.7 from Zhipu AI
 * **Package Manager:** uv (NOT pip, NOT poetry)
 * **Git:** Pre-commit hooks with secret detection
 * **IDE:** VSCode
@@ -20,10 +21,10 @@ This file tells Claude (me) how to help with this CrewAI project.
 uv sync
 
 # Run the main crew
-uv run crewai-run
+uv run stockiv-run
 
 # Run as module
-uv run python -m crewai_project
+uv run python -m stockiv
 
 # Add dependencies
 uv add <package>
@@ -40,11 +41,12 @@ uv run pre-commit install-hooks
 ## Project Structure
 
 ```
-crewai-project/
+stock-agent/
 ├── src/
-│   └── crewai_project/
+│   └── stockiv/
 │       └── __init__.py     # Main entry point with agents
-├── tools/                   # Custom CrewAI tools
+├── tools/                   # Custom tools
+├── logs/                    # Execution logs
 ├── .env.example            # API key template
 ├── .pre-commit-config.yaml # Pre-commit hooks (secret detection)
 ├── pyproject.toml          # Dependencies (hatchling build)
@@ -54,7 +56,7 @@ crewai-project/
 ## How I Should Help
 
 ### Adding Features
-1. Read existing code in `src/crewai_project/`
+1. Read existing code in `src/stockiv/`
 2. Follow existing patterns (Agent, Task, Crew structure)
 3. Run `uv run pre-commit run --all-files` before committing
 
@@ -84,7 +86,7 @@ crewai-project/
 ## Environment Variables Required
 
 ```
-OPENAI_API_KEY=sk-...       # Required for CrewAI
+ZHIPUAI_API_KEY=...       # Required for GLM-4.7
 SERPER_API_KEY=...          # Optional - for web search
 ```
 

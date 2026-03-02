@@ -13,17 +13,18 @@
 - Prefers concise communication over pleasantries
 - Likes clean git history with meaningful commits
 
-**Current Project: CrewAI**
-- Location: `/home/luattranb/Documents/projects/crewai`
+**Current Project: StockIV**
+- Location: `/home/luattranb/Documents/projects/stock-agent`
 - Framework: CrewAI 1.9.3 for AI agent orchestration
-- Structure: Proper Python package under `src/crewai_project/`
-- Entry point: `uv run crewai-run` or `python -m crewai_project`
+- LLM: GLM-4.7 from Zhipu AI
+- Structure: Proper Python package under `src/stockiv/`
+- Entry point: `uv run stockiv-run` or `python -m stockiv`
 
 **Key Commands (use uv always):**
 ```bash
 uv sync              # Install dependencies
 uv add <pkg>         # Add dependency
-uv run crewai-run    # Run the crew
+uv run stockiv-run   # Run the crew
 uv run pre-commit run --all-files  # Run security hooks
 ```
 
@@ -36,6 +37,8 @@ uv run pre-commit run --all-files  # Run security hooks
 - Set up pre-commit hooks with detect-secrets for credential leak protection
 - Added research + writing agents as example
 - Created OpenClaw-style memory system (IDENTITY, SOUL, USER, AGENTS, CLAUDE)
+- Configured GLM-4.7 as the LLM
+- Added event-based logging with LoggingCallback and ConsoleCallback
 
 **Security Measures:**
 - `.env` is gitignored (API keys stay local)
@@ -48,7 +51,7 @@ uv run pre-commit run --all-files  # Run security hooks
 ## Patterns to Follow
 
 **Adding New Agents/Crews:**
-1. Read existing code in `src/crewai_project/`
+1. Read existing code in `src/stockiv/`
 2. Follow Agent → Task → Crew pattern
 3. Use `uv run` for all Python commands
 4. Run pre-commit before committing
@@ -66,9 +69,10 @@ uv run pre-commit run --all-files  # Run security hooks
 
 ## Things to Remember
 
-- This is a learning/exploration project for CrewAI
+- This is a learning/exploration project for CrewAI + stock analysis
 - Main agents currently: Research Analyst + Tech Content Writer
-- `tools/` directory exists for custom CrewAI tools
+- `tools/` directory exists for custom tools
+- `logs/` directory stores execution logs in JSONL format
 
 ---
 

@@ -10,7 +10,7 @@ from crewai import Agent, Crew, Process, Task, LLM
 from crewai_tools import SerperDevTool, ScrapeWebsiteTool
 from dotenv import load_dotenv
 
-from crewai_project.callbacks import LoggingCallback, ConsoleCallback
+from stockiv.callbacks import LoggingCallback, ConsoleCallback
 
 load_dotenv()
 
@@ -93,13 +93,16 @@ def main():
     # Create tasks
     tasks = create_tasks(agents)
 
+    # Initialize event listeners (singleton - registers with event bus)
+    LoggingCallback()
+    ConsoleCallback()
+
     # Create and run crew
     crew = Crew(
         agents=list(agents.values()),
         tasks=tasks,
         process=Process.sequential,
         verbose=True,
-        callbacks=[LoggingCallback(), ConsoleCallback()],
     )
 
     print("\n" + "=" * 60)

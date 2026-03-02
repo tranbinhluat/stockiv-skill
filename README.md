@@ -1,6 +1,6 @@
-# CrewAI Project
+# StockIV
 
-A project demonstrating AI agent orchestration using [CrewAI](https://www.crewai.com/).
+A stock analysis project using AI agent orchestration with [CrewAI](https://www.crewai.com/).
 
 ## Setup
 
@@ -17,27 +17,27 @@ A project demonstrating AI agent orchestration using [CrewAI](https://www.crewai
 
 3. **Run the example:**
    ```bash
-   uv run crewai-run
+   uv run stockiv-run
    # or
-   python -m crewai_project
+   python -m stockiv
    ```
 
 ## Project Structure
 
 ```
-crewai-project/
+stock-agent/
 ├── src/
-│   └── crewai_project/   # Main package
-│       └── __init__.py   # Entry point with agents and crew
-├── tools/                # Custom tools
-├── .env.example          # Environment variables template
-└── pyproject.toml        # Project dependencies
+│   └── stockiv/            # Main package
+│       └── __init__.py     # Entry point with agents and crew
+├── tools/                  # Custom tools
+├── .env.example            # Environment variables template
+└── pyproject.toml          # Project dependencies
 ```
 
 ## Requirements
 
 - Python 3.12+
-- OpenAI API key
+- ZhipuAI API key (GLM-4.7)
 - (Optional) Serper API key for web search
 
 ## Resources
