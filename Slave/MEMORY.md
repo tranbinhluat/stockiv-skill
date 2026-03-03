@@ -16,7 +16,7 @@
 **Current Project: StockIV**
 - Location: `/home/luattb/Documents/Work/stockew`
 - Framework: CrewAI 1.9.3 for AI agent orchestration
-- LLM: GLM-4.7 from Zhipu AI
+- LLM: Gemini 2.5 Pro
 - Structure: Proper Python package under `src/stockiv/`
 - Entry point: `uv run stockiv-run` or `python -m stockiv`
 
@@ -37,7 +37,7 @@ uv run pre-commit run --all-files  # Run security hooks
 - Set up pre-commit hooks with detect-secrets for credential leak protection
 - Added research + writing agents as example
 - Created OpenClaw-style memory system (IDENTITY, SOUL, USER, AGENTS, CLAUDE)
-- Configured GLM-4.7 as the LLM
+- Configured Gemini 2.5 Pro as the LLM
 - Added event-based logging with LoggingCallback and ConsoleCallback
 
 **Security Measures:**
@@ -117,9 +117,9 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 
 **Shared LLM Configuration Pattern:**
 - Create `src/stockiv/agents/` package with `base.py`
-- Centralize `glm_llm` instance to avoid repetition
-- All crews import: `from stockiv.agents import glm_llm`
-- Use `llm=glm_llm` in Agent definitions
+- Centralize `gemini_llm` instance to avoid repetition
+- All crews import: `from stockiv.agents import gemini_llm`
+- Use `llm=gemini_llm` in Agent definitions
 
 **Knowledge Base Pattern:**
 ```

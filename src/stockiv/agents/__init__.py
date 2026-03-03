@@ -4,6 +4,6 @@ StockIV Agents Package
 Shared agent definitions and LLM configuration.
 """
 
-from stockiv.agents.base import get_llm, glm_llm, DEFAULT_MODEL, DEFAULT_BASE_URL
+from stockiv.agents.base import DEFAULT_BASE_URL, DEFAULT_MODEL, gemini_llm, get_llm
 
-__all__ = ["get_llm", "glm_llm", "DEFAULT_MODEL", "DEFAULT_BASE_URL"]
+__all__ = ["get_llm", "gemini_llm", "DEFAULT_MODEL", "DEFAULT_BASE_URL"]

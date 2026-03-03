@@ -11,7 +11,7 @@ Decision authority: [APPROVED], [REJECTED], [MORE_INFO_NEEDED]
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from stockiv.agents import glm_llm
+from stockiv.agents import gemini_llm
 from stockiv.crews.director.models import DirectorDecision
 
 
@@ -26,7 +26,7 @@ class DirectorCrew:
     def director(self) -> Agent:
         return Agent(
             config=self.agents_config["director"],
-            llm=glm_llm,
+            llm=gemini_llm,
         )
 
     @task

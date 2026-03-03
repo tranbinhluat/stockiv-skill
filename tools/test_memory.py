@@ -8,7 +8,7 @@ REQUIRES: Embedder API key (OpenAI, Google, or local provider)
 
 import os
 from crewai import Memory, LLM
-from stockiv.agents import glm_llm
+from stockiv.agents import gemini_llm
 
 print("="*60)
 print("CrewAI 1.10.1b1 Memory Test")
@@ -19,7 +19,7 @@ print("""
 -------------------------
 Memory requires TWO components:
 
-1. LLM (for analysis) ✅ We have: GLM-4.7
+1. LLM (for analysis) ✅ We have: Gemini 2.5 Pro
 2. Embedder (for vector search) ❌ Missing: Need OpenAI/Google API key
 
 Options for embedder:
@@ -29,7 +29,7 @@ Options for embedder:
 
 Example setup:
     memory = Memory(
-        llm=glm_llm,
+        llm=gemini_llm,
         embedder={"provider": "openai"},  # or "google", "ollama"
         storage="lancedb"  # or "chroma"
     )
@@ -43,10 +43,10 @@ print("-" * 60)
 
 try:
     # Create memory without embedder, using shallow depth
-    memory = Memory(llm=glm_llm)
+    memory = Memory(llm=gemini_llm)
     # Use remember with explicit fields to avoid LLM analysis
     memory.remember(
-        "We use GLM-4.7 from Zhipu AI",
+        "We use Gemini 2.5 Pro",
         scope="/stockiv/config",
         importance=0.8
     )

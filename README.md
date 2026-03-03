@@ -37,7 +37,7 @@ stock-agent/
 ## Requirements
 
 - Python 3.12+
-- ZhipuAI API key (GLM-4.7)
+- Google Gemini API key (gemini-2.5-pro)
 - (Optional) Serper API key for web search
 
 ## Resources

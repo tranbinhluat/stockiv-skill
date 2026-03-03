@@ -5,7 +5,7 @@ Quant Analyst Crew - Performs quantitative analysis on stock data.
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from stockiv.agents import glm_llm
+from stockiv.agents import gemini_llm
 
 
 @CrewBase
@@ -19,7 +19,7 @@ class QuantAnalystCrew:
     def quant_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config["quant_analyst"],
-            llm=glm_llm,
+            llm=gemini_llm,
         )
 
     @task

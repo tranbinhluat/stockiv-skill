@@ -9,8 +9,8 @@ from crewai import LLM
 
 
 # Default model configuration
-DEFAULT_MODEL = "glm-4.7"
-DEFAULT_BASE_URL = "https://api.z.ai/api/coding/paas/v4/"
+DEFAULT_MODEL = "gemini-2.5-pro"
+DEFAULT_BASE_URL = None
 
 
 def get_llm(model: str = DEFAULT_MODEL, base_url: str = DEFAULT_BASE_URL) -> LLM:
@@ -18,18 +18,18 @@ def get_llm(model: str = DEFAULT_MODEL, base_url: str = DEFAULT_BASE_URL) -> LLM
     Get a configured LLM instance.
 
     Args:
-        model: Model name (default: glm-4.7)
-        base_url: API base URL (default: https://api.z.ai/api/coding/paas/v4/)
+        model: Model name (default: gemini-2.5-pro)
+        base_url: API base URL (default: None)
 
     Returns:
         Configured LLM instance
     """
     return LLM(
-        model=model,
-        api_key=os.getenv("ZHIPUAI_API_KEY"),
+        model=f"gemini/{model}",
+        api_key=os.getenv("GOOGLE_API_KEY"),
         base_url=base_url,
     )
 
 
 # Default LLM instance
-glm_llm = get_llm()
+gemini_llm = get_llm()
