@@ -1,0 +1,12 @@
+collect_stock_data:
+  description: >
+    Collect comprehensive stock data for {stock_symbols} including:
+    - Current and historical price data
+    - Trading volume
+    - Financial metrics (P/E, market cap, etc.)
+    - Recent news and events
+    - Market indicators and trends
+  expected_output: >
+    A structured dataset containing all relevant stock information for
+    the specified symbols, ready for quantitative and sentiment analysis.
+  agent: data_collector

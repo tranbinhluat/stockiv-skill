@@ -1,0 +1,14 @@
+synthesize_analysis:
+  description: >
+    Synthesize the quantitative analysis and sentiment analysis for
+    {stock_symbols} into a unified assessment:
+    - Identify convergences and divergences between metrics and sentiment
+    - Weight different factors based on market conditions
+    - Generate composite scores and ratings
+    - Highlight key insights and patterns
+    - Flag potential risks and opportunities
+  expected_output: >
+    A synthesized analysis report combining all data points into a
+    cohesive assessment with composite scores, key insights, risk/
+    opportunity flags, and overall investment thesis for each stock.
+  agent: synthesizer

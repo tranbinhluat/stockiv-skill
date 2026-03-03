@@ -1,0 +1,15 @@
+orchestrate_workflow:
+  description: >
+    Orchestrate the complete stock analysis workflow for {stock_symbols}:
+    - Define sequence of crew operations
+    - Manage handoffs between collector, quant_analyst, sentiment_analyst,
+      synthesizer, reporter, and director
+    - Handle dependencies and data flow
+    - Monitor progress and identify bottlenecks
+    - Ensure quality standards are maintained throughout
+    - Coordinate final delivery of analysis
+  expected_output: >
+    A successfully completed end-to-end stock analysis workflow with all
+    crews executing in proper sequence, outputs properly chained, and a
+    final validated analysis report ready for presentation.
+  agent: orchestrator

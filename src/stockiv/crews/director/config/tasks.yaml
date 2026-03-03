@@ -1,0 +1,14 @@
+validate_analysis:
+  description: >
+    Review and validate the stock analysis for {stock_symbols}:
+    - Check data accuracy and completeness
+    - Verify analytical methodologies
+    - Assess quality of insights and conclusions
+    - Identify gaps or areas needing clarification
+    - Ensure recommendations are well-supported
+    - Provide feedback for improvement if needed
+  expected_output: >
+    A validation report with quality assessment, identified issues (if any),
+    approval status, and recommendations for refining the analysis before
+    final presentation.
+  agent: director

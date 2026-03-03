@@ -1,0 +1,13 @@
+analyze_sentiment:
+  description: >
+    Analyze market sentiment for {stock_symbols} by examining:
+    - Recent news headlines and articles
+    - Social media discussions and trends
+    - Analyst ratings and recommendations
+    - Market commentary and expert opinions
+    - Overall market mood and psychological indicators
+  expected_output: >
+    A sentiment analysis report including overall sentiment score (bullish/
+    bearish/neutral), key sentiment drivers, notable news impact, and
+    psychological market assessment for each stock.
+  agent: sentiment_analyst

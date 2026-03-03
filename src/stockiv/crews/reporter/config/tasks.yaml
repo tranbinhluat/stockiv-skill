@@ -1,0 +1,16 @@
+generate_report:
+  description: >
+    Generate a comprehensive stock analysis report for {stock_symbols} based
+    on all previous analysis:
+    - Executive summary with key findings
+    - Quantitative metrics breakdown
+    - Sentiment analysis highlights
+    - Synthesis and overall assessment
+    - Risk factors and opportunities
+    - Clear recommendations with confidence levels
+    - Visual data presentation suggestions
+  expected_output: >
+    A polished, professional stock analysis report with executive summary,
+    detailed findings, clear recommendations, risk assessment, and
+    actionable insights for investment decisions.
+  agent: reporter
