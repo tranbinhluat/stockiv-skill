@@ -18,7 +18,7 @@ load_dotenv()
 glm_llm = LLM(
     model="glm-4.7",
     api_key=os.getenv("ZHIPUAI_API_KEY"),
-    base_url="https://api.z.ai/api/coding/paas/v4/",
+    base_url="https://api.z.ai/api/coding/paas/v4/"
 )
 
 
@@ -103,6 +103,7 @@ def main():
         tasks=tasks,
         process=Process.sequential,
         verbose=True,
+        tracing=True
     )
 
     print("\n" + "=" * 60)

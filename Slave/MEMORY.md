@@ -98,6 +98,15 @@ result = crew.crew().kickoff(inputs={"key": "value"})
   - Approve/Reject/MORE_INFO → Task expected_output parsing
 - Workflow: Orchestrator coordinates, Director approves (independent quality gate)
 
+**CrewAI LLM Configuration Pattern:**
+- LiteLLM (underlying CrewAI) requires **provider prefix** in model name
+- Format: `[provider]/[model_name]`
+- Examples:
+  - `zhipuai/glm-4.7` for ZhipuAI
+  - `deepseek/deepseek-chat` for DeepSeek
+  - `openai/custom-model` for OpenAI-compatible APIs
+- Without prefix, LiteLLM doesn't know how to route API key → error
+
 ---
 
 ## Critical Rules
