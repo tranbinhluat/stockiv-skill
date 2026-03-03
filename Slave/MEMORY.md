@@ -50,9 +50,33 @@ uv run pre-commit run --all-files  # Run security hooks
 
 ## Patterns to Follow
 
+**Crew Architecture Pattern (CrewAI @CrewBase):**
+```python
+# Each crew follows this structure:
+src/stockiv/crews/<crew_name>/
+├── <crew_name>.py        # @CrewBase class
+├── config/
+│   ├── agents.yaml       # role/goal/backstory
+│   └── tasks.yaml        # description/expected_output
+
+# Usage:
+from stockiv.crews import CollectorCrew
+crew = CollectorCrew()
+result = crew.crew().kickoff(inputs={"key": "value"})
+```
+
+**7 StockIV Crews:**
+- collector - Data gathering from sources
+- quant_analyst - Quantitative analysis (metrics, ratios)
+- sentiment_analyst - Market sentiment/mood analysis
+- synthesizer - Combine multi-source analysis
+- reporter - Generate comprehensive reports
+- director - Validate analysis quality
+- orchestrator - Coordinate workflow between crews
+
 **Adding New Agents/Crews:**
-1. Read existing code in `src/stockiv/`
-2. Follow Agent → Task → Crew pattern
+1. Read existing code in `src/stockiv/crews/`
+2. Follow @CrewBase pattern with YAML configs
 3. Use `uv run` for all Python commands
 4. Run pre-commit before committing
 
