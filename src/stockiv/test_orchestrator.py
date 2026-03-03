@@ -7,7 +7,6 @@ scope of work, and workflow.
 
 import os
 from crewai import Crew, Process, Task
-from dotenv import load_dotenv
 
 from stockiv.callbacks import LoggingCallback, ConsoleCallback
 from stockiv.crews.orchestrator.orchestrator import OrchestratorCrew
@@ -32,7 +31,7 @@ def main():
     test_task = Task(
         description="Please confirm your responsibility, scope of work, and workflow. Explain how you coordinate the stock analysis process from data collection through final reporting.",
         expected_output="A clear explanation of your role as Workflow Orchestrator, including the crews you coordinate, the sequential workflow you manage, and how you handle Director feedback.",
-        agent=orchestrator_crew.orchestrator()
+        agent=orchestrator_crew.orchestrator(),
     )
 
     # Create and run crew
@@ -41,7 +40,7 @@ def main():
         tasks=[test_task],
         process=Process.sequential,
         verbose=True,
-        tracing=True
+        tracing=True,
     )
 
     print("\n" + "=" * 60)

@@ -9,7 +9,7 @@ from crewai import LLM
 
 
 # Default model configuration
-DEFAULT_MODEL = "zhipuai/glm-4.7"
+DEFAULT_MODEL = "glm-4.7"
 DEFAULT_BASE_URL = "https://api.z.ai/api/coding/paas/v4/"
 
 
@@ -18,7 +18,7 @@ def get_llm(model: str = DEFAULT_MODEL, base_url: str = DEFAULT_BASE_URL) -> LLM
     Get a configured LLM instance.
 
     Args:
-        model: Model name (default: zhipuai/glm-4.7)
+        model: Model name (default: glm-4.7)
         base_url: API base URL (default: https://api.z.ai/api/coding/paas/v4/)
 
     Returns:

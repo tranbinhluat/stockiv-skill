@@ -14,7 +14,7 @@
 - Likes clean git history with meaningful commits
 
 **Current Project: StockIV**
-- Location: `/home/luattranb/Documents/projects/stock-agent`
+- Location: `/home/luattb/Documents/Work/stockew`
 - Framework: CrewAI 1.9.3 for AI agent orchestration
 - LLM: GLM-4.7 from Zhipu AI
 - Structure: Proper Python package under `src/stockiv/`
@@ -95,8 +95,77 @@ result = crew.crew().kickoff(inputs={"key": "value"})
   - `role/goal/backstory` → `agents.yaml`
   - `task description/expected_output` → `tasks.yaml`
   - "Spawn subagent" → `crew.kickoff()` with inputs
-  - Approve/Reject/MORE_INFO → Task expected_output parsing
+  - Approve/Reject/MORE_INFO → `output_pydantic` with decision enum
 - Workflow: Orchestrator coordinates, Director approves (independent quality gate)
+
+**CrewAI Structured Output Pattern (2025):**
+| Output Type | Use Case | Access Method |
+|-------------|----------|---------------|
+| `output_pydantic` | Type-safe structured data, task-to-task passing | `result.pydantic` |
+| `output_json` | Structured data as dictionary | `result.json_dict` |
+| `output_file` | Persistent storage for reports/audit | File system |
+| `raw` (default) | Plain text | `result.raw` |
+
+**Key constraint:** Each task can only use ONE output format.
+
+**Recommended pattern:**
+- Use `output_pydantic` for decision/data pipeline tasks (Director, Orchestrator)
+- Use `output_file` for final deliverables (Reporter)
+- Combine: Pydantic for parsing + `.to_markdown()` for human review
+- Define models in `models.py` within crew directory
+- Import and use in task: `output_pydantic=MyModel`
+
+**Shared LLM Configuration Pattern:**
+- Create `src/stockiv/agents/` package with `base.py`
+- Centralize `glm_llm` instance to avoid repetition
+- All crews import: `from stockiv.agents import glm_llm`
+- Use `llm=glm_llm` in Agent definitions
+
+**Knowledge Base Pattern:**
+```
+src/stockiv/knowledge/
+├── framework.md          # GCCP methodology (Good Company Cheap Price)
+├── criteria.md           # Graham/Greenblatt/Lynch selection criteria
+├── market_context.md     # VN-Index market states & data protocols
+├── evidence_standard.md  # Evidence tiers & audit trail requirements
+├── industry_guides.md    # Vietnam-specific industry analysis (8 industries)
+└── base.py              # KnowledgeBase class (pending)
+```
+
+**Framework.md Structure (2026-03-03):**
+```
+PART I: GOOD COMPANY
+├── A. QUALITATIVE (50%)
+│   ├── Industry (with analysis steps → industry_guides.md)
+│   ├── Business Model
+│   └── Management Quality (4 pillars, MQS score)
+└── B. QUANTITATIVE (50%)
+    ├── Profitability (ROA, ROE, margins)
+    ├── Financial Health (ratios)
+    └── Growth
+    ├── Simplified Rating System (threshold-based)
+    └── Rating Algorithm (pseudo-code)
+
+PART II: CHEAP PRICE
+├── Market Cycle Awareness (P/E thresholds → market_context.md)
+├── Valuation Metrics (P/B, P/E, P/E×P/B)
+├── Valuation Methods (DCF, Relative, SOTP)
+└── Margin of Safety
+
+PART III: RANKING (Greenblatt Magic Formula)
+PART IV: TIER COMPARISON RULES
+PART V: CHECKLIST
+PART VI: RELATED RESOURCES (links to all 5 files)
+```
+
+**Purpose:** Shared framework for Director (validation) and Synthesizer (analysis)
+
+**Usage:**
+- Director validates against framework/criteria/evidence standards
+- Synthesizer applies framework/criteria for analysis
+- Market context updated daily by Collector crew
+- See `memory/knowledge_base_review.md` for detailed issues & action items
+- Market cycle awareness: Check VN-Index P/E → adjust margin of safety
 
 
 ---
@@ -119,6 +188,8 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 - Main agents currently: Research Analyst + Tech Content Writer
 - `tools/` directory exists for custom tools
 - `logs/` directory stores execution logs in JSONL format
+- `src/stockiv/knowledge/` contains 4 markdown files: framework, criteria, market_context, evidence_standard
+- `memory/knowledge_base_review.md` contains detailed issues & action items for knowledge base
 
 ---
 

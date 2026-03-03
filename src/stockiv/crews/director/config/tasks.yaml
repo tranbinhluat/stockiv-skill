@@ -1,14 +1,188 @@
 validate_analysis:
   description: >
-    Review and validate the stock analysis for {stock_symbols}:
-    - Check data accuracy and completeness
-    - Verify analytical methodologies
-    - Assess quality of insights and conclusions
-    - Identify gaps or areas needing clarification
-    - Ensure recommendations are well-supported
-    - Provide feedback for improvement if needed
+    Perform comprehensive forensic review and validation of the stock analysis for {stock_symbols}.
+
+    **STOCK ANALYSIS TO REVIEW:**
+    {analysis}
+
+    **Your Output Format:**
+    You must output a JSON object matching the DirectorDecision Pydantic model with this structure:
+
+    ```json
+    {
+      "decision": "APPROVED" | "REJECTED" | "MORE_INFO_NEEDED",
+      "ticker": "stock symbol",
+      "style": "Graham | Greenblatt | Lynch",
+      "financial_statements": {
+        "income_statement": true/false,
+        "balance_sheet": true/false,
+        "cash_flow_statement": true/false,
+        "notes_reviewed": true/false
+      },
+      "anomalies": [
+        {
+          "category": "revenue | margins | balance_sheet | cash_flow | equity | related_parties | governance",
+          "description": "brief description",
+          "data": "specific numbers",
+          "question": "probing question",
+          "required": "what must be provided"
+        }
+      ],
+      "methodology": {
+        "style_verified": true/false,
+        "all_criteria_evaluated": true/false,
+        "scoring_correct": true/false,
+        "tier_comparison_valid": true/false,
+        "industry_context_applied": true/false
+      },
+      "accuracy": {
+        "numbers_sourced": true/false,
+        "data_current": true/false,
+        "calculations_correct": true/false,
+        "peer_comparison_valid": true/false
+      },
+      "completeness": {
+        "all_criteria_checked": true/false,
+        "risks_identified": true/false,
+        "red_flags_reported": true/false,
+        "downside_considered": true/false
+      },
+      "evidence": {
+        "pdfs_provided": true/false,
+        "page_references": true/false,
+        "excel_model": true/false,
+        "primary_sources": true/false
+      },
+      "methodology_failures": ["specific failure 1", "specific failure 2"],
+      "accuracy_failures": ["specific failure 1"],
+      "completeness_failures": ["specific failure 1"],
+      "evidence_failures": ["specific failure 1"],
+      "feedback_summary": "human-readable summary of decision and key findings",
+      "next_steps": ["step 1", "step 2"]  // Optional, for REJECTED/MORE_INFO_NEEDED
+    }
+    ```
+
+    **Step 1: Verify Financial Statements (REQUIRED)**
+    Confirm that the following have been provided and reviewed:
+    - Income Statement (3-5 years)
+    - Balance Sheet (3-5 years)
+    - Cash Flow Statement (3-5 years)
+    - Notes to Financial Statements (for anomalies)
+
+    Set financial_statements fields to false if any are missing.
+    If NOT provided → decision = "REJECTED"
+
+    **Step 2: Scan for Anomalies**
+    Check for the following patterns and add to anomalies list:
+
+    *Revenue Anomalies:*
+    - Revenue spikes in Q4 (earnings management?)
+    - Revenue grows but receivables grow faster (booking sales not collected?)
+    - Revenue up, cash from operations down (low quality earnings?)
+    - One customer >20% revenue (concentration risk?)
+
+    *Margin Anomalies:*
+    - Gross margin jumps unexpectedly (accounting change or one-time gain?)
+    - Operating margin declining while revenue grows (cost control failure?)
+    - Net margin higher than operating margin (one-time gains?)
+    - SG&A growing faster than revenue (bloated overhead?)
+
+    *Balance Sheet Anomalies:*
+    - Inventory growing faster than sales (overproduction or obsolescence?)
+    - Receivables aging increasing (collection problems?)
+    - Payables growing faster than payables period (cash flow stress?)
+    - Goodwill >20% of assets (overpaid for acquisitions?)
+    - Deferred revenue declining (future revenue declining?)
+    - Off-balance sheet liabilities (hidden debt?)
+
+    *Cash Flow Anomalies:*
+    - Net income positive, operating cash flow negative (low quality earnings?)
+    - Capex > depreciation for 5+ years (heavy investment phase - when does it pay off?)
+    - Free cash flow negative for 3+ years (cash burn - how long sustainable?)
+    - Financing cash flow consistently positive (dependency on external capital?)
+    - Dividends paid while FCF negative (unsustainable payout?)
+
+    *Equity Anomalies:*
+    - Share count increasing rapidly (dilution?)
+    - Retained earnings declining while profitable (dividends > earnings?)
+    - Minority interest growing (complex structure?)
+
+    *Related Party & Governance Anomalies:*
+    - Related party transactions >5% revenue (self-dealing risk?)
+    - Loans to directors/executives (governance red flag?)
+    - Related party receivables (cash extraction?)
+    - Management compensation >5% of net income (excessive pay?)
+    - Qualified audit opinion (auditor concerns?)
+    - Auditor change (potential red flag?)
+    - Accounting policy changes (earnings management?)
+    - Restatements (historical inaccuracy?)
+
+    For each anomaly detected, add to anomalies array with all required fields.
+
+    **Step 3: Validate Methodology**
+    Set methodology fields:
+    - style_verified: Correct investment style used? (Graham, Greenblatt, Lynch)
+    - all_criteria_evaluated: All criteria evaluated? (Graham = 9, Greenblatt = 5)
+    - scoring_correct: Scoring calculated correctly?
+    - tier_comparison_valid: Tier comparison valid? (Large Cap >20,000B VND, Mid Cap 5,000-20,000B VND, Small Cap <5,000B VND)
+    - industry_context_applied: Industry-specific factors considered?
+
+    **Step 4: Validate Accuracy**
+    Set accuracy fields:
+    - numbers_sourced: All numbers traceable to source?
+    - data_current: Data current? (Reject 2024 data in 2026)
+    - calculations_correct: Calculations verified accurate?
+    - peer_comparison_valid: Peer comparison valid (same tier and industry)?
+
+    **Step 5: Validate Completeness**
+    Set completeness fields:
+    - all_criteria_checked: All investment style criteria evaluated?
+    - risks_identified: Risk factors identified and analyzed?
+    - red_flags_reported: Red flags reported (if they exist)? Note: Red flags existing is NOT reason to reject — not reporting them IS.
+    - downside_considered: Downside scenarios analyzed?
+
+    **Step 6: Validate Evidence**
+    Set evidence fields:
+    - pdfs_provided: PDF documents attached or linked?
+    - page_references: Page references provided for all key numbers?
+    - excel_model: Excel model with formulas provided?
+    - primary_sources: Primary sources used (annual reports, filings)?
+
+    **Step 7: Make Decision**
+
+    Set decision based on validation:
+
+    **"APPROVED"** when:
+    ✅ All financial_statements fields = true
+    ✅ anomalies is empty OR all anomalies addressed with evidence
+    ✅ All methodology fields = true
+    ✅ All accuracy fields = true
+    ✅ All completeness fields = true
+    ✅ All evidence fields = true
+
+    **"REJECTED"** when:
+    ❌ Any financial_statements field = false
+    ❌ anomalies detected but not addressed
+    ❌ Any methodology field = false (wrong methodology applied)
+    ❌ Any accuracy field = false (unsourced or stale data)
+    ❌ peer_comparison_valid = false (wrong tier)
+    ❌ red_flags_reported = false (risks ignored)
+    ❌ Any evidence field = false (no evidence provided)
+
+    **"MORE_INFO_NEEDED"** when:
+    🔄 Some checks incomplete (missing but not failed)
+    🔄 Anomalies detected, clarification needed
+    🔄 Sources cited but not attached
+
+    Remember: You challenge the ANALYSIS, not the COMPANY. If Synthesizer reports "insider selling >3 in 6 months" with evidence → red_flags_reported = true → APPROVE (if all other checks pass). If they ignore insider selling → red_flags_reported = false → REJECT.
+
+    For failures, add specific messages to methodology_failures, accuracy_failures, completeness_failures, or evidence_failures arrays.
+
+    Provide feedback_summary as a concise human-readable summary.
+
+    For REJECTED or MORE_INFO_NEEDED, provide next_steps array with specific actionable items.
   expected_output: >
-    A validation report with quality assessment, identified issues (if any),
-    approval status, and recommendations for refining the analysis before
-    final presentation.
+    JSON object matching DirectorDecision Pydantic model with decision, ticker, style,
+    financial_statements verification, anomalies list, validation checks (methodology,
+    accuracy, completeness, evidence), failure arrays, feedback_summary, and optional next_steps.
   agent: director

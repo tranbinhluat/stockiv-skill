@@ -1,16 +1,23 @@
 """
-Director Crew - Guides and validates the analysis workflow.
+Director Crew - Quality Control & Fraud Detection Authority
+
+The Director challenges every analysis with forensic precision, verifying
+methodology, detecting anomalies, validating evidence, and ensuring only
+accurate, complete, and well-supported analysis reaches publication.
+
+Decision authority: [APPROVED], [REJECTED], [MORE_INFO_NEEDED]
 """
 
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from stockiv.agents import glm_llm
+from stockiv.crews.director.models import DirectorDecision
 
 
 @CrewBase
 class DirectorCrew:
-    """Director Crew - Workflow Direction"""
+    """Director Crew - Quality Control & Fraud Detection"""
 
     agents_config = "config/agents.yaml"
     tasks_config = "config/tasks.yaml"
@@ -26,6 +33,7 @@ class DirectorCrew:
     def validate_analysis(self) -> Task:
         return Task(
             config=self.tasks_config["validate_analysis"],
+            output_pydantic=DirectorDecision,
         )
 
     @crew
@@ -36,4 +44,5 @@ class DirectorCrew:
             tasks=self.tasks,
             process=Process.sequential,
             verbose=True,
+            tracing=True,
         )

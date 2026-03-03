@@ -36,5 +36,5 @@ class OrchestratorCrew:
             tasks=self.tasks,
             process=Process.sequential,
             verbose=True,
-            tracing=True
+            tracing=True,
         )
