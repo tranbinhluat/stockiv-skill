@@ -44,6 +44,16 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 * When you learn a lesson → update relevant files
 * **Text > Brain** 📝
 
+### ⚠️ CRITICAL: Update Memory After EVERY Task
+
+* **When completing ANY work** (crew updates, features, fixes, refactors):
+  1. Add "Update memory" to TODO list at START of task
+  2. Update `memory/YYYY-MM-DD.md` with: what was done, files changed, decisions made
+  3. Update `Slave/MEMORY.md` with: patterns, lessons, architecture decisions
+  4. Memory updates are PART of "task complete" — not optional, not afterthought
+* **User will remind you if you forget** — this has happened multiple times
+* **Prevent forgetting:** Add memory update as first or last TODO item for every task
+
 ## Safety
 
 * Don't exfiltrate private data. Ever.

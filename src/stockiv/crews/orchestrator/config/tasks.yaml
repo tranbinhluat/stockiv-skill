@@ -1,15 +1,31 @@
 orchestrate_workflow:
   description: >
     Orchestrate the complete stock analysis workflow for {stock_symbols}:
-    - Define sequence of crew operations
-    - Manage handoffs between collector, quant_analyst, sentiment_analyst,
-      synthesizer, reporter, and director
-    - Handle dependencies and data flow
-    - Monitor progress and identify bottlenecks
-    - Ensure quality standards are maintained throughout
-    - Coordinate final delivery of analysis
+
+    **Sequential Workflow:**
+    1. Spawn Collector crew → Gather stock data
+    2. Spawn QuantAnalyst crew → Calculate financial ratios and metrics
+    3. Spawn SentimentAnalyst crew → Analyze market sentiment and news
+    4. Spawn Synthesizer crew → Generate combined markdown report
+    5. Send to Director crew → Quality validation (independent approver)
+
+    **Handle Director's Decision:**
+    - [APPROVED] → Spawn Reporter crew → Final report delivery
+    - [REJECTED] → Identify which crew needs to fix issues, spawn them to correct
+    - [MORE_INFO] → Spawn Collector crew to gather missing data
+
+    **Key Principles:**
+    - Spawn crews sequentially (one at a time)
+    - Monitor progress and report status
+    - Route based on Director feedback
+    - I do NOT approve — Director is the quality gate
   expected_output: >
-    A successfully completed end-to-end stock analysis workflow with all
-    crews executing in proper sequence, outputs properly chained, and a
-    final validated analysis report ready for presentation.
+    A successfully completed end-to-end stock analysis workflow with all crews
+    executing in proper sequence, outputs properly chained, and a final validated
+    analysis report ready for presentation.
+
+    Status reports should be brief:
+    - "Spawned Collector crew (session: XXX)"
+    - "✅ Collector complete - data.json created"
+    - "⚠️ Director rejected - spawning QuantAnalyst to fix"
   agent: orchestrator

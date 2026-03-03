@@ -89,6 +89,27 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 - ruff for linting, ruff-format for formatting
 - Run `uv run pre-commit run --all-files` to check
 
+**OpenClaw to CrewAI Migration Pattern:**
+- OpenClaw SOUL.md files contain agent/crew specifications
+- Map SOUL concepts to CrewAI YAML format:
+  - `role/goal/backstory` → `agents.yaml`
+  - `task description/expected_output` → `tasks.yaml`
+  - "Spawn subagent" → `crew.kickoff()` with inputs
+  - Approve/Reject/MORE_INFO → Task expected_output parsing
+- Workflow: Orchestrator coordinates, Director approves (independent quality gate)
+
+---
+
+## Critical Rules
+
+**ALWAYS Update Memory After Work:**
+- When completing ANY task (crew updates, features, fixes):
+  1. Update `memory/YYYY-MM-DD.md` with what was done
+  2. Update `Slave/MEMORY.md` with patterns/lessons learned
+  3. Add memory update to TODO list at START of task
+- This is non-negotiable. User will remind you if you forget.
+- Memory updates are part of "task complete" — not optional
+
 ---
 
 ## Things to Remember
