@@ -12,7 +12,7 @@ _Learn about the person you're helping. Update this as you go._
 
 Luat is a software engineer working on AI agent orchestration using CrewAI. He's setting up a stock analysis project with:
 
-* **Tech Stack:** Python 3.12, CrewAI, Gemini 2.5 Pro, uv (package manager), git
+* **Tech Stack:** Python 3.12, CrewAI, Gemini 3 Flash, uv (package manager), git
 * **Current Project:** StockIV - Stock analysis with AI agents
 * **Tools:** VSCode, WSL2, pre-commit hooks for security
 * **Preferences:**

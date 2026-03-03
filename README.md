@@ -37,7 +37,7 @@ stock-agent/
 ## Requirements
 
 - Python 3.12+
-- Google Gemini API key (gemini-2.5-pro)
+- Google Gemini API key (gemini-3-flash)
 - (Optional) Serper API key for web search
 
 ## Resources

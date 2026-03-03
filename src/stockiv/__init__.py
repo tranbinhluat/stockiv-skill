@@ -16,7 +16,7 @@ load_dotenv()
 
 # Configure Gemini
 gemini_llm = LLM(
-    model="gemini/gemini-2.5-pro",
+    model="gemini/gemini-3-flash",
     api_key=os.getenv("GOOGLE_API_KEY"),
 )
 

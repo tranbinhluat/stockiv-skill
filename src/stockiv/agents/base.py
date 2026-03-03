@@ -9,7 +9,7 @@ from crewai import LLM
 
 
 # Default model configuration
-DEFAULT_MODEL = "gemini-2.5-pro"
+DEFAULT_MODEL = "gemini-3-flash"
 DEFAULT_BASE_URL = None
 
 

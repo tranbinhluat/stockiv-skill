@@ -16,7 +16,7 @@
 **Current Project: StockIV**
 - Location: `/home/luattb/Documents/Work/stockew`
 - Framework: CrewAI 1.9.3 for AI agent orchestration
-- LLM: Gemini 2.5 Pro
+- LLM: Gemini 3 Flash
 - Structure: Proper Python package under `src/stockiv/`
 - Entry point: `uv run stockiv-run` or `python -m stockiv`
 
