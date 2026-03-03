@@ -5,6 +5,8 @@ Sentiment Analyst Crew - Analyzes market sentiment and news.
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from stockiv.agents import glm_llm
+
 
 @CrewBase
 class SentimentAnalystCrew:
@@ -17,6 +19,7 @@ class SentimentAnalystCrew:
     def sentiment_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config["sentiment_analyst"],
+            llm=glm_llm,
         )
 
     @task

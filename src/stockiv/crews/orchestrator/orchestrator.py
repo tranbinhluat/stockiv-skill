@@ -5,6 +5,8 @@ Orchestrator Crew - Coordinates all crews in the workflow.
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from stockiv.agents import glm_llm
+
 
 @CrewBase
 class OrchestratorCrew:
@@ -17,6 +19,7 @@ class OrchestratorCrew:
     def orchestrator(self) -> Agent:
         return Agent(
             config=self.agents_config["orchestrator"],
+            llm=glm_llm,
         )
 
     @task
@@ -33,4 +36,5 @@ class OrchestratorCrew:
             tasks=self.tasks,
             process=Process.sequential,
             verbose=True,
+            tracing=True
         )

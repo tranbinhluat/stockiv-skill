@@ -5,6 +5,8 @@ Director Crew - Guides and validates the analysis workflow.
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from stockiv.agents import glm_llm
+
 
 @CrewBase
 class DirectorCrew:
@@ -17,6 +19,7 @@ class DirectorCrew:
     def director(self) -> Agent:
         return Agent(
             config=self.agents_config["director"],
+            llm=glm_llm,
         )
 
     @task

@@ -5,6 +5,8 @@ Collector Crew - Gathers stock data from various sources.
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from stockiv.agents import glm_llm
+
 
 @CrewBase
 class CollectorCrew:
@@ -17,6 +19,7 @@ class CollectorCrew:
     def data_collector(self) -> Agent:
         return Agent(
             config=self.agents_config["data_collector"],
+            llm=glm_llm,
         )
 
     @task
