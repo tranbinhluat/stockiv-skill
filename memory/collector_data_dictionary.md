@@ -99,7 +99,15 @@ The full history of 10-year quarterly accounting data, normalized into `balance`
 
 ---
 
-## 4. `company_overview` & `historical_prices`
+### Table 4: `company_overview` & `historical_prices`
 
 - `company_overview`: Contains exactly the base identifiers: `industry` (e.g. Technology), `company_type` (CTCP), `established_year`, `outstanding_shares`, `charter_capital`.
 - `historical_prices`: Standard daily OHLCV (Open, High, Low, Close, Volume) data cached by specific date.
+
+---
+
+## Provenance Tracking (Auditing Metadata)
+To allow the Synthesizer and Director crews to audit the data and filter out hallucinations, **every single table** above also natively stores three tracking columns:
+1. `source`: The exact API endpoint or proxy used (e.g., `vnstock-KBS`, `vnstock-VCI-regex`, `brave-search`).
+2. `confidence`: A float (0.0 - 1.0) indicating reliability. Direct Broker API hits = `1.0`. Regex extracted items = `0.8`.
+3. `citation`: The raw URL or endpoint string for citation checking.

@@ -24,6 +24,9 @@ def _ensure_db_exists():
         low REAL,
         close REAL,
         volume INTEGER,
+        source TEXT,
+        confidence REAL,
+        citation TEXT,
         PRIMARY KEY (ticker, date)
     )
     """)
@@ -37,6 +40,9 @@ def _ensure_db_exists():
         item_id TEXT,
         item_name TEXT,
         value REAL,
+        source TEXT,
+        confidence REAL,
+        citation TEXT,
         PRIMARY KEY (ticker, statement_type, period, item_id)
     )
     """)
@@ -49,6 +55,9 @@ def _ensure_db_exists():
         item_id TEXT,
         item_name TEXT,
         value REAL,
+        source TEXT,
+        confidence REAL,
+        citation TEXT,
         PRIMARY KEY (ticker, period, item_id)
     )
     """)
@@ -61,7 +70,10 @@ def _ensure_db_exists():
         company_type TEXT,
         established_year TEXT,
         outstanding_shares INTEGER,
-        charter_capital INTEGER
+        charter_capital INTEGER,
+        source TEXT,
+        confidence REAL,
+        citation TEXT
     )
     """)
 
@@ -74,19 +86,23 @@ def _ensure_db_exists():
         issue_date TEXT,
         event_desc TEXT,
         amount REAL,
+        source TEXT,
+        confidence REAL,
+        citation TEXT,
         PRIMARY KEY (ticker, ex_dividend_date)
     )
     """)
 
     # Create ratio summary table (JSON-based for flexibility of the 46 columns)
-    # Dropping if exists because we are altering the schema to include date
-    cursor.execute("DROP TABLE IF EXISTS ratio_summary")
     cursor.execute("""
-    CREATE TABLE ratio_summary (
+    CREATE TABLE IF NOT EXISTS ratio_summary (
         ticker TEXT,
         date TEXT,
         year_report INTEGER,
         metrics_json TEXT,
+        source TEXT,
+        confidence REAL,
+        citation TEXT,
         PRIMARY KEY (ticker, date, year_report)
     )
     """)
@@ -133,20 +149,41 @@ def fetch_historical_prices(ticker: str, days_back: int = 30) -> str:
         if pd.api.types.is_datetime64_any_dtype(df["date"]):
             df["date"] = df["date"].dt.strftime("%Y-%m-%d")
 
-        df = df[["ticker", "date", "open", "high", "low", "close", "volume"]]
+        # Add tracking metadata
+        df["source"] = "vnstock-KBS"
+        df["confidence"] = 1.0
+        df["citation"] = ""
+
+        df = df[
+            [
+                "ticker",
+                "date",
+                "open",
+                "high",
+                "low",
+                "close",
+                "volume",
+                "source",
+                "confidence",
+                "citation",
+            ]
+        ]
 
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.executemany(
             """
-            INSERT INTO historical_prices (ticker, date, open, high, low, close, volume)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO historical_prices (ticker, date, open, high, low, close, volume, source, confidence, citation)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(ticker, date) DO UPDATE SET
                 open=excluded.open,
                 high=excluded.high,
                 low=excluded.low,
                 close=excluded.close,
-                volume=excluded.volume
+                volume=excluded.volume,
+                source=excluded.source,
+                confidence=excluded.confidence,
+                citation=excluded.citation
             """,
             df.values.tolist(),
         )
@@ -225,8 +262,8 @@ def fetch_financial_statements(ticker: str) -> str:
                 for _, row in melted_df.iterrows():
                     cursor.execute(
                         """
-                    INSERT OR REPLACE INTO financial_statements (ticker, statement_type, period, item_id, item_name, value)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO financial_statements (ticker, statement_type, period, item_id, item_name, value, source, confidence, citation)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                         (
                             ticker,
@@ -235,6 +272,9 @@ def fetch_financial_statements(ticker: str) -> str:
                             row["item_id"],
                             row["item"],
                             row["value"],
+                            "vnstock-KBS",
+                            1.0,
+                            "",
                         ),
                     )
                     total_rows += 1
@@ -307,10 +347,19 @@ def fetch_financial_ratios(ticker: str) -> str:
             for _, row in melted_df.iterrows():
                 cursor.execute(
                     """
-                INSERT OR REPLACE INTO financial_ratios (ticker, period, item_id, item_name, value)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT OR REPLACE INTO financial_ratios (ticker, period, item_id, item_name, value, source, confidence, citation)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                    (ticker, row["period"], row["item_id"], row["item"], row["value"]),
+                    (
+                        ticker,
+                        row["period"],
+                        row["item_id"],
+                        row["item"],
+                        row["value"],
+                        "vnstock-KBS",
+                        1.0,
+                        "",
+                    ),
                 )
                 total_rows += 1
 
@@ -354,8 +403,8 @@ def fetch_company_overview(ticker: str) -> str:
         row = df.iloc[0]
         cursor.execute(
             """
-        INSERT OR REPLACE INTO company_overview (ticker, industry, company_type, established_year, outstanding_shares, charter_capital)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT OR REPLACE INTO company_overview (ticker, industry, company_type, established_year, outstanding_shares, charter_capital, source, confidence, citation)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 ticker,
@@ -368,6 +417,9 @@ def fetch_company_overview(ticker: str) -> str:
                 int(row.get("charter_capital", 0))
                 if pd.notna(row.get("charter_capital"))
                 else 0,
+                "vnstock",
+                1.0,
+                "",
             ),
         )
 
@@ -422,10 +474,10 @@ def fetch_ratio_summary(ticker: str) -> str:
 
             cursor.execute(
                 """
-            INSERT OR REPLACE INTO ratio_summary (ticker, date, year_report, metrics_json)
-            VALUES (?, ?, ?, ?)
+            INSERT OR REPLACE INTO ratio_summary (ticker, date, year_report, metrics_json, source, confidence, citation)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-                (ticker, today_str, year_report, metrics_json),
+                (ticker, today_str, year_report, metrics_json, "vnstock-VCI", 0.9, ""),
             )
 
         conn.commit()
@@ -469,9 +521,12 @@ def fetch_dividend_history(ticker: str) -> str:
             return f"No dividend events found for {ticker}."
 
         def extract_dividend(row):
+            # Returns a tuple of (amount, source, confidence, citation)
+            citation = str(row.get("source_url", ""))
+
             # Try raw value column first
             if pd.notna(row.get("value")) and row["value"] > 0:
-                return float(row["value"])
+                return pd.Series([float(row["value"]), "vnstock-VCI", 1.0, citation])
 
             # Fallback to parsing the Vietnamese title text
             title = str(row.get("event_title", ""))
@@ -479,12 +534,16 @@ def fetch_dividend_history(ticker: str) -> str:
             if match:
                 val_str = match.group(1).replace(".", "").replace(",", ".")
                 try:
-                    return float(val_str)
+                    return pd.Series(
+                        [float(val_str), "vnstock-VCI-regex", 0.8, citation]
+                    )
                 except ValueError:
                     pass
-            return 0.0
+            return pd.Series([0.0, "vnstock-VCI-fail", 0.0, citation])
 
-        df_div["amount"] = df_div.apply(extract_dividend, axis=1)
+        df_div[["amount", "source", "confidence", "citation"]] = df_div.apply(
+            extract_dividend, axis=1
+        )
 
         # Filter out invalid records where amount couldn't be parsed
         df_div = df_div[
@@ -495,8 +554,8 @@ def fetch_dividend_history(ticker: str) -> str:
         for _, row in df_div.iterrows():
             cursor.execute(
                 """
-            INSERT OR REPLACE INTO dividend_history (ticker, ex_dividend_date, record_date, issue_date, event_desc, amount)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO dividend_history (ticker, ex_dividend_date, record_date, issue_date, event_desc, amount, source, confidence, citation)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     ticker,
@@ -505,6 +564,9 @@ def fetch_dividend_history(ticker: str) -> str:
                     row["issue_date"],
                     row["event_title"],
                     row["amount"],
+                    row["source"],
+                    row["confidence"],
+                    row["citation"],
                 ),
             )
             total_rows += 1
