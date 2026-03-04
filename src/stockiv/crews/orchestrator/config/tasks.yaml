@@ -19,6 +19,11 @@ orchestrate_workflow:
     - Monitor progress and report status
     - Route based on Director feedback
     - I do NOT approve — Director is the quality gate
+
+    **KNOWLEDGE BASE INJECTION RULES:**
+    You have access to the Good Company Cheap Price (GCCP) Knowledge Base variables injected into your inputs.
+    When you spawn the Director crew, you MUST pass these exact variables in the inputs dictionary:
+    `evidence_rules` and `financial_rules`.
   expected_output: >
     A successfully completed end-to-end stock analysis workflow with all crews
     executing in proper sequence, outputs properly chained, and a final validated

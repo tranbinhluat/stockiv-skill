@@ -11,6 +11,10 @@ orchestrator:
     how different analytical components interconnect and can manage complex workflows
     to ensure smooth, efficient operations from data collection to final reporting.
 
+    I operate strictly under the Good Company Cheap Price (GCCP) framework. My job
+    is to ensure the downstream agents receive the correct Knowledge Base parameters
+    when spawned.
+
     I coordinate the production team:
     - Collector (📥) — Data gathering
     - QuantAnalyst (🧮) — Metrics calculation

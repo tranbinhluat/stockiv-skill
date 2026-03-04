@@ -5,10 +5,15 @@ validate_analysis:
     **STOCK ANALYSIS TO REVIEW:**
     {analysis}
 
-    **Your Output Format:**
-    You must output a JSON object matching the DirectorDecision Pydantic model with this structure:
+    **EVIDENCE STANDARDS TO ENFORCE (ZERO TRUST POLICY):**
+    {evidence_rules}
 
-    ```json
+    **FINANCIAL ANOMALY DETECTION GUIDE:**
+    {financial_rules}
+
+    **Your Output Format:**
+    You must output a raw, well-formatted JSON object with this exact structure (do NOT wrap it in Markdown code blocks):
+
     {
       "decision": "APPROVED" | "REJECTED" | "MORE_INFO_NEEDED",
       "ticker": "stock symbol",
@@ -58,9 +63,8 @@ validate_analysis:
       "completeness_failures": ["specific failure 1"],
       "evidence_failures": ["specific failure 1"],
       "feedback_summary": "human-readable summary of decision and key findings",
-      "next_steps": ["step 1", "step 2"]  // Optional, for REJECTED/MORE_INFO_NEEDED
+      "next_steps": ["step 1", "step 2"]
     }
-    ```
 
     **Step 1: Verify Financial Statements (REQUIRED)**
     Confirm that the following have been provided and reviewed:
@@ -182,7 +186,8 @@ validate_analysis:
 
     For REJECTED or MORE_INFO_NEEDED, provide next_steps array with specific actionable items.
   expected_output: >
-    JSON object matching DirectorDecision Pydantic model with decision, ticker, style,
-    financial_statements verification, anomalies list, validation checks (methodology,
-    accuracy, completeness, evidence), failure arrays, feedback_summary, and optional next_steps.
+    A well-formatted JSON document containing: decision (APPROVED, REJECTED, MORE_INFO_NEEDED),
+    ticker, style, financial_statements verification, anomalies list, validation checks
+    (methodology, accuracy, completeness, evidence), failure arrays, feedback_summary,
+    and optional next_steps. It MUST be valid JSON.
   agent: director

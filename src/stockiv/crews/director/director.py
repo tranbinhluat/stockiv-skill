@@ -12,7 +12,6 @@ from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from stockiv.agents import primary_llm
-from stockiv.crews.director.models import DirectorDecision
 
 
 @CrewBase
@@ -33,7 +32,6 @@ class DirectorCrew:
     def validate_analysis(self) -> Task:
         return Task(
             config=self.tasks_config["validate_analysis"],
-            output_pydantic=DirectorDecision,
         )
 
     @crew
