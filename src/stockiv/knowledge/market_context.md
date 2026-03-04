@@ -10,14 +10,14 @@
 
 - **VN-Index P/E:** 14.2x
 - **VN-Index P/B:** 1.7x
-- **Foreign Flow (1M):** Net Selling -2,500T 
+- **Foreign Flow (1M):** Net Selling -2,500T
 - **Current Interest Rate (SBV Refinancing):** 4.5%
 
 ---
 
 ## 2. Market Phase State Machine
 
-**Agent Logic (Director / Synthesizer):** 
+**Agent Logic (Director / Synthesizer):**
 1. Read the current `VN-Index P/E` from section 1.
 2. Match it against the table below to determine the `Market Phase`.
 3. Apply the `Required Margin of Safety (MoS)` to all valuations before issuing an [APPROVED] decision.

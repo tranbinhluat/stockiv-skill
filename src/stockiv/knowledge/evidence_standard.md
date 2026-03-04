@@ -5,7 +5,7 @@
 
 ## 1. Zero Trust Policy
 
-The Director Crew operates on a **ZERO TRUST** baseline. 
+The Director Crew operates on a **ZERO TRUST** baseline.
 
 * The Synthesizer's claims are considered *hypothesis* until proven by *evidence*.
 * An analysis that fails to cite Tier 1 or Tier 2 evidence for its quantitative claims **MUST BE REJECTED**.
@@ -40,10 +40,10 @@ Before marking `accuracy=True` and `evidence=True`, the Director must execute th
 def validate_evidence(thesis):
     if "Facebook" in thesis.sources or "Rumor" in thesis.sources:
         return "REJECTED", "Tier 3 sources detected. Auto-reject."
-        
+
     if not has_tier_1_sources(thesis.metrics):
         return "MORE_INFO_NEEDED", "Quantitative claims lack Tier 1 sourcing (e.g., Audited BCTC, VNStock API)."
-        
+
     if tier_1_data_contradicts_tier_2_claims(thesis):
         return "REJECTED", "Anomaly: Broker optimism contradicts primary financial data trend."
 

@@ -32,7 +32,7 @@
 | **Debt/Asset Ratio** | Leverage risk | < 20% | 20% - 30% | 30% - 50% | > 50% |
 | **Pre-sales / Revenue** | Future revenue visibility | > 50% | 30% - 50% | 10% - 30% | < 10% |
 
-**Vietnam Context:** Look for "Người mua trả tiền trước" (Customer advances) on the balance sheet. This is unearned revenue and a highly positive signal. 
+**Vietnam Context:** Look for "Người mua trả tiền trước" (Customer advances) on the balance sheet. This is unearned revenue and a highly positive signal.
 
 ---
 

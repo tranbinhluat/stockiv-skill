@@ -397,15 +397,15 @@ Buổi 5
   **Giá cổ phiếu (Price)** Giá giao dịch cổ phiếu
 
   **Số lượng cổ phiếu      Vốn cổ phần/mệnh giá CP
-  (SLCP)**                 
+  (SLCP)**
 
   **Vốn hóa (Market Cap)** Giá cả x SLCP
 
   **Earnings Per Share     Lợi nhuận ròng/SLCP
-  (EPS)**                  
+  (EPS)**
 
   **Book Value Per Share   Giá trị sổ sách/SLCP
-  (BVPS)**                 
+  (BVPS)**
   -----------------------------------------------------------------------
 
 - **Rẻ/Đắt tương quan TS bạn mua**
@@ -522,7 +522,7 @@ Buổi 7
   Ít thời gian           Toàn thời gian           Toàn thời gian
 
   Lợi nhuận bằng thị     Lợi nhuận hơn thị trường Lợi nhuận kỳ vọng cao
-  trường                                          
+  trường
   -----------------------------------------------------------------------
 
 - **Bữa tiệc cocktails (Peter Lynch)**
@@ -852,4 +852,3 @@ Buổi 10
 
 - Tiếp tục chọn 1-3 doanh nghiệp để thực hành tìm hiểu doanh nghiệp, giá
   cả
-

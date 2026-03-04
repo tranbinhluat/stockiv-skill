@@ -43,7 +43,7 @@ The most critical test of financial health is the reconciliation of Net Income t
 1. Extract `Net Income` from Income Statement.
 2. Extract `Net Cash from Operating Activities (OCF)` from the Cash Flow Statement.
 
-> **The Divergence Test:** If `Net Income` is consistently highly positive, but `OCF` is consistently negative or substantially lower over a 3-year period, **REJECT** the company. Output: 
+> **The Divergence Test:** If `Net Income` is consistently highly positive, but `OCF` is consistently negative or substantially lower over a 3-year period, **REJECT** the company. Output:
 > *Anomaly Detected: The company reports "paper profits" but fails to generate actual cash. Extremely high fraud or cash-burn risk.*
 
 ---
