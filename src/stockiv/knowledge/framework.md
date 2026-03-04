@@ -1,526 +1,113 @@
-# Investment Framework — Good Company Cheap Price (GCCP)
+# The StockIV Good Company Cheap Price (GCCP) Framework
 
-> **🧠 CORE BACKBONE — All agents must read this before any analysis**
+> **🧠 MASTER DIRECTIVE — All Crews MUST strictly adhere to this framework.**
+> *This is the core philosophical and operational backbone of StockIV.*
+> *Last Updated: 2026-03-04*
 
----
+## PART I: The Foundation (Investing vs. Trading)
 
-## 🎯 Core Principle
+**Operational Rule:** Any agent evaluating "Good Company" (Business Quality) or "Cheap Price" (Valuation) MUST ignore "Trading" signals. StockIV is an **Investing** framework.
 
-> **"Đầu tư là tìm mua TÀI SẢN, không phải 'đánh' (trade) hàng"**
->
-> Investment is buying ASSETS, not trading goods.
-
-## 🎯 Goal
-
-> **Tìm CÔNG TY TỐT + MUA VỚI GIÁ RẺ**
->
-> Find GOOD COMPANY + Buy at CHEAP PRICE
-
----
-
-## 🧠 Mindset
-
-- Long-term ownership, not short-term trading
-- Business analysis, not price prediction
-- Margin of safety always
-- Think like an owner, not a trader
+| Trading (IGNORE) | Investing (APPLY) |
+|------------------|-------------------|
+| Focuses on Price History / Charts | Focuses on Business Fundamentals / Value |
+| Short-term speculation | Long-term ownership |
+| "Why did it drop today?" | "Is the business generating free cash flow?" |
+| Buying to sell to someone else | Buying to hold as an owner |
 
 ---
 
-# PART I: GOOD COMPANY
+## PART II: GOOD COMPANY (Qualitative Evaluation)
 
-## Cấu trúc tổng thể
+*Agents must determine if the company is fundamentally sound before looking at the price.*
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    GOOD COMPANY ANALYSIS                     │
-│                  (Phân tích Công ty Tốt)                     │
-└─────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┴───────────────┐
-              │                               │
-    ┌─────────▼─────────┐         ┌──────────▼──────────┐
-    │   QUALITATIVE     │         │   QUANTITATIVE      │
-    │   (Định tính)     │         │   (Định lượng)      │
-    └─────────┬─────────┘         └──────────┬──────────┘
-              │                               │
-    ┌─────────┴─────────┐         ┌──────────┴──────────┐
-    │                   │         │                     │
-┌───▼───┐         ┌─────▼────┐  ┌─▼──────┐      ┌──────▼─────┐
-│Industry│         │ Business │  │Profit- │      │ Financial  │
-│(Ngành)│         │  Model   │  │ability │      │   Health   │
-└───────┘         └────┬─────┘  └────────┘      └────────────┘
-                       │
-                 ┌─────▼─────────┐
-                 │  MANAGEMENT   │
-                 │  (Quản trị)   │
-                 └───────┬───────┘
-                         │
-         ┌───────────────┼───────────────┐
-         │               │               │
-    ┌────▼────┐    ┌─────▼─────┐   ┌────▼────┐
-    │Ownership│    │  Insider  │   │Leadership│
-    │Structure│    │ Activity  │   │ Quality │
-    └─────────┘    └───────────┘   └─────────┘
-         │
-    ┌────▼────┐
-    │Governance│
-    │ Signals  │
-    └──────────┘
-```
+### 1. Industry Dynamics (`[Data Source: Pending Specification]`, `industry_guides.md`)
+
+Classify the company's industry into one of the four growth stages:
+
+1. **Slow Growth (Tăng trưởng chậm):** Market is saturated. Focus is entirely on high Dividend Yield and absolute stability (e.g., legacy utilities).
+2. **Sustainable Growth (Tăng trưởng bền vững):** Consistent compounding. Look for high Returns on Capital, strong moats, and reinvestment capacity (e.g., top-tier consumer goods, top banks).
+3. **Fast Growth (Tăng trưởng nhanh):** High top-line expansion. Focus on Gross Margins, expanding market share, and revenue growth. Risk: Requires capital to grow.
+4. **Cyclical (Tăng trưởng theo chu kỳ):** Tied to economic inputs (e.g., commodities, construction). Focus on surviving the downturns (low debt) and buying when P/E looks artificially high.
+
+> **Agent Action:** Refer to `industry_guides.md` for specific metrics to check based on this classification.
+
+### 2. The Business Model (Mô hình kinh doanh)
+
+Evaluate simplicity and focus.
+
+- **Output (Đầu ra):** Who do they sell to? What is the product? Where is the revenue from?
+- **Input (Đầu vào):** What are the raw materials? Where are they sourced?
+- **Core Engine (Công cụ sản xuất):** Factories, workforce, distribution network.
+- **Complexity Check:** Is this a single-industry (Đơn ngành) or multi-industry (Đa ngành) conglomerate? Conglomerates require higher margins of safety due to opacity.
+
+### 3. Management & Governance (Quản trị)
+
+Evaluate the people running the engine.
+
+- **Structure:** Who are the major shareholders? Who is on the Board of Directors vs. the Executive Board?
+- **Reputation:** Are they known for diluting shareholders or prioritizing related parties? (Ref: `financial_reading_guide.md` for proxy checks).
 
 ---
 
-## A. QUALITATIVE ANALYSIS (Định tính) — 50%
+## PART III: GOOD COMPANY (Quantitative Evaluation)
 
-### 1. Industry (Ngành)
+*The numbers must reflect the narrative.*
 
-> **See also:** [industry_guides.md](industry_guides.md) for detailed Vietnam-specific industry analysis
+> **Agent Core Rule:** Use the **Double-Entry Principle**. Every transaction leaves a trace. To find the truth, trace the numbers across all three statements. (Ref: `financial_reading_guide.md`).
 
-**3 Questions to Answer:**
-- What are the industry characteristics? Factors affecting it?
-- What is the growth stage?
-- What are the risks?
+| Metric Category | Key Agent Checks | Target Signatures |
+|-----------------|------------------|-------------------|
+| **Capital Structure (Cơ cấu vốn)** | Where are the biggest assets? What % is ST vs LT debt? | Asset structure matches the Industry type (e.g., heavy cash for services, heavy PPE for manufacturing). |
+| **Profitability (Khả năng sinh lời)** | Gross, Operating, Pre-Tax, and Net Margins over time. ROE and ROA. | Consistently high ROE (>15%) and ROA (>6%) over a 5-10 year period. |
+| **Cash Generation (Dòng tiền)** | Operating Cash Flow > Net Income. Free Cash Flow Margin. | `OCF` must convert "paper profit" into real cash. `FCF margin > 5%`. |
 
-**How to Analyze (Step-by-Step):**
-1. **Identify industry** from company_overview
-2. **Growth stage classification:**
-   - Slow Growth: Utilities, Telecom
-   - Sustainable Growth: FMCG, Banking
-   - Fast Growth: Tech, E-commerce
-   - Cyclical: Steel, Airlines, Real Estate
-3. **Check industry-specific metrics** from [industry_guides.md](industry_guides.md):
-   - Banking: NIM > 3.5%, NPL < 2%, CAR > 14%
-   - Real Estate: Inventory turnover < 2 years, Debt/Asset < 30%
-   - Technology: Revenue growth > 25%, R&D ratio 10-15%
-   - etc.
-
-**Growth Stages:**
-
-| Stage | Characteristics | Example Industries |
-|-------|-----------------|-------------------|
-| **Slow Growth** | Mature, stable, low growth | Utilities, Telecom |
-| **Sustainable Growth** | Steady 5-10% growth | FMCG, Banking |
-| **Fast Growth** | High growth >15% | Tech, E-commerce |
-| **Cyclical** | Follows economic cycles | Steel, Airlines, Real Estate |
-
-### 2. Business Model (Mô hình kinh doanh)
-
-**Questions to Answer:**
-- What are the business segments?
-- Input: Raw materials, suppliers?
-- Output: Products/services, markets?
-- Is the model easy to understand?
-- Single industry or diversified?
-
-**Ideal:** Simple, understandable, focused business
+> **Agent Protocol (Return vs Yield):** The framework strictly separates `Return` and `Yield`.
+> - **Return (ROA/ROE):** Profit relative to *Book Value* (How good is the internal engine?).
+> - **Yield (Earnings Yield/FCF Yield):** Profit relative to *Market Capitalization* (How good is the price I am paying?).
 
 ---
 
-### 3. Management Quality (Quản trị) — 4 Pillars
+## PART IV: CHEAP PRICE (Valuation)
 
-> **"Đầu tư vào công ty có quản trị tốt là đầu tư vào người quản lý tài ba và trung thực."** - Warren Buffett
+*A Good Company can be a bad investment if the price is too high.*
 
-#### Pillar 1: Ownership Structure (Cơ cấu sở hữu) — 25%
+### 1. The Market Phase (`market_context.md`)
 
-**Data Source:** `company.ownership()`, `company.shareholders()`
+Before valuing the individual stock, the agent MUST determine the overall market phase.
 
-| Red Flags 🚩 | Threshold | Points |
-|--------------|-----------|--------|
-| Công ty mẹ nắm > 50% | > 50% | -30 |
-| State ownership cao | > 30% | -10 |
-| Free float thấp | < 20% | -20 |
-| Top 3 cổ đông > 70% | > 70% | -20 |
+- **Crisis Phase (P/E ~ 10x):** Heavy buying opportunity.
+- **Fair/Expensive (P/E 12-20x):** Selective buying. Higher Margin of Safety required.
+- **Bubble Phase (P/E > 20x):** Extreme caution.
 
-| Green Flags ✅ | Threshold | Points |
-|----------------|-----------|--------|
-| Founder ownership | 10-30% | +15 |
-| Insider ownership hợp lý | 5-20% | +10 |
-| Institutional ownership | 20-40% | +10 |
-| Free float tốt | > 40% | +5 |
+### 2. Relative Valuation Metrics
 
-#### Pillar 2: Insider Activity (Hoạt động nội bộ) — 25%
+Evaluate the price relative to the internal engine.
 
-**Data Source:** `company.insider_trading()`, `company.news()`
-
-| Red Flags 🚩 | Pattern | Points |
-|--------------|---------|--------|
-| HĐQT liên tục bán | > 3 sales in 6 months | -25 |
-| CEO bán cổ phiếu | Any sale | -20 |
-| Nhiều insider bán cùng lúc | > 3 sellers in 1 month | -30 |
-
-| Green Flags ✅ | Pattern | Points |
-|----------------|---------|--------|
-| Insider mua vào | Any buy | +15 |
-| CEO mua cổ phiếu | Any buy | +25 |
-| Multiple insiders mua | > 2 buyers in 3 months | +20 |
-
-#### Pillar 3: Leadership Quality (Chất lượng lãnh đạo) — 25%
-
-**Data Source:** `company.officers()`, `company.overview()`
-
-| Red Flags 🚩 | Pattern | Points |
-|--------------|---------|--------|
-| CEO turnover cao | > 2 CEOs in 5 years | -20 |
-| Board size quá lớn | > 15 members | -10 |
-| CEO kiêm Chairman | Same person | -15 |
-
-| Green Flags ✅ | Pattern | Points |
-|----------------|---------|--------|
-| Founder-led | Founder is CEO | +20 |
-| Stable leadership | CEO tenure > 5 years | +15 |
-| Separate CEO/Chairman | Different people | +10 |
-
-#### Pillar 4: Governance Signals (Tín hiệu quản trị) — 25%
-
-**Data Source:** `company.news()`, `company.events()`
-
-| Red Flags 🚩 | Keywords | Points |
-|--------------|----------|--------|
-| Fraud allegations | gian lận, fraud | -50 |
-| SEC investigation | điều tra, investigation | -40 |
-| Accounting issues | kế toán, restatement | -35 |
-| Executive departure | từ chức, resign | -15 |
-
-| Green Flags ✅ | Keywords | Points |
-|----------------|---------|--------|
-| Dividend increase | tăng cổ tức | +10 |
-| Share buyback | mua lại cổ phiếu | +15 |
-| New contracts | hợp đồng mới | +5 |
-
-#### Management Quality Score (MQS)
-
-```python
-MQS = (ownership_score + insider_score + leadership_score + governance_score) / 4
-# Normalized to 0-100
-```
-
-| Score | Rating | Description |
-|-------|--------|-------------|
-| 80-100 | ⭐⭐⭐⭐⭐ | Quản trị xuất sắc |
-| 60-79 | ⭐⭐⭐⭐ | Quản trị tốt |
-| 40-59 | ⭐⭐⭐ | Quản trị trung bình |
-| 20-39 | ⭐⭐ | Quản trị kém |
-| 0-19 | ⭐ | Quản trị rất kém, tránh |
+- **P/B (Price to Book):** Price paid relative to contributed capital. Use for banks and asset-heavy cyclicals.
+- **P/E (Price to Earnings):** Price paid for profitability. **For Growth Companies:** P/E must be less than `(Growth Rate + Dividend Yield)`.
+- **EV/EBITDA:** Enterprise value relative to operating cash flow. Neutralizes debt variations.
 
 ---
 
-## B. QUANTITATIVE ANALYSIS (Định lượng) — 50%
+## PART V: THE INTELLIGENT INVESTOR EXECUTION
 
-### A. Profitability (Khả năng sinh lời)
+*How to synthesize the qualitative, quantitative, and valuation findings.*
 
-| Metric | Formula | Good Threshold |
-|--------|---------|----------------|
-| **ROA** | Net Income / Total Assets | > 6% (Greenblatt) |
-| **ROE** | Net Income / Equity | > 15% (Greenblatt) |
-| **Gross Margin** | (Revenue - COGS) / Revenue | Industry dependent |
-| **Operating Margin** | Operating Profit / Revenue | > 15% ideal |
-| **Net Margin** | Net Income / Revenue | > 15% (Greenblatt) |
-| **FCF Margin** | Free Cash Flow / Revenue | > 5% (Greenblatt) |
-
-### B. Financial Health (Sức khỏe tài chính)
-
-| Metric | Formula | Safe Threshold |
-|--------|---------|----------------|
-| **Current Ratio** | Current Assets / ST Debt | ≥ 2x (Graham) |
-| **Debt/Equity** | Total Debt / Equity | ≤ 2x (Graham) |
-| **Debt/Assets** | Total Debt / Total Assets | ≤ 0.5 |
-| **Interest Coverage** | EBIT / Interest Expense | > 3x |
-
-### C. Growth (Tăng trưởng)
-
-| Metric | Requirement |
-|--------|-------------|
-| Revenue Growth | Consistent over 5-10 years |
-| EPS Growth | ≥ 33% over 10 years (Graham) |
-| Profit History | Profitable 10 consecutive years (Graham) |
+1. **Classify the User/Portfolio (`criteria.md`):** Are they a Defensive (Phòng thủ) or Enterprising (Mạnh bạo) investor?
+2. **Apply the Specific Filters (`criteria.md`):**
+   - For Defensive: Apply the strict 9 Graham criteria (Must pass 8/9).
+   - For Enterprising: Apply Greenblatt Magic Formula or Lynch Categorical rules (e.g., hunting Turnarounds or Asset Plays).
+3. **Verify Evidence (`evidence_standard.md`):** Ensure all numbers are sourced from Tier 1 verified financial statements (`[Data Source: Pending Specification]`), not rumors.
 
 ---
 
-## Simplified Rating System
-
-> **For LLM Agents:** Use threshold-based logic instead of subjective point allocation.
-
-### Good Company Rating
-
-| Rating | Criteria | Action |
-|--------|----------|--------|
-| ⭐⭐⭐⭐⭐ **Excellent** | MQS ≥ 80 AND (ROE > 15% OR ROA > 6%) AND (D/E ≤ 2 OR Current ≥ 2) | **Strong candidate** |
-| ⭐⭐⭐⭐ **Good** | MQS ≥ 60 AND meets 2/3 quantitative metrics | **Good candidate** |
-| ⭐⭐⭐ **Fair** | MQS 40-59 OR meets 1/3 quantitative metrics | **Investigate further** |
-| ⭐⭐ **Poor** | MQS < 40 OR fails all quantitative | **Avoid** |
-| ⭐ **Very Poor** | Any red flag (fraud, governance crisis) | **Reject immediately** |
-
-### Quantitative Metrics Check
-
-| Metric | Excellent | Good | Fair | Poor |
-|--------|-----------|------|------|------|
-| ROE | > 20% | 15-20% | 12-15% | < 12% |
-| ROA | > 10% | 6-10% | 3-6% | < 3% |
-| Net Margin | > 15% | 10-15% | 5-10% | < 5% |
-| FCF Margin | > 8% | 5-8% | 2-5% | < 2% |
-| Debt/Equity | < 0.5 | 0.5-1.0 | 1.0-2.0 | > 2.0 |
-| Current Ratio | > 2.5 | 2.0-2.5 | 1.5-2.0 | < 1.5 |
-| Interest Coverage | > 8x | 4-8x | 2-4x | < 2x |
-
-### Rating Algorithm
-
-```python
-# Pseudo-code for LLM agents
-def rate_good_company(mqs, roe, roa, de, current, net_margin, fcf_margin):
-    # Check red flags first
-    if has_red_flags():
-        return "⭐ Very Poor - REJECT"
-
-    # Count quantitative passes
-    quant_passes = 0
-    if roe > 15 or roa > 6: quant_passes += 1
-    if de <= 2 or current >= 2: quant_passes += 1
-    if net_margin > 15 or fcf_margin > 5: quant_passes += 1
-
-    # Apply rating logic
-    if mqs >= 80 and quant_passes >= 2:
-        return "⭐⭐⭐⭐⭐ Excellent - Strong candidate"
-    elif mqs >= 60 and quant_passes >= 2:
-        return "⭐⭐⭐⭐ Good - Good candidate"
-    elif mqs >= 40 or quant_passes >= 1:
-        return "⭐⭐⭐ Fair - Investigate further"
-    else:
-        return "⭐⭐ Poor - Avoid"
-```
-
----
-
-# PART II: CHEAP PRICE
-
-## Market Cycle Awareness
-
-> **See also:** [market_context.md](market_context.md) for current VN-Index status
-
-**Check market phase before valuation:**
-
-| Market Phase | VN-Index P/E | Action | Required Margin of Safety |
-|--------------|--------------|--------|---------------------------|
-| **Crisis** | ~10x | **Best buying opportunity** | 15% (lower OK) |
-| **Fair Value** | 12-15x | Normal buying | 20% |
-| **Expensive** | 16-20x | Be selective | 30%+ (need wider margin) |
-| **Bubble** | >20x | **Don't buy** | 50%+ (must be extremely cheap) |
-
-**How to use:**
-1. Check current VN-Index P/E from [market_context.md](market_context.md)
-2. Identify market phase
-3. Adjust required margin of safety accordingly
-4. Example: If market P/E = 18x (Expensive), require 30% discount to fair value
-
----
-
-## Valuation Metrics
-
-| Metric | Formula | Graham Rule |
-|--------|---------|-------------|
-| **P/B** | Price / Book Value Per Share | < 1.5x |
-| **P/E** | Price / Earnings Per Share | < 15x |
-| **P/E × P/B** | Combined metric | ≤ 22.5 |
-
-## Valuation Methods
-
-### 1. Discounted Cash Flow (DCF)
-
-**When to use:** All companies with stable cash flows
-
-**Process:**
-1. Forecast free cash flows (5-10 years)
-2. Apply discount rate (WACC or target return)
-3. Calculate terminal value
-4. Sum PV of FCF + PV of terminal value
-
-**Vietnam context:**
-- Higher country risk premium (2-3%)
-- Currency risk (VND/USD)
-- Emerging market discount
-
-### 2. Relative Valuation
-
-**P/E Ratio:** Compare to industry peers, 5-year average, market average
-**P/B Ratio:** Compare to industry peers, historical range
-**EV/EBITDA:** Useful for capital-intensive industries
-
-### 3. Sum-of-the-Parts (SOTP)
-
-**When to use:** Conglomerates with unrelated businesses
-
----
-
-## Margin of Safety
-
-**Minimum requirement:** 20% discount to fair value
-
-**Higher discount required when:**
-- Emerging growth company (volatility risk)
-- Regulatory uncertainty
-- Weak governance
-- Competitive threats
-- Illiquid stock
-
----
-
-# PART III: RANKING (Greenblatt Magic Formula)
-
-## The Formula
-
-Joel Greenblatt's "Magic Formula" ranks stocks by combining:
-
-1. **ROA** (Return on Assets) — measures company efficiency
-2. **P/E** (Price to Earnings) — measures valuation (lower = cheaper)
-
-## Step-by-Step Calculation
-
-### Step 1: Get Raw Data
-For each stock: ROA, P/E
-
-### Step 2: Rank Each Metric
-
-**ROA Ranking (highest = 1):**
-- Sort all stocks by ROA (highest to lowest)
-
-**P/E Ranking (lowest = 1):**
-- Sort all stocks by P/E (lowest to highest)
-
-### Step 3: Combined Score
-```
-Combined Score = ROA_Rank + PE_Rank
-```
-
-### Step 4: Final Ranking
-- Sort by Combined Score (lowest = best)
-
-## Example
-
-| Stock | ROA | P/E | ROA Rank | P/E Rank | Combined |
-|-------|-----|-----|----------|----------|----------|
-| MWG   | 18% | 22x | 1 | 5 | 6 |
-| FPT   | 15% | 14x | 2 | 4 | 6 |
-| VCB   | 14% | 12x | 3 | 2 | **5** |
-| VNM   | 12% | 11x | 4 | 1 | **5** |
-| HPG   | 10% | 13x | 5 | 3 | 8 |
-
-**Result:** VCB and VNM have best combination
-
-## Strategy
-
-1. Buy top 20-30 stocks from ranking
-2. Hold for 2-3 years minimum
-3. Rebalance annually
-4. Don't panic sell on dips
-
----
-
-# PART IV: TIER COMPARISON RULES
-
-## Tier Definitions
-
-| Tier | Market Cap (B VND) | Examples |
-|------|-------------------|----------|
-| **Large Cap** | > 20,000 | VNM, FPT, VCB, VIC |
-| **Mid Cap** | 5,000 - 20,000 | PNJ, MSN, HPG, SSI |
-| **Small Cap** | < 5,000 | Smaller companies |
-
-## ✅ DO Compare
-- Same industry
-- Same tier (market cap)
-- Same business model
-
-## ❌ DON'T Compare
-- Large cap vs small cap
-- Different industries
-- Different business models
-
----
-
-# PART V: CHECKLIST
-
-## Good Company Checklist
-
-```markdown
-□ Industry: Đặc điểm, giai đoạn, rủi ro?
-□ Business Model: Dễ hiểu, tập trung?
-□ Management: Score __/100
-  □ Ownership Structure
-  □ Insider Activity
-  □ Leadership Quality
-  □ Governance Signals
-□ Profitability: ROE > 15%, ROA > 6%?
-□ Financial Health: D/E ≤ 2, Current ≥ 2?
-□ Growth: Consistent 5-10 years?
-```
-
-## Cheap Price Checklist
-
-```markdown
-□ P/E < 15x?
-□ P/B < 1.5x?
-□ P/E × P/B ≤ 22.5?
-□ Margin of safety ≥ 20%?
-□ Valuation triangulated (DCF + Relative)?
-```
-
----
-
-# PART VI: RELATED RESOURCES
-
-> **Complete GCCP knowledge system - Refer to these files for detailed analysis**
-
-## Core Framework Files
-
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| **[industry_guides.md](industry_guides.md)** | Vietnam-specific industry analysis (8 industries) | Industry classification step |
-| **[criteria.md](criteria.md)** | Graham/Greenblatt/Lynch selection criteria | Final screening & ranking |
-| **[market_context.md](market_context.md)** | VN-Index market states & daily data | Before valuation (check market phase) |
-| **[evidence_standard.md](evidence_standard.md)** | Evidence tiers & audit trail requirements | Data validation & sourcing |
-
-## Quick Reference
-
-**Industry Analysis:** See [industry_guides.md](industry_guides.md)
-- Banking: NIM, NPL, CAR, CASA metrics
-- Real Estate: Inventory turnover, legal risk
-- Technology: Revenue growth, R&D ratio
-- Construction: Order book, payment terms
-- Logistics: Fleet utilization, fuel cost
-- Insurance: Combined ratio, solvency
-- Telecom: ARPU, churn rate
-- Manufacturing: Capacity utilization, export ratio
-- Consumer Goods: Distribution coverage, brand share
-
-**Selection Criteria:** See [criteria.md](criteria.md)
-- Graham: 9 defensive criteria (pass 8-9 = Strong)
-- Greenblatt: Magic Formula (ROA rank + P/E rank)
-- Lynch: 6 categories (Stable, Moderate, Fast Growth, Cyclical, Turnaround, Asset Play)
-
-**Market Data:** See [market_context.md](market_context.md)
-- Current VN-Index P/E level
-- Market phase (Crisis/Fair/Expensive/Bubble)
-- Foreign flow direction
-- Sector performance
-
-**Evidence Requirements:** See [evidence_standard.md](evidence_standard.md)
-- Tier 1: HOSE/HNX filings, Annual Reports, vnstock API
-- Tier 2: Broker reports, news (verification only)
-- Tier 3: Social media, blogs (REJECTED)
-
----
-
-## ⚠️ Important Rules for Agents
-
-1. **ALWAYS read this file first** before any analysis
-2. **ALWAYS compare within same tier**
-3. **ALWAYS check industry context**
-4. **ALWAYS apply margin of safety**
-5. **NEVER recommend without understanding the business**
-6. **NEVER ignore qualitative factors**
-
----
-
-*Last Updated: 2026-03-03*
-*This document is the single source of truth for investment logic.*
-*This document is the single source of truth for investment logic.*
+## PART VI: KNOWLEDGE BASE INDEX (Cross-References)
+
+When drafting a final report, the Director MUST utilize these specific files to validate its logic:
+
+1. **`industry_guides.md`:** Quantitative metric thresholds optimized for 8 specific Vietnamese industries.
+2. **`criteria.md`:** Explicit IF/THEN logic for Graham, Greenblatt, and Lynch strategies.
+3. **`market_context.md`:** Current VN-Index state machine and exact Margin of Safety adjustments.
+4. **`financial_reading_guide.md`:** Financial forensic rules to catch anomalies (Double-entry violations, fake revenue, inventory bloat).
+5. **`evidence_standard.md`:** The "Zero Trust" data sourcing and audit trail policy for the Director execution.
