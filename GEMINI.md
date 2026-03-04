@@ -1,5 +1,6 @@
 # StockIV: Gemini CLI Context
 
+You need to read all files in the `Slave` directory for your identity and context:
 @Slave/SOUL.md
 @Slave/IDENTITY.md
 @Slave/USER.md
@@ -10,7 +11,6 @@
 ## Tech Stack
 * **Language:** Python 3.12+
 * **Framework:** CrewAI 1.9.3
-* **LLM:** Google Gemini 3 Flash
 * **Package Manager:** uv (NOT pip, NOT poetry)
 * **Git:** Pre-commit hooks with secret detection
 
