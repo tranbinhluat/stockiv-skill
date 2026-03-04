@@ -65,6 +65,19 @@ def _ensure_db_exists():
     )
     """)
 
+    # Create dividend history table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS dividend_history (
+        ticker TEXT,
+        ex_dividend_date TEXT,
+        record_date TEXT,
+        issue_date TEXT,
+        event_desc TEXT,
+        amount REAL,
+        PRIMARY KEY (ticker, ex_dividend_date)
+    )
+    """)
+
     # Create ratio summary table (JSON-based for flexibility of the 46 columns)
     # Dropping if exists because we are altering the schema to include date
     cursor.execute("DROP TABLE IF EXISTS ratio_summary")
@@ -175,51 +188,56 @@ def fetch_financial_statements(ticker: str) -> str:
     try:
         finance = Finance(symbol=ticker, source="KBS")
 
-        statements = {
-            "income": finance.income_statement(period="quarter"),
-            "balance": finance.balance_sheet(period="quarter"),
-            "cashflow": finance.cash_flow(period="quarter"),
-        }
-
+        # We fetch BOTH yearly and quarterly data to allow flexible "mix" analysis
+        periods_to_fetch = ["year", "quarter"]
         total_rows = 0
-        for stmt_type, df in statements.items():
-            if df is None or df.empty:
-                continue
 
-            # Melt the KBS dataframe structure: [item, item_id, 2025-Q4, 2025-Q3, ...]
-            id_vars = ["item", "item_id"]
-            # Only keep quarter columns, sometimes there are extraneous columns
-            val_vars = [
-                col
-                for col in df.columns
-                if col not in id_vars and ("Q" in col or "-" in col)
-            ]
+        for p in periods_to_fetch:
+            statements = {
+                "income": finance.income_statement(period=p),
+                "balance": finance.balance_sheet(period=p),
+                "cashflow": finance.cash_flow(period=p),
+            }
 
-            melted_df = df.melt(
-                id_vars=id_vars,
-                value_vars=val_vars,
-                var_name="period",
-                value_name="value",
-            )
-            melted_df = melted_df.dropna(subset=["value"])
+            for stmt_type, df in statements.items():
+                if df is None or df.empty:
+                    continue
 
-            # Insert into database using parameterization
-            for _, row in melted_df.iterrows():
-                cursor.execute(
-                    """
-                INSERT OR REPLACE INTO financial_statements (ticker, statement_type, period, item_id, item_name, value)
-                VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                    (
-                        ticker,
-                        stmt_type,
-                        row["period"],
-                        row["item_id"],
-                        row["item"],
-                        row["value"],
-                    ),
+                # Melt the KBS dataframe structure: [item, item_id, 2025-Q4, 2025-Q3, ...]
+                id_vars = ["item", "item_id"]
+                # Only keep quarter columns, sometimes there are extraneous columns
+                val_vars = [
+                    col
+                    for col in df.columns
+                    if col not in id_vars
+                    and ("Q" in col or "-" in col or col.isdigit())
+                ]
+
+                melted_df = df.melt(
+                    id_vars=id_vars,
+                    value_vars=val_vars,
+                    var_name="period",
+                    value_name="value",
                 )
-                total_rows += 1
+                melted_df = melted_df.dropna(subset=["value"])
+
+                # Insert into database using parameterization
+                for _, row in melted_df.iterrows():
+                    cursor.execute(
+                        """
+                    INSERT OR REPLACE INTO financial_statements (ticker, statement_type, period, item_id, item_name, value)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                        (
+                            ticker,
+                            stmt_type,
+                            row["period"],
+                            row["item_id"],
+                            row["item"],
+                            row["value"],
+                        ),
+                    )
+                    total_rows += 1
 
         conn.commit()
         conn.close()
@@ -259,39 +277,47 @@ def fetch_financial_ratios(ticker: str) -> str:
 
     try:
         finance = Finance(symbol=ticker, source="KBS")
-        df = finance.ratio(period="quarter")
 
-        if df is None or df.empty:
-            conn.close()
-            return f"Error: No financial ratio data found for {ticker}."
+        # We fetch BOTH yearly and quarterly data
+        periods_to_fetch = ["year", "quarter"]
+        total_rows = 0
 
-        # Melt the KBS dataframe structure
-        id_vars = ["item", "item_id"]
-        val_vars = [
-            col
-            for col in df.columns
-            if col not in id_vars and ("Q" in col or "-" in col)
-        ]
+        for p in periods_to_fetch:
+            df = finance.ratio(period=p)
 
-        melted_df = df.melt(
-            id_vars=id_vars, value_vars=val_vars, var_name="period", value_name="value"
-        )
-        melted_df = melted_df.dropna(subset=["value"])
+            if df is None or df.empty:
+                continue
 
-        # Insert into database using parameterization
-        for _, row in melted_df.iterrows():
-            cursor.execute(
-                """
-            INSERT OR REPLACE INTO financial_ratios (ticker, period, item_id, item_name, value)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-                (ticker, row["period"], row["item_id"], row["item"], row["value"]),
+            # Melt the KBS dataframe structure
+            id_vars = ["item", "item_id"]
+            val_vars = [
+                col
+                for col in df.columns
+                if col not in id_vars and ("Q" in col or "-" in col or col.isdigit())
+            ]
+
+            melted_df = df.melt(
+                id_vars=id_vars,
+                value_vars=val_vars,
+                var_name="period",
+                value_name="value",
             )
+            melted_df = melted_df.dropna(subset=["value"])
+
+            for _, row in melted_df.iterrows():
+                cursor.execute(
+                    """
+                INSERT OR REPLACE INTO financial_ratios (ticker, period, item_id, item_name, value)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                    (ticker, row["period"], row["item_id"], row["item"], row["value"]),
+                )
+                total_rows += 1
 
         conn.commit()
         conn.close()
 
-        return f"Successfully fetched and stored {len(melted_df)} financial ratio records for {ticker}."
+        return f"Successfully fetched and stored {total_rows} financial ratio records for {ticker}."
 
     except Exception as e:
         return f"Error fetching financial ratios for {ticker}: {str(e)}"
@@ -410,3 +436,84 @@ def fetch_ratio_summary(ticker: str) -> str:
     except Exception as e:
         conn.close()
         return f"Error fetching ratio summary for {ticker}: {str(e)}"
+
+
+@tool("Fetch Dividend History")
+def fetch_dividend_history(ticker: str) -> str:
+    """
+    Fetches the historical cash dividend payout history for a specific stock ticker.
+    Args:
+        ticker: The stock symbol (e.g., 'FPT')
+    Returns:
+        A confirmation message that data is saved to SQLite.
+    """
+    import re
+
+    _ensure_db_exists()
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    try:
+        company = Company(symbol=ticker, source="VCI")
+        df = company.events()
+
+        if df is None or df.empty:
+            conn.close()
+            return f"Error: No events found for {ticker}."
+
+        df_div = df[df["event_list_code"] == "DIV"].copy()
+
+        if df_div.empty:
+            conn.close()
+            return f"No dividend events found for {ticker}."
+
+        def extract_dividend(row):
+            # Try raw value column first
+            if pd.notna(row.get("value")) and row["value"] > 0:
+                return float(row["value"])
+
+            # Fallback to parsing the Vietnamese title text
+            title = str(row.get("event_title", ""))
+            match = re.search(r"([\d\.,]+)\s*VND?/?C[P]?", title, re.IGNORECASE)
+            if match:
+                val_str = match.group(1).replace(".", "").replace(",", ".")
+                try:
+                    return float(val_str)
+                except ValueError:
+                    pass
+            return 0.0
+
+        df_div["amount"] = df_div.apply(extract_dividend, axis=1)
+
+        # Filter out invalid records where amount couldn't be parsed
+        df_div = df_div[
+            (df_div["amount"] > 0) & (df_div["exright_date"] != "1753-01-01")
+        ]
+
+        total_rows = 0
+        for _, row in df_div.iterrows():
+            cursor.execute(
+                """
+            INSERT OR REPLACE INTO dividend_history (ticker, ex_dividend_date, record_date, issue_date, event_desc, amount)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    ticker,
+                    row["exright_date"],
+                    row["record_date"],
+                    row["issue_date"],
+                    row["event_title"],
+                    row["amount"],
+                ),
+            )
+            total_rows += 1
+
+        conn.commit()
+        conn.close()
+
+        return f"Successfully fetched and stored {total_rows} dividend history records for {ticker}."
+
+    except Exception as e:
+        conn.close()
+        return f"Error fetching dividend history for {ticker}: {str(e)}"

@@ -185,6 +185,12 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - **Telemetry:** Added `tracing=True` to all Crew classes so execution runs populate the dashboard at `app.crew.ai`.
 - **Self-Hosted Embeddings:** CrewAI memory (`memory=True`) usually expects an OpenAI-compatible API (which eats credits). If the user refuses paid embedders (like DashScope), use `langchain-huggingface` and `sentence-transformers/all-MiniLM-L6-v2` locally via the `embedder` config dictionary to bypass paid boundaries completely.
 
+**Tool Architecture (2026-03-05)**
+- **API Efficiency:** Before making external `requests.get()` calls, tools should execute a local SQLite `SELECT MAX()` cache-check.
+- **Compound Keys for Time-Series:** Metrics like P/E and P/B change daily with price fluctuations. They must be cached on a `(ticker, date)` compound primary key, not just `(ticker, year_report)`.
+- **Hybrid Period Retrieval:** When pulling financial statements, pull BOTH `period="year"` and `period="quarter"` simultaneously. This supports 10-year Graham history checks plus responsive TTM (Trailing Twelve Months) math when Q1 reports drop.
+- **Regex Fallbacks for VCI:** `vnstock`'s VCI events API frequently returns `value=NaN` for historical dividends. Tools must dynamically parse the `event_title` (e.g. "1.000VND/CP", "1000 đồng/cổ phiếu") with regex to fill in pipeline gaps.
+
 ---
 
 ## Critical Rules

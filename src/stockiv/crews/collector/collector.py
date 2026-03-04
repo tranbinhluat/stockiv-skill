@@ -22,6 +22,7 @@ from tools.vnstock_tools import (
     fetch_financial_ratios,
     fetch_company_overview,
     fetch_ratio_summary,
+    fetch_dividend_history,
 )
 from tools.brave_tools import search_market_context
 
@@ -44,6 +45,7 @@ class CollectorCrew:
                 fetch_financial_ratios,
                 fetch_company_overview,
                 fetch_ratio_summary,
+                fetch_dividend_history,
             ],
         )
 
