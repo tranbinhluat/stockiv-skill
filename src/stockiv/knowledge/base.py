@@ -5,7 +5,6 @@ Loads the Markdown files containing the GCCP framework and rules so they
 can be dynamically injected into CrewAI tasks as strings.
 """
 
-import os
 from pathlib import Path
 
 # The directory where this script lives is the knowledge base directory
@@ -28,7 +27,7 @@ class KnowledgeBase:
         filepath = KB_DIR / filename
         if not filepath.exists():
             return f"Error: Knowledge base file '{filename}' not found at {filepath}"
-            
+
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 return f.read()
@@ -74,8 +73,11 @@ class KnowledgeBase:
     def financial_reading_guide(self) -> str:
         """The anomaly detection toolkit based on double-entry accounting."""
         if self._financial_reading_guide is None:
-            self._financial_reading_guide = self._read_file("financial_reading_guide.md")
+            self._financial_reading_guide = self._read_file(
+                "financial_reading_guide.md"
+            )
         return self._financial_reading_guide
+
 
 # Create a singleton instance for easy import
 kb = KnowledgeBase()
