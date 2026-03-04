@@ -6,14 +6,12 @@ scope of work, and workflow.
 """
 
 import os
-from crewai import Crew, Process, Task
-
 from stockiv.callbacks import LoggingCallback, ConsoleCallback
-from stockiv.crews.orchestrator.orchestrator import OrchestratorCrew
+from stockiv.crews.orchestrator.orchestrator import StockOrchestratorFlow
 
 
 def main():
-    """Run the Orchestrator crew test."""
+    """Run the Orchestrator Flow test."""
     # Check for API keys
     key = os.getenv("ANTHROPIC_API_KEY", os.getenv("ANTHROPIC_AUTH_TOKEN"))
     if not key:
@@ -22,41 +20,34 @@ def main():
         )
         return
 
-    # Create the orchestrator crew
-    orchestrator_crew = OrchestratorCrew()
-
     # Initialize event listeners (singleton - registers with event bus)
     LoggingCallback()
     ConsoleCallback()
 
-    # Create a simple test task to confirm the orchestrator's role
-    test_task = Task(
-        description="Please confirm your responsibility, scope of work, and workflow. Explain how you coordinate the stock analysis process from data collection through final reporting.",
-        expected_output="A clear explanation of your role as Workflow Orchestrator, including the crews you coordinate, the sequential workflow you manage, and how you handle Director feedback.",
-        agent=orchestrator_crew.orchestrator(),
-    )
-
-    # Create and run crew
-    crew = Crew(
-        agents=[orchestrator_crew.orchestrator()],
-        tasks=[test_task],
-        process=Process.sequential,
-        verbose=True,
-        tracing=True,
-    )
-
     print("\n" + "=" * 60)
-    print("Starting Orchestrator Crew Test")
+    print("Starting Orchestrator Flow Test")
     print("=" * 60 + "\n")
 
-    result = crew.kickoff()
+    # Initialize the new Flow
+    orchestrator_flow = StockOrchestratorFlow()
+
+    # We want to test routing to the Collector Crew for the ticker 'FPT'
+    # We pass this into the flow's state via kickoff() inputs
+    print("User Action: Requesting to collect data for FPT...")
+    result = orchestrator_flow.kickoff(
+        inputs={"request": "Please collect data for FPT."}
+    )
 
     print("\n" + "=" * 60)
     print("Test completed!")
     print("=" * 60 + "\n")
 
-    print("Orchestrator Response:")
+    print("Orchestrator Flow Final State:")
     print("-" * 60)
+    import pprint
+
+    pprint.pprint(orchestrator_flow.state)
+    print("\nFlow Result:")
     print(result)
 
 

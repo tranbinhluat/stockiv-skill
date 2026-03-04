@@ -94,7 +94,7 @@ def main():
     ConsoleCallback()
 
     # Create and run crew
-    crew = Crew(
+    Crew(
         agents=list(agents.values()),
         tasks=tasks,
         process=Process.sequential,
@@ -106,7 +106,25 @@ def main():
     print("Starting CrewAI Research & Writing Crew")
     print("=" * 60 + "\n")
 
-    result = crew.kickoff()
+    # For demonstration, let's define some dummy targets. In a real CLI, these would come from args.
+    targets = ["AAPL", "GOOGL"]
+
+    try:
+        from stockiv.crews.orchestrator.orchestrator import StockOrchestratorFlow
+
+        orchestrator = StockOrchestratorFlow()
+
+        # We pass the list of targets as a request prompt to the flow
+        request_msg = (
+            f"Please collect and analyze data for these stocks: {', '.join(targets)}"
+        )
+        result = orchestrator.kickoff(inputs={"request": request_msg})
+
+        print("\n--- Stock Analysis Complete ---")
+        print(result)
+    except Exception as e:
+        print(f"An error occurred during orchestration: {e}")
+        result = "Orchestration failed."
 
     print("\n" + "=" * 60)
     print("Crew execution completed!")

@@ -20,7 +20,7 @@ from stockiv.crews.sentiment_analyst.sentiment_analyst import SentimentAnalystCr
 from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew
 from stockiv.crews.reporter.reporter import ReporterCrew
 from stockiv.crews.director.director import DirectorCrew
-from stockiv.crews.orchestrator.orchestrator import OrchestratorCrew
+from stockiv.crews.orchestrator.orchestrator import StockOrchestratorFlow
 
 __all__ = [
     "CollectorCrew",
@@ -29,5 +29,5 @@ __all__ = [
     "SynthesizerCrew",
     "ReporterCrew",
     "DirectorCrew",
-    "OrchestratorCrew",
+    "StockOrchestratorFlow",
 ]
