@@ -23,20 +23,36 @@ class Anomaly(BaseModel):
 class FinancialStatementVerification(BaseModel):
     """Verification status of required financial statements."""
 
-    income_statement: bool = Field(description="Income Statement (3-5 years) provided and reviewed")
-    balance_sheet: bool = Field(description="Balance Sheet (3-5 years) provided and reviewed")
-    cash_flow_statement: bool = Field(description="Cash Flow Statement (3-5 years) provided and reviewed")
-    notes_reviewed: bool = Field(description="Notes to Financial Statements reviewed for anomalies")
+    income_statement: bool = Field(
+        description="Income Statement (3-5 years) provided and reviewed"
+    )
+    balance_sheet: bool = Field(
+        description="Balance Sheet (3-5 years) provided and reviewed"
+    )
+    cash_flow_statement: bool = Field(
+        description="Cash Flow Statement (3-5 years) provided and reviewed"
+    )
+    notes_reviewed: bool = Field(
+        description="Notes to Financial Statements reviewed for anomalies"
+    )
 
 
 class MethodologyCheck(BaseModel):
     """Methodology validation results."""
 
-    style_verified: bool = Field(description="Correct investment style used (Graham, Greenblatt, Lynch)")
-    all_criteria_evaluated: bool = Field(description="All criteria evaluated (Graham=9, Greenblatt=5)")
+    style_verified: bool = Field(
+        description="Correct investment style used (Graham, Greenblatt, Lynch)"
+    )
+    all_criteria_evaluated: bool = Field(
+        description="All criteria evaluated (Graham=9, Greenblatt=5)"
+    )
     scoring_correct: bool = Field(description="Scoring calculated correctly")
-    tier_comparison_valid: bool = Field(description="Tier comparison valid (same tier only)")
-    industry_context_applied: bool = Field(description="Industry-specific factors considered")
+    tier_comparison_valid: bool = Field(
+        description="Tier comparison valid (same tier only)"
+    )
+    industry_context_applied: bool = Field(
+        description="Industry-specific factors considered"
+    )
 
 
 class AccuracyCheck(BaseModel):
@@ -45,13 +61,17 @@ class AccuracyCheck(BaseModel):
     numbers_sourced: bool = Field(description="All numbers traceable to source")
     data_current: bool = Field(description="Data is current (not stale)")
     calculations_correct: bool = Field(description="Calculations verified accurate")
-    peer_comparison_valid: bool = Field(description="Peer comparison valid (same tier and industry)")
+    peer_comparison_valid: bool = Field(
+        description="Peer comparison valid (same tier and industry)"
+    )
 
 
 class CompletenessCheck(BaseModel):
     """Completeness validation results."""
 
-    all_criteria_checked: bool = Field(description="All investment style criteria evaluated")
+    all_criteria_checked: bool = Field(
+        description="All investment style criteria evaluated"
+    )
     risks_identified: bool = Field(description="Risk factors identified and analyzed")
     red_flags_reported: bool = Field(description="Red flags reported (if they exist)")
     downside_considered: bool = Field(description="Downside scenarios analyzed")
@@ -61,9 +81,13 @@ class EvidenceCheck(BaseModel):
     """Evidence validation results."""
 
     pdfs_provided: bool = Field(description="PDF documents attached or linked")
-    page_references: bool = Field(description="Page references provided for all key numbers")
+    page_references: bool = Field(
+        description="Page references provided for all key numbers"
+    )
     excel_model: bool = Field(description="Excel model with formulas provided")
-    primary_sources: bool = Field(description="Primary sources used (annual reports, filings)")
+    primary_sources: bool = Field(
+        description="Primary sources used (annual reports, filings)"
+    )
 
 
 class DirectorDecision(BaseModel):
@@ -77,10 +101,12 @@ class DirectorDecision(BaseModel):
 
     decision: Literal["APPROVED", "REJECTED", "MORE_INFO_NEEDED"] = Field(
         description="Final decision: APPROVED (ready for publication), REJECTED (fatal flaws), "
-                    "MORE_INFO_NEEDED (clarification required)"
+        "MORE_INFO_NEEDED (clarification required)"
     )
     ticker: str = Field(description="Stock ticker symbol analyzed")
-    style: str = Field(description="Investment style applied: Graham, Greenblatt, or Lynch")
+    style: str = Field(
+        description="Investment style applied: Graham, Greenblatt, or Lynch"
+    )
 
     # Financial Statements (REQUIRED)
     financial_statements: FinancialStatementVerification = Field(
@@ -90,31 +116,29 @@ class DirectorDecision(BaseModel):
     # Anomaly Detection
     anomalies: List[Anomaly] = Field(
         default_factory=list,
-        description="List of detected anomalies requiring clarification"
+        description="List of detected anomalies requiring clarification",
     )
 
     # Validation Checks
     methodology: MethodologyCheck = Field(description="Methodology validation results")
     accuracy: AccuracyCheck = Field(description="Accuracy validation results")
-    completeness: CompletenessCheck = Field(description="Completeness validation results")
+    completeness: CompletenessCheck = Field(
+        description="Completeness validation results"
+    )
     evidence: EvidenceCheck = Field(description="Evidence validation results")
 
     # Detailed Feedback
     methodology_failures: List[str] = Field(
-        default_factory=list,
-        description="Specific methodology failures identified"
+        default_factory=list, description="Specific methodology failures identified"
     )
     accuracy_failures: List[str] = Field(
-        default_factory=list,
-        description="Specific accuracy failures identified"
+        default_factory=list, description="Specific accuracy failures identified"
     )
     completeness_failures: List[str] = Field(
-        default_factory=list,
-        description="Specific completeness failures identified"
+        default_factory=list, description="Specific completeness failures identified"
     )
     evidence_failures: List[str] = Field(
-        default_factory=list,
-        description="Specific evidence failures identified"
+        default_factory=list, description="Specific evidence failures identified"
     )
 
     # Summary
@@ -125,7 +149,7 @@ class DirectorDecision(BaseModel):
     # Optional routing guidance
     next_steps: Optional[List[str]] = Field(
         default=None,
-        description="Specific next steps for REJECTED or MORE_INFO_NEEDED decisions"
+        description="Specific next steps for REJECTED or MORE_INFO_NEEDED decisions",
     )
 
     def to_markdown(self) -> str:
@@ -168,10 +192,16 @@ class DirectorDecision(BaseModel):
         lines.append("## ✅ Methodology Verified:")
         meth = self.methodology
         lines.append(f"- Style verified: {'✅' if meth.style_verified else '❌'}")
-        lines.append(f"- All criteria evaluated: {'✅' if meth.all_criteria_evaluated else '❌'}")
+        lines.append(
+            f"- All criteria evaluated: {'✅' if meth.all_criteria_evaluated else '❌'}"
+        )
         lines.append(f"- Scoring correct: {'✅' if meth.scoring_correct else '❌'}")
-        lines.append(f"- Tier comparison valid: {'✅' if meth.tier_comparison_valid else '❌'}")
-        lines.append(f"- Industry context applied: {'✅' if meth.industry_context_applied else '❌'}")
+        lines.append(
+            f"- Tier comparison valid: {'✅' if meth.tier_comparison_valid else '❌'}"
+        )
+        lines.append(
+            f"- Industry context applied: {'✅' if meth.industry_context_applied else '❌'}"
+        )
         lines.append("")
 
         # Failures by category
@@ -213,10 +243,14 @@ class DirectorDecision(BaseModel):
 
         # Approval message
         if self.decision == "APPROVED":
-            lines.append("\n---\n**Analysis withstands scrutiny. Ready for publication.**")
+            lines.append(
+                "\n---\n**Analysis withstands scrutiny. Ready for publication.**"
+            )
         elif self.decision == "REJECTED":
             lines.append("\n---\n**Not acceptable. Address failures and resubmit.**")
         else:  # MORE_INFO_NEEDED
-            lines.append("\n---\n**Clarification required. Address items and resubmit.**")
+            lines.append(
+                "\n---\n**Clarification required. Address items and resubmit.**"
+            )
 
         return "\n".join(lines)

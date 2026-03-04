@@ -6,13 +6,12 @@ The new Memory class in 1.10 provides unified memory with LLM-powered analysis.
 REQUIRES: Embedder API key (OpenAI, Google, or local provider)
 """
 
-import os
-from crewai import Memory, LLM
+from crewai import Memory
 from stockiv.agents import gemini_llm
 
-print("="*60)
+print("=" * 60)
 print("CrewAI 1.10.1b1 Memory Test")
-print("="*60)
+print("=" * 60)
 
 print("""
 ⚠️  Memory Setup Required:
@@ -45,20 +44,16 @@ try:
     # Create memory without embedder, using shallow depth
     memory = Memory(llm=gemini_llm)
     # Use remember with explicit fields to avoid LLM analysis
-    memory.remember(
-        "We use Gemini 2.5 Pro",
-        scope="/stockiv/config",
-        importance=0.8
-    )
+    memory.remember("We use Gemini 2.5 Pro", scope="/stockiv/config", importance=0.8)
     print("✅ Stored with explicit fields")
 except Exception as e:
     print(f"⚠️  Even shallow storage needs embedder: {e}")
 
-print("\n" + "="*60)
+print("\n" + "=" * 60)
 print("CrewAI 1.10.1b1 Upgrade Summary")
-print("="*60)
+print("=" * 60)
 
-print(f"""
+print("""
 ✅ Successfully upgraded: CrewAI 1.9.3 → 1.10.1b1
 
 New Features in 1.10.1b1:

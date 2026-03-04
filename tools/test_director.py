@@ -147,22 +147,24 @@ Comparing to VCB (Large Cap) - looks cheaper!
 
 def test_director(name: str, analysis: str, ticker: str = "VCB"):
     """Run a test case through the Director."""
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"TEST: {name}")
-    print(f"{'='*80}\n")
+    print(f"{'=' * 80}\n")
 
     crew = DirectorCrew()
-    result = crew.crew().kickoff(inputs={
-        "stock_symbols": ticker,
-        "analysis": analysis,
-    })
+    result = crew.crew().kickoff(
+        inputs={
+            "stock_symbols": ticker,
+            "analysis": analysis,
+        }
+    )
 
     # Get the Pydantic output
     decision = result.pydantic
 
     # Display the markdown report
     print(decision.to_markdown())
-    print(f"\n{'='*80}\n")
+    print(f"\n{'=' * 80}\n")
 
     return decision
 

@@ -15,8 +15,8 @@ from stockiv.callbacks import LoggingCallback, ConsoleCallback
 load_dotenv()
 
 # Configure Gemini
-gemini_llm = LLM(
-    model="gemini/gemini-3-flash",
+primary_llm = LLM(
+    model="gemini/gemini-2.0-flash",
     api_key=os.getenv("GOOGLE_API_KEY"),
 )
 
@@ -30,7 +30,7 @@ def create_researcher() -> Agent:
         emerging trends in technology. You have a knack for finding relevant
         information and synthesizing complex topics.""",
         tools=[SerperDevTool(), ScrapeWebsiteTool()],
-        llm=gemini_llm,
+        llm=primary_llm,
         verbose=True,
     )
 
@@ -43,7 +43,7 @@ def create_writer() -> Agent:
         backstory="""You are a skilled writer who transforms technical concepts
         into accessible, engaging content. Your readers love your clear explanations
         and real-world examples.""",
-        llm=gemini_llm,
+        llm=primary_llm,
         verbose=True,
     )
 

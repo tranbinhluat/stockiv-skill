@@ -5,7 +5,7 @@ Synthesizer Crew - Combines analysis from multiple sources.
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from stockiv.agents import gemini_llm
+from stockiv.agents import primary_llm
 
 
 @CrewBase
@@ -19,7 +19,7 @@ class SynthesizerCrew:
     def synthesizer(self) -> Agent:
         return Agent(
             config=self.agents_config["synthesizer"],
-            llm=gemini_llm,
+            llm=primary_llm,
         )
 
     @task

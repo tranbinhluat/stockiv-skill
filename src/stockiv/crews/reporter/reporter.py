@@ -5,7 +5,7 @@ Reporter Crew - Generates comprehensive reports.
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from stockiv.agents import gemini_llm
+from stockiv.agents import primary_llm
 
 
 @CrewBase
@@ -19,7 +19,7 @@ class ReporterCrew:
     def reporter(self) -> Agent:
         return Agent(
             config=self.agents_config["reporter"],
-            llm=gemini_llm,
+            llm=primary_llm,
         )
 
     @task
