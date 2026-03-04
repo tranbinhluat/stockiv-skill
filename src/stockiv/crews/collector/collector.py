@@ -16,7 +16,11 @@ import os
 # Ensure tools can be imported
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
 
-from tools.vnstock_tools import fetch_historical_prices
+from tools.vnstock_tools import (
+    fetch_historical_prices,
+    fetch_financial_statements,
+    fetch_financial_ratios,
+)
 from tools.brave_tools import search_market_context
 
 
@@ -32,7 +36,11 @@ class CollectorCrew:
         return Agent(
             config=self.agents_config["market_data_fetcher"],
             llm=primary_llm,
-            tools=[fetch_historical_prices],
+            tools=[
+                fetch_historical_prices,
+                fetch_financial_statements,
+                fetch_financial_ratios,
+            ],
         )
 
     @agent

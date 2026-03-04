@@ -10,7 +10,7 @@ dependencies = [
     "zhipuai>=1.0.7",
     "pypandoc>=1.16.2",
     "pytz>=2026.1.post1",
-    "vnstock==0.2.8.5",
+    "vnstock==3.4.2",
     "ipython>=9.10.0",
     "plotly>=6.6.0",
     "langchain-core>=1.2.17",
