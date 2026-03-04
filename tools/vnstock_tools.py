@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 from crewai.tools import tool
-from vnstock import Finance, Quote
+from vnstock import Finance, Quote, Company
 from datetime import datetime, timedelta
 import os
 
@@ -52,6 +52,32 @@ def _ensure_db_exists():
         PRIMARY KEY (ticker, period, item_id)
     )
     """)
+
+    # Create company overview table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS company_overview (
+        ticker TEXT PRIMARY KEY,
+        industry TEXT,
+        company_type TEXT,
+        established_year TEXT,
+        outstanding_shares INTEGER,
+        charter_capital INTEGER
+    )
+    """)
+
+    # Create ratio summary table (JSON-based for flexibility of the 46 columns)
+    # Dropping if exists because we are altering the schema to include date
+    cursor.execute("DROP TABLE IF EXISTS ratio_summary")
+    cursor.execute("""
+    CREATE TABLE ratio_summary (
+        ticker TEXT,
+        date TEXT,
+        year_report INTEGER,
+        metrics_json TEXT,
+        PRIMARY KEY (ticker, date, year_report)
+    )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -96,11 +122,22 @@ def fetch_historical_prices(ticker: str, days_back: int = 30) -> str:
 
         df = df[["ticker", "date", "open", "high", "low", "close", "volume"]]
 
-        # Save to SQLite using append (in a real app, use UPSERT)
         conn = sqlite3.connect(DB_PATH)
-        df.to_sql(
-            "historical_prices", conn, if_exists="append", index=False, method="multi"
+        cursor = conn.cursor()
+        cursor.executemany(
+            """
+            INSERT INTO historical_prices (ticker, date, open, high, low, close, volume)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(ticker, date) DO UPDATE SET
+                open=excluded.open,
+                high=excluded.high,
+                low=excluded.low,
+                close=excluded.close,
+                volume=excluded.volume
+            """,
+            df.values.tolist(),
         )
+        conn.commit()
         conn.close()
 
         return f"Successfully fetched and stored {len(df)} days of price data for {ticker} up to {end_str}."
@@ -120,6 +157,21 @@ def fetch_financial_statements(ticker: str) -> str:
     """
     _ensure_db_exists()
 
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Cache check: if we have data from this year or last year, skip fetching
+    current_year = datetime.now().year
+    cursor.execute(
+        "SELECT MAX(period) FROM financial_statements WHERE ticker = ?", (ticker,)
+    )
+    latest_period = cursor.fetchone()[0]
+    if latest_period and (
+        str(current_year) in latest_period or str(current_year - 1) in latest_period
+    ):
+        conn.close()
+        return f"Cache hit: Financial statements for {ticker} are already up to date (latest: {latest_period})."
+
     try:
         finance = Finance(symbol=ticker, source="KBS")
 
@@ -128,9 +180,6 @@ def fetch_financial_statements(ticker: str) -> str:
             "balance": finance.balance_sheet(period="quarter"),
             "cashflow": finance.cash_flow(period="quarter"),
         }
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
 
         total_rows = 0
         for stmt_type, df in statements.items():
@@ -178,6 +227,7 @@ def fetch_financial_statements(ticker: str) -> str:
         return f"Successfully fetched and stored {total_rows} financial statement records for {ticker}."
 
     except Exception as e:
+        conn.close()
         return f"Error fetching financial statements for {ticker}: {str(e)}"
 
 
@@ -192,11 +242,27 @@ def fetch_financial_ratios(ticker: str) -> str:
     """
     _ensure_db_exists()
 
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Cache check
+    current_year = datetime.now().year
+    cursor.execute(
+        "SELECT MAX(period) FROM financial_ratios WHERE ticker = ?", (ticker,)
+    )
+    latest_period = cursor.fetchone()[0]
+    if latest_period and (
+        str(current_year) in latest_period or str(current_year - 1) in latest_period
+    ):
+        conn.close()
+        return f"Cache hit: Financial ratios for {ticker} are already up to date (latest: {latest_period})."
+
     try:
         finance = Finance(symbol=ticker, source="KBS")
         df = finance.ratio(period="quarter")
 
         if df is None or df.empty:
+            conn.close()
             return f"Error: No financial ratio data found for {ticker}."
 
         # Melt the KBS dataframe structure
@@ -211,9 +277,6 @@ def fetch_financial_ratios(ticker: str) -> str:
             id_vars=id_vars, value_vars=val_vars, var_name="period", value_name="value"
         )
         melted_df = melted_df.dropna(subset=["value"])
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
 
         # Insert into database using parameterization
         for _, row in melted_df.iterrows():
@@ -232,3 +295,118 @@ def fetch_financial_ratios(ticker: str) -> str:
 
     except Exception as e:
         return f"Error fetching financial ratios for {ticker}: {str(e)}"
+
+
+@tool("Fetch Company Overview")
+def fetch_company_overview(ticker: str) -> str:
+    """
+    Fetches the company profile and overview (industry, shares, capital) for a specific stock ticker.
+    Args:
+        ticker: The stock symbol (e.g., 'FPT')
+    Returns:
+        A confirmation message that data is saved to SQLite.
+    """
+    _ensure_db_exists()
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Check cache
+    cursor.execute("SELECT ticker FROM company_overview WHERE ticker = ?", (ticker,))
+    if cursor.fetchone():
+        conn.close()
+        return f"Cache hit: Company overview for {ticker} already exists."
+
+    try:
+        company = Company(symbol=ticker)
+        df = company.overview()
+
+        if df is None or df.empty:
+            conn.close()
+            return f"Error: No company overview found for {ticker}."
+
+        row = df.iloc[0]
+        cursor.execute(
+            """
+        INSERT OR REPLACE INTO company_overview (ticker, industry, company_type, established_year, outstanding_shares, charter_capital)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+            (
+                ticker,
+                str(row.get("icb_name4", row.get("industry", ""))),
+                str(row.get("company_type", "")),
+                str(row.get("founded_date", row.get("establishedYear", ""))),
+                int(row.get("outstanding_shares", 0))
+                if pd.notna(row.get("outstanding_shares"))
+                else 0,
+                int(row.get("charter_capital", 0))
+                if pd.notna(row.get("charter_capital"))
+                else 0,
+            ),
+        )
+
+        conn.commit()
+        conn.close()
+
+        return f"Successfully fetched and stored company overview for {ticker}."
+
+    except Exception as e:
+        conn.close()
+        return f"Error fetching company overview for {ticker}: {str(e)}"
+
+
+@tool("Fetch Ratio Summary")
+def fetch_ratio_summary(ticker: str) -> str:
+    """
+    Fetches the comprehensive 46-metric ratio summary (PE, PB, ROE, margins, etc) for a stock.
+    Args:
+        ticker: The stock symbol (e.g., 'FPT')
+    Returns:
+        A confirmation message that data is saved to SQLite.
+    """
+    import json
+
+    _ensure_db_exists()
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    # Check cache by date since price-dependent metrics like PE/PB change daily
+    cursor.execute("SELECT MAX(date) FROM ratio_summary WHERE ticker = ?", (ticker,))
+    latest_date = cursor.fetchone()[0]
+    if latest_date and latest_date == today_str:
+        conn.close()
+        return f"Cache hit: Ratio summary for {ticker} is already up to date for {today_str}."
+
+    try:
+        company = Company(symbol=ticker, source="VCI")
+        df = company.ratio_summary()
+
+        if df is None or df.empty:
+            conn.close()
+            return f"Error: No ratio summary found for {ticker}."
+
+        # Store as JSON string to handle all 46 columns flexibly
+        for _, row in df.iterrows():
+            year_report = int(row.get("year_report", 0))
+            metrics_dict = row.dropna().to_dict()
+            metrics_json = json.dumps(metrics_dict)
+
+            cursor.execute(
+                """
+            INSERT OR REPLACE INTO ratio_summary (ticker, date, year_report, metrics_json)
+            VALUES (?, ?, ?, ?)
+            """,
+                (ticker, today_str, year_report, metrics_json),
+            )
+
+        conn.commit()
+        conn.close()
+
+        return f"Successfully fetched and stored 46-metric ratio summary for {ticker} up to date {today_str}."
+
+    except Exception as e:
+        conn.close()
+        return f"Error fetching ratio summary for {ticker}: {str(e)}"

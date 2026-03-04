@@ -20,6 +20,8 @@ from tools.vnstock_tools import (
     fetch_historical_prices,
     fetch_financial_statements,
     fetch_financial_ratios,
+    fetch_company_overview,
+    fetch_ratio_summary,
 )
 from tools.brave_tools import search_market_context
 
@@ -40,6 +42,8 @@ class CollectorCrew:
                 fetch_historical_prices,
                 fetch_financial_statements,
                 fetch_financial_ratios,
+                fetch_company_overview,
+                fetch_ratio_summary,
             ],
         )
 

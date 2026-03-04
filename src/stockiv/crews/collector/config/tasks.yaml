@@ -13,10 +13,11 @@ fetch_financials_task:
 
 fetch_daily_market_data_task:
   description: >
-    Retrieve the latest daily trading data, current P/E, P/B, and live market
-    metrics for {stock_symbols}.
+    Retrieve the latest daily trading data, company overview (size/industry),
+    current P/E, P/B, and live market metrics for {stock_symbols}.
 
-    This data is highly time-sensitive. Use the provided tools to hit the API
+    This data is highly time-sensitive. Use the provided tools (including
+    fetch_company_overview and fetch_ratio_summary) to hit the API
     directly and update the local SQLite database with today's values.
   expected_output: >
     A confirmation message that today's market metrics for the requested tickers
