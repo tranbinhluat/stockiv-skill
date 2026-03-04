@@ -117,9 +117,21 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 
 **Shared LLM Configuration Pattern:**
 - Create `src/stockiv/agents/` package with `base.py`
-- Centralize `gemini_llm` instance to avoid repetition
-- All crews import: `from stockiv.agents import gemini_llm`
-- Use `llm=gemini_llm` in Agent definitions
+- Centralize `gemini_llm` or `primary_llm` instance to avoid repetition
+- All crews import: `from stockiv.agents import primary_llm`
+- Use `llm=primary_llm` in Agent definitions
+
+**Data Storage Architecture (Collector Pattern):**
+- **Structured Data (vnstock):** Written directly to local SQLite DB (`data/stockiv.db`).
+  - *Why:* Prevents huge Context Window blowouts. Downstream Quant Analysts use `DatabaseSearchTool` with custom SQL queries.
+- **Unstructured Data (Brave Search/News):** Written to local JSON cache (`data/raw/cache/`).
+  - *Why:* Easy for LLMs to read/summarize.
+- **Strict API Rate Limiting:** External API calls (like Brave Search 30/day limit) MUST check the local JSON cache before firing `requests.get()`.
+
+**Data Fetching Constraints (vnstock):**
+- **Must use `vnstock` 3.x (e.g. `3.4.2`).**
+- **Authentication Required:** VCI and KBS upstream APIs currently return 401/403 for 10-year financial statements without a paid account. The `VNSTOCK_API_KEY` must be loaded via `os.environ.get()` to bypass this.
+- **Syntax:** Use OOP `Quote(symbol, source="KBS")` for prices and `Finance(symbol, source="KBS")` for statements. Melt wide DataFrames into narrow SQLite tables.
 
 **Knowledge Base Pattern:**
 ```
@@ -185,8 +197,10 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 ## Things to Remember
 
 - This is a learning/exploration project for CrewAI + stock analysis
-- Main agents currently: Research Analyst + Tech Content Writer
-- `tools/` directory exists for custom tools
+- **Directory Roles:**
+  - `tools/` strictly reserved for custom CrewAI `@tool` methods (e.g., `vnstock_tools.py`).
+  - `tests/` strictly reserved for validation scripts (e.g., `test_collector.py`).
+  - `scripts/` strictly reserved for developer utilities (e.g., `view_logs.py`).
 - `logs/` directory stores execution logs in JSONL format
 - `src/stockiv/knowledge/` contains 4 markdown files: framework, criteria, market_context, evidence_standard
 - `memory/knowledge_base_review.md` contains detailed issues & action items for knowledge base
