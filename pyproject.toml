@@ -4,10 +4,11 @@ version = "0.1.0"
 description = "Stock analysis with AI agents"
 requires-python = ">=3.12"
 dependencies = [
-    "crewai[google-genai]>=1.10",
+    "crewai[anthropic,google-genai]>=1.10",
     "crewai-tools>=1.10",
     "python-dotenv>=1.0.0",
     "zhipuai>=1.0.7",
+    "pypandoc>=1.16.2",
 ]
 
 [build-system]
