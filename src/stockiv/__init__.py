@@ -6,19 +6,14 @@ Configured to use Gemini 2.5 Pro.
 """
 
 import os
-from crewai import Agent, Crew, Process, Task, LLM
-from crewai_tools import SerperDevTool, ScrapeWebsiteTool
+from crewai import Agent, Crew, Process, Task
+from crewai_tools import ScrapeWebsiteTool, SerperDevTool
 from dotenv import load_dotenv
 
-from stockiv.callbacks import LoggingCallback, ConsoleCallback
+from stockiv.agents.base import primary_llm
+from stockiv.callbacks import ConsoleCallback, LoggingCallback
 
 load_dotenv()
-
-# Configure Gemini
-primary_llm = LLM(
-    model="gemini/gemini-2.0-flash",
-    api_key=os.getenv("GOOGLE_API_KEY"),
-)
 
 
 def create_researcher() -> Agent:
@@ -74,9 +69,11 @@ def create_tasks(agents: dict) -> list[Task]:
 def main():
     """Run the CrewAI crew."""
     # Check for API keys
-    if not os.getenv("GOOGLE_API_KEY"):
-        print("Error: GOOGLE_API_KEY not found. Please set it in your .env file.")
-        print("Example: GOOGLE_API_KEY=your-key-here")
+    key = os.getenv("ANTHROPIC_API_KEY", os.getenv("ANTHROPIC_AUTH_TOKEN"))
+    if not key:
+        print(
+            "Error: ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN not found. Please set it in your .env file."
+        )
         return
 
     if not os.getenv("SERPER_API_KEY"):

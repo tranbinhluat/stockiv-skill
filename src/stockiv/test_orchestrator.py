@@ -15,9 +15,11 @@ from stockiv.crews.orchestrator.orchestrator import OrchestratorCrew
 def main():
     """Run the Orchestrator crew test."""
     # Check for API keys
-    if not os.getenv("GOOGLE_API_KEY"):
-        print("Error: GOOGLE_API_KEY not found. Please set it in your .env file.")
-        print("Example: GOOGLE_API_KEY=your-key-here")
+    key = os.getenv("ANTHROPIC_API_KEY", os.getenv("ANTHROPIC_AUTH_TOKEN"))
+    if not key:
+        print(
+            "Error: ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN not found. Please set it in your .env file."
+        )
         return
 
     # Create the orchestrator crew
