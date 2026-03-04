@@ -180,6 +180,11 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - Market cycle awareness: Check VN-Index P/E → adjust margin of safety
 
 
+**Orchestrator & Telemetry (2026-03-05)**
+- **LLM in Flow Routing:** Replaced simple regex routing with an LLM prompt that enforces JSON output syntax for robust dynamic routing. Always provide a legacy regex fallback.
+- **Telemetry:** Added `tracing=True` to all Crew classes so execution runs populate the dashboard at `app.crew.ai`.
+- **Self-Hosted Embeddings:** CrewAI memory (`memory=True`) usually expects an OpenAI-compatible API (which eats credits). If the user refuses paid embedders (like DashScope), use `langchain-huggingface` and `sentence-transformers/all-MiniLM-L6-v2` locally via the `embedder` config dictionary to bypass paid boundaries completely.
+
 ---
 
 ## Critical Rules

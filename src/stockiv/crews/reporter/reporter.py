@@ -36,4 +36,5 @@ class ReporterCrew:
             tasks=self.tasks,
             process=Process.sequential,
             verbose=True,
+            tracing=True,
         )
