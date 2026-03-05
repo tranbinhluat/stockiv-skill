@@ -82,11 +82,6 @@ class CollectorCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.parallel,
-            memory=True,
-            embedder={
-                "provider": "huggingface",
-                "config": {"model": "sentence-transformers/all-MiniLM-L6-v2"},
-            },
             verbose=True,
             tracing=True,
         )

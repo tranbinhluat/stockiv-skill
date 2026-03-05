@@ -1,10 +1,10 @@
 routing_task:
   description: >
     Analyze the following user request: '{request}'
-    
+
     If the user is asking to collect, gather, fetch, or analyze data for a stock, you must set the 'route' to "route_to_collector" and extract the uppercase stock ticker (e.g. "FPT", "VNM").
     If the request is unclear, conversational, or not related to collecting stock data, set 'route' to "unrecognized_route" and leave target_ticker empty.
-    
+
     You do NOT answer the user's question. You ONLY output the routing decision.
   expected_output: >
     A structured routing decision indicating the route and target ticker.
