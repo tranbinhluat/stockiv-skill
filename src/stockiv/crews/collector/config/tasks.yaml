@@ -10,6 +10,7 @@ fetch_financials_task:
     A confirmation message that the financial data for the requested tickers
     has been successfully saved to the SQLite database.
   agent: market_data_fetcher
+  max_iter: 3
 
 fetch_daily_market_data_task:
   description: >
@@ -22,7 +23,9 @@ fetch_daily_market_data_task:
   expected_output: >
     A confirmation message that today's market metrics for the requested tickers
     have been successfully updated in the SQLite database.
+  context: [fetch_financials_task]
   agent: market_data_fetcher
+  max_iter: 3
 
 fetch_market_context_task:
   description: >
@@ -37,3 +40,4 @@ fetch_market_context_task:
     and market context for the requested tickers, ready to be consumed by the
     Sentiment Crew.
   agent: macro_micro_scout
+  max_iter: 3

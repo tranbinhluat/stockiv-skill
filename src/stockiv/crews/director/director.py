@@ -8,10 +8,21 @@ accurate, complete, and well-supported analysis reaches publication.
 Decision authority: [APPROVED], [REJECTED], [MORE_INFO_NEEDED]
 """
 
+from pydantic import BaseModel, Field
+from typing import Literal
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from stockiv.agents import primary_llm
+
+
+class ValidationDecision(BaseModel):
+    decision: Literal["APPROVED", "REJECTED", "MORE_INFO_NEEDED"] = Field(
+        description="The final decision on the analysis quality."
+    )
+    reasoning: str = Field(
+        description="Detailed explanation of why the analysis was approved, rejected, or needs more info."
+    )
 
 
 @CrewBase
@@ -32,6 +43,7 @@ class DirectorCrew:
     def validate_analysis(self) -> Task:
         return Task(
             config=self.tasks_config["validate_analysis"],
+            output_pydantic=ValidationDecision,
         )
 
     @crew
@@ -41,6 +53,11 @@ class DirectorCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
+            memory=True,
+            embedder={
+                "provider": "huggingface",
+                "config": {"model": "sentence-transformers/all-MiniLM-L6-v2"},
+            },
             verbose=True,
             tracing=True,
         )
