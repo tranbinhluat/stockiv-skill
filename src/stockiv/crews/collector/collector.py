@@ -70,9 +70,15 @@ class CollectorCrew:
         )
 
     @task
-    def fetch_market_context_task(self) -> Task:
+    def fetch_macro_context_task(self) -> Task:
         return Task(
-            config=self.tasks_config["fetch_market_context_task"],
+            config=self.tasks_config["fetch_macro_context_task"],
+        )
+
+    @task
+    def fetch_ticker_context_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["fetch_ticker_context_task"],
         )
 
     @crew
@@ -81,7 +87,7 @@ class CollectorCrew:
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
-            process=Process.parallel,
+            process=Process.sequential,
             verbose=True,
             tracing=True,
         )

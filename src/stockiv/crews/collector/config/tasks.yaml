@@ -27,23 +27,41 @@ fetch_daily_market_data_task:
   agent: market_data_fetcher
   max_iter: 3
 
-fetch_market_context_task:
+fetch_macro_context_task:
   description: >
-    Gather comprehensive macro and micro market context for {stock_symbols}.
+    Gather overarching global macroeconomic conditions, Vietnam domestic economy health,
+    and broad sector/industry trends related to {stock_symbols}.
 
-    Use your search tools to find recent news, industry trends, and global
-    macroeconomic factors affecting these tickers and their sectors.
-
-    CRITICAL: Do not just scrape the surface. After your first search, identify the
-    most impactful 1-2 storylines and use additional tool calls to search specifically
-    into those sub-topics to build a profound understanding. Take advantage of your
-    increased tool usage allocations.
+    CRITICAL INSTRUCTION: You MUST NOT search for the specific {stock_symbols} ticket. 
+    Your entire focus must be on the macro-environment, interest rates, industry trends, 
+    and global supply chains that affect the sector.
+    
+    Do not just scrape the surface. After your first search, identify the
+    most impactful 1-2 macro storylines and use additional tool calls to search specifically
+    into those sub-topics to build a profound understanding.
   expected_output: >
     A comprehensive RAW DATA COMPILATION containing the full text, critical claims,
-    direct quotes, supporting statistics, and URLs for all impactful market news and
-    macro trends related to the requested tickers.
-    DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found
-    across all of your deep-dive searches so that downstream Sentiment Analysts have
-    the unadulterated facts available to them on demand.
+    direct quotes, supporting statistics, and URLs for all impactful macroeconomic 
+    and industry-wide news.
+    DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
   agent: macro_micro_scout
-  max_iter: 5
+  max_iter: 4
+
+fetch_ticker_context_task:
+  description: >
+    Gather specific news, management interviews, and localized events explicitly
+    for the {stock_symbols} ticker.
+
+    Now that you understand the macro environment, your focus shifts EXCLUSIVELY to
+    the specific ticket. Search for company-specific news, product launches, earnings 
+    leaks, or management statements.
+    
+    If your previous macro research highlighted a specific headwind (e.g. "chip shortage"),
+    you should search to see how the specific ticket ({stock_symbols}) is reacting to it.
+  expected_output: >
+    A comprehensive RAW DATA COMPILATION containing the full text, critical claims,
+    direct quotes, supporting statistics, and URLs for all impactful ticker-specific news.
+    DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
+  context: [fetch_macro_context_task]
+  agent: macro_micro_scout
+  max_iter: 4
