@@ -1,13 +1,22 @@
-analyze_sentiment:
+summarize_market:
   description: >
-    Analyze market sentiment for {stock_symbols} by examining:
-    - Recent news headlines and articles
-    - Social media discussions and trends
-    - Analyst ratings and recommendations
-    - Market commentary and expert opinions
-    - Overall market mood and psychological indicators
+    Analyze the overall macro market sentiment by reading the provided
+    market context file. Identify broad economic trends, sector rotations,
+    and general market psychology that could impact the investment landscape.
+    Use your tools to read the file located at: {macro_context_file}
   expected_output: >
-    A sentiment analysis report including overall sentiment score (bullish/
-    bearish/neutral), key sentiment drivers, notable news impact, and
-    psychological market assessment for each stock.
+    A comprehensive summary of the overall market sentiment, identifying
+    key macroeconomic drivers and the prevailing market mood (bullish, bearish, or neutral).
+  agent: sentiment_analyst
+
+summarize_symbol:
+  description: >
+    Analyze the sentiment specific to {stock_symbols} by reviewing its
+    dedicated ticker context file. Evaluate recent news, localized events,
+    and management actions to determine how they affect the stock's outlook.
+    Use your tools to read the file located at: {ticker_context_file}
+  expected_output: >
+    A detailed sentiment analysis report for {stock_symbols}, including a sentiment
+    score (bullish/bearish/neutral), key drivers, notable news impacts, and
+    a psychological assessment specific to the stock.
   agent: sentiment_analyst

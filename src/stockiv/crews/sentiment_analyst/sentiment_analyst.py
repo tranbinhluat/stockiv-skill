@@ -5,6 +5,8 @@ Sentiment Analyst Crew - Analyzes market sentiment and news.
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from crewai_tools import FileReadTool
+
 from stockiv.agents import primary_llm
 
 
@@ -20,12 +22,19 @@ class SentimentAnalystCrew:
         return Agent(
             config=self.agents_config["sentiment_analyst"],
             llm=primary_llm,
+            tools=[FileReadTool()],
         )
 
     @task
-    def analyze_sentiment(self) -> Task:
+    def summarize_market(self) -> Task:
         return Task(
-            config=self.tasks_config["analyze_sentiment"],
+            config=self.tasks_config["summarize_market"],
+        )
+
+    @task
+    def summarize_symbol(self) -> Task:
+        return Task(
+            config=self.tasks_config["summarize_symbol"],
         )
 
     @crew
@@ -37,4 +46,9 @@ class SentimentAnalystCrew:
             process=Process.sequential,
             verbose=True,
             tracing=True,
+            memory=True,
+            embedder={
+                "provider": "huggingface",
+                "config": {"model": "sentence-transformers/all-MiniLM-L6-v2"},
+            },
         )

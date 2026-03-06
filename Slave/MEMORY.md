@@ -197,6 +197,11 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - **Hybrid Period Retrieval:** When pulling financial statements, pull BOTH `period="year"` and `period="quarter"` simultaneously. This supports 10-year Graham history checks plus responsive TTM (Trailing Twelve Months) math when Q1 reports drop.
 - **Regex Fallbacks for VCI:** `vnstock`'s VCI events API frequently returns `value=NaN` for historical dividends. Tools must dynamically parse the `event_title` (e.g. "1.000VND/CP", "1000 đồng/cổ phiếu") with regex to fill in pipeline gaps.
 
+**Memory & Context Ingestion Pattern (2026-03-06):**
+- Crews needing long-term memory across tasks should initialize with `memory=True` and configure a local embedder (e.g. `sentence-transformers/all-MiniLM-L6-v2` via HuggingFace provider).
+- **Note on CrewAI Memory**: The extraction of entities/summaries for the knowledge base defaults to OpenAI. If `OPENAI_API_KEY` is not present, the embedder will still work locally, but entity extraction will fail with a warning. This is acceptable for simple local document retrieval.
+- To read generated markdown contexts (like `FPT_macro_context.md`), agents MUST be explicitly equipped with the `FileReadTool` from `crewai_tools` and instructed to use it in `tasks.yaml`.
+
 ---
 
 ## Critical Rules
