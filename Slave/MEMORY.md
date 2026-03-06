@@ -200,6 +200,11 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - **Hybrid Period Retrieval:** When pulling financial statements, pull BOTH `period="year"` and `period="quarter"` simultaneously. This supports 10-year Graham history checks plus responsive TTM (Trailing Twelve Months) math when Q1 reports drop.
 - **Regex Fallbacks for VCI:** `vnstock`'s VCI events API frequently returns `value=NaN` for historical dividends. Tools must dynamically parse the `event_title` (e.g. "1.000VND/CP", "1000 đồng/cổ phiếu") with regex to fill in pipeline gaps.
 
+**Vietstock Scraping Architecture (2026-03-07)**
+- **Static Bucket Routing:** Avoid general search engines (Brave Search limits) by deducing static buckets directly. E.g., Vietstock URLs resolve cleanly as `https://static2.vietstock.vn/data/{HOSE|HNX|UPCOM}/{year}/BCTN/VN/{ticker}_Baocaothuongnien_{year}.{pdf|zip}`. Fast `HEAD` requests validate these instantly.
+- **Dynamic Year Fallback:** The current calendar year `Y` rarely has reports published yet. Scripts should immediately test `Y-1` and `Y-2` chronologically to ensure data hits.
+- **ZIP Extraction:** Financial endpoints often bundle large reports in `.zip`. Tools MUST inspect the response and use `zipfile` extraction before parsing to Markdown.
+
 **Memory & Context Ingestion Pattern (2026-03-06):**
 - Crews needing long-term memory across tasks should initialize with `memory=True` and configure a local embedder (e.g. `sentence-transformers/all-MiniLM-L6-v2` via HuggingFace provider).
 - **Note on CrewAI Memory**: The extraction of entities/summaries for the knowledge base defaults to OpenAI. If `OPENAI_API_KEY` is not present, the embedder will still work locally, but entity extraction will fail with a warning. This is acceptable for simple local document retrieval.
