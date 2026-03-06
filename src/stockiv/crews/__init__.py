@@ -15,7 +15,6 @@ Crews:
 """
 
 from stockiv.crews.collector.collector import CollectorCrew
-from stockiv.crews.quant_analyst.quant_analyst import QuantAnalystCrew
 from stockiv.crews.sentiment_analyst.sentiment_analyst import SentimentAnalystCrew
 from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew
 from stockiv.crews.reporter.reporter import ReporterCrew
@@ -24,7 +23,6 @@ from stockiv.crews.orchestrator.orchestrator import StockOrchestratorFlow
 
 __all__ = [
     "CollectorCrew",
-    "QuantAnalystCrew",
     "SentimentAnalystCrew",
     "SynthesizerCrew",
     "ReporterCrew",

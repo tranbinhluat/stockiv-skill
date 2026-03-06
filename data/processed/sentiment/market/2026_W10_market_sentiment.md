@@ -1,4 +1,4 @@
-**I. Executive Summary:**  
+**I. Executive Summary:**
 The market exhibits a cautiously optimistic, risk-on sentiment driven by the US Federal Reserve's ongoing interest rate cut cycle and Vietnam's robust domestic economic growth. While global capital flows are beginning to favor emerging markets like Vietnam, short-term volatility persists due to geopolitical tensions and structural concerns in the local stock market, which is currently experiencing foreign outflows despite strong fundamentals.
 
 **Market Dashboard:**

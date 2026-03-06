@@ -1,14 +1,17 @@
-synthesize_analysis:
-  description: >
-    Synthesize the quantitative analysis and sentiment analysis for
-    {stock_symbols} into a unified assessment:
-    - Identify convergences and divergences between metrics and sentiment
-    - Weight different factors based on market conditions
-    - Generate composite scores and ratings
-    - Highlight key insights and patterns
-    - Flag potential risks and opportunities
-  expected_output: >
-    A synthesized analysis report combining all data points into a
-    cohesive assessment with composite scores, key insights, risk/
-    opportunity flags, and overall investment thesis for each stock.
-  agent: synthesizer
+  compile_evaluation_report:
+    description: >
+      Synthesize a full GCCP report for `{stock_symbols}`.
+
+      Step 1: Locate and extract the latest financial metrics from the local SQLite DB (`data/stockiv.db`) and the qualitative sentiment from (`data/processed/sentiment/`).
+      Step 2: Cross-reference these metrics directly against the limits defined in your GCCP knowledge base.
+      Step 3: Delegate any necessary chart creation or data table exports to the Visualization Specialist.
+      Step 4: Compile the final Markdown report. DO NOT include a final "Pass" or "Fail" approval flag (save this for the Director).
+    expected_output: >
+      A highly structured report perfectly matching the `SynthesizerReport` format.
+      You MUST process the data section-by-section according to the GCCP framework:
+      1. Classify the Industry Dynamics.
+      2. Evaluate "Good Company": Business Model (Input/Output/Engine), Management Governance, and Financial Health (Capital/Profit/Cash and Forensic Anomalies).
+      3. Evaluate "Cheap Price": Market Context, Relative Valuation against Growth/Sectors, and Margin of Safety.
+      For each major section, you must determine its specific `is_good` or `is_cheap` flag based on the framework rules.
+      Do NOT provide an overall Pass/Fail for the whole stock.
+    agent: lead_synthesizer

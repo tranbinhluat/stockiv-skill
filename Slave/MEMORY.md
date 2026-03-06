@@ -235,7 +235,7 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - This is a learning/exploration project for CrewAI + stock analysis
 - **Directory Roles:**
   - `tools/` strictly reserved for custom CrewAI `@tool` methods (e.g., `vnstock_tools.py`).
-  - `tests/` strictly reserved for validation scripts (e.g., `test_collector.py`).
+  - `tests/` strictly reserved for validation scripts (e.g., `test_collector.py`). Tests should implement and demonstrate CrewAI `Flow` constructs to show how agents/crews interact.
   - `scripts/` strictly reserved for developer utilities (e.g., `view_logs.py`).
 - `logs/` directory stores execution logs in JSONL format
 - `src/stockiv/knowledge/` contains 4 markdown files: framework, criteria, market_context, evidence_standard
