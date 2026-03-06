@@ -122,3 +122,32 @@ graph LR
 | **Flows**| Conditional logic, routing, event-driven | A full application handling user inputs, routing, and multi-crew pipelines. |
 | **Memory** | Complex multi-turn tasks & context retention | An agent that needs to remember a user's name across an execution. |
 | **output_pydantic** | API integration, systematic routing | Forcing an Orchestrator to decide between `[APPROVED, REJECTED]`. |
+
+---
+
+## 7. Case Study: Stock Analysis (Single Crew vs. Multiple Crews)
+
+For a complex modular use case like analyzing a stock, **it is a best practice to spawn multiple Crews orchestrated by a Flow**, rather than stuffing all agents into a single massive Crew.
+
+### Why Multiple Crews (Orchestrated by a Flow) is Better Here:
+
+1. **Separation of Concerns (Database vs. Analysis):** 
+   - Gathering financial data requires strict JSON parsing, hitting APIs (vnstock), and saving numbers exactly as-is into SQLite. This requires deterministic, low-temperature behavior.
+   - Analyzing that data requires creative, high-temperature reasoning and drafting.
+   - Forcing a Data Engineer agent and a Quant Analyst agent into the same Crew pollutes their context window. The Analyst doesn't need to see the raw JSON HTTP payloads of the VNStock API; they just need the final retrieved metrics.
+
+2. **Conditional Execution (Error Handling):**
+   - In a single Crew, if the Data Fetcher agent fails to get the VNStock API data, the Analysis agent might still try to run, "hallucinating" numbers to complete its task.
+   - With Multiple Crews inside a Flow, you can use Python code to say: `if data_collection_failed: return Error`—preventing the Analysis crew from hallucinating entirely.
+
+3. **Speed (Parallel Execution):**
+   - You can have one Crew scraping news (Brave API) and another Crew doing Technical Analysis charts (TA-Lib) simultaneously. A single crew usually dictates a tighter sequential bottleneck.
+
+### When would a Single Crew be enough?
+
+You should use multiple Agents in a **Single Crew** when the tasks are deeply interconnected and require the agents to brainstorm together. 
+
+**Example:** If your goal is _simply_ "Write a blog post about FPT stock," you don't need a Flow. A single Crew with a `ResearcherAgent` and a `WriterAgent` is perfect. The Researcher grabs the latest news, instantly hands the markdown notes to the Writer in the same context window, and the Writer outputs the blog. 
+
+### Conclusion for StockIV
+Because StockIV involves heavy API data gathering, strict step-validation (Director checking Analyst work), and saving to SQLite, **the Multiple Crews + Flow architecture we currently have is the ideal, production-grade state-of-the-art.**
