@@ -1,14 +1,12 @@
-
-
 import asyncio
 from typing import Any, Dict, List
 
-from crewai_tools import SerperDevTool
 from pydantic import BaseModel, Field
 
 from crewai.agent import Agent
 from crewai.flow.flow import Flow, listen, start
 from src.stockiv.agents.base import get_llm
+
 
 # Define a structured output format
 class MarketAnalysis(BaseModel):
@@ -39,7 +37,7 @@ class MarketResearchFlow(Flow[MarketResearchState]):
             backstory="You are an experienced market analyst with expertise in "
             "identifying market trends and opportunities.",
             verbose=True,
-            llm=get_llm('qwen3-coder-plus')
+            llm=get_llm("qwen3-coder-plus"),
         )
 
         # Define the research query

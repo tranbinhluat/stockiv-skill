@@ -24,6 +24,7 @@ dependencies = [
     "matplotlib>=3.10.8",
     "pysqlite3>=0.6.0",
     "sqlalchemy>=2.0.48",
+    "pymupdf4llm>=0.2.9",
 ]
 
 [build-system]

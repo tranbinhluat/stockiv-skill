@@ -1,12 +1,16 @@
 import sqlite3
 import pandas as pd
 from pydantic import BaseModel, Field
-from typing import Any, Type
+from typing import Type
 from crewai.tools import BaseTool
-import json
+
 
 class QueryStockDatabaseSchema(BaseModel):
-    query: str = Field(..., description="The SQL query to execute against the stockiv.db SQLite database.")
+    query: str = Field(
+        ...,
+        description="The SQL query to execute against the stockiv.db SQLite database.",
+    )
+
 
 class QueryStockDatabaseTool(BaseTool):
     name: str = "Query Stock Database"

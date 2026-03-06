@@ -160,6 +160,15 @@ class SynthesizerCrew:
         )
 
     @agent
+    def forensic_accountant(self) -> Agent:
+        return Agent(
+            config=self.agents_config["forensic_accountant"],
+            llm=get_llm("qwen3-coder-plus"),
+            tools=[FileReadTool()],
+            max_iter=3,
+        )
+
+    @agent
     def visualization_specialist(self) -> Agent:
         return Agent(
             config=self.agents_config["visualization_specialist"],

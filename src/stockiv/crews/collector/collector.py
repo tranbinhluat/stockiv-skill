@@ -25,6 +25,7 @@ from tools.vnstock_tools import (
     fetch_dividend_history,
 )
 from tools.brave_tools import search_market_context
+from tools.report_finder_tools import search_annual_report_pdf, download_and_convert_pdf
 
 
 @CrewBase
@@ -46,6 +47,8 @@ class CollectorCrew:
                 fetch_company_overview,
                 fetch_ratio_summary,
                 fetch_dividend_history,
+                search_annual_report_pdf,
+                download_and_convert_pdf,
             ],
         )
 
@@ -61,6 +64,12 @@ class CollectorCrew:
     def fetch_financials_task(self) -> Task:
         return Task(
             config=self.tasks_config["fetch_financials_task"],
+        )
+
+    @task
+    def fetch_annual_report_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["fetch_annual_report_task"],
         )
 
     @task

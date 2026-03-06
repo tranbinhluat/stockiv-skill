@@ -69,7 +69,7 @@ This document visualizes the skills, attributes, and interactions of the core Cr
 ```mermaid
 graph TD
     User([User / Webhook]) -->|Request| OF[Orchestrator Flow]
-    
+
     subgraph Routing Hub
     OF -->|"@start"| OrchestratorCrew
     OrchestratorCrew -->|Pydantic: RouteDecision| OF_Router["@router"]
