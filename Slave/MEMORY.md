@@ -64,7 +64,7 @@ from stockiv.crews import CollectorCrew
 crew = CollectorCrew()
 result = crew.crew().kickoff(inputs={"key": "value"})
 
-# Critical Rule: All Crews MUST explicitly enable `tracing=True` 
+# Critical Rule: All Crews MUST explicitly enable `tracing=True`
 # in the @crew initialization so the user knows what's happening.
 ```
 
@@ -130,6 +130,7 @@ result = crew.crew().kickoff(inputs={"key": "value"})
   - *Why:* Prevents huge Context Window blowouts. Downstream Quant Analysts use `DatabaseSearchTool` with custom SQL queries.
 - **Unstructured Data (Brave Search/News):** Written to local JSON cache (`data/raw/cache/`).
   - *Why:* Easy for LLMs to read/summarize.
+  - To pass data persistently across completely separate runs, use `output_file: data/raw/context/{stock_symbols}_context.md` in `tasks.yaml` so the agent permanently writes its final compilation to disk instead of just holding it in prompt memory.
 - **Strict API Rate Limiting:** External API calls (like Brave Search 30/day limit) MUST check the local JSON cache before firing `requests.get()`.
 
 **Data Fetching Constraints (vnstock):**
@@ -187,6 +188,7 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 **Orchestrator & Telemetry (2026-03-05)**
 - **LLM in Flow Routing:** Replaced simple regex routing with an LLM prompt that enforces JSON output syntax for robust dynamic routing. Always provide a legacy regex fallback.
 - **Telemetry:** Added `tracing=True` to all Crew classes so execution runs populate the dashboard at `app.crew.ai`.
+- **Telemetry Execution Auth:** In background worker shells, tests will emit "ephemeral" anonymous trace links unless `CREWAI_API_KEY` is explicitly declared in `.env` and loaded via python before execution (e.g. `source .env && uv run test.py`).
 
 
 **Tool Architecture (2026-03-05)**
