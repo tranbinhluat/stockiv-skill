@@ -25,6 +25,8 @@ dependencies = [
     "pysqlite3>=0.6.0",
     "sqlalchemy>=2.0.48",
     "pymupdf4llm>=0.2.9",
+    "pytesseract>=0.3.13",
+    "pillow>=12.1.1",
 ]
 
 [build-system]

@@ -70,16 +70,21 @@ def download_and_convert_pdf(url: str, ticker: str) -> str:
     pdf_path = f"{output_pdf_dir}/{ticker}_annual_report.pdf"
     md_path = f"{output_md_dir}/{ticker}_annual_report.md"
 
-    try:
-        # Download the PDF
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-        response = requests.get(url, headers=headers, stream=True, timeout=30)
-        response.raise_for_status()
+    # CACHE CHECK: If the Markdown already exists, just return it
+    if os.path.exists(md_path) and os.path.exists(pdf_path):
+        return f"Cache hit: Annual report for {ticker} already downloaded and converted at {md_path}."
 
-        with open(pdf_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
+    try:
+        # Download the PDF if we don't already have it
+        if not os.path.exists(pdf_path):
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            response = requests.get(url, headers=headers, stream=True, timeout=30)
+            response.raise_for_status()
+
+            with open(pdf_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
 
         # Try to convert to Markdown
         md_text = pymupdf4llm.to_markdown(pdf_path)
@@ -87,10 +92,11 @@ def download_and_convert_pdf(url: str, ticker: str) -> str:
         # Some Vietnamese PDFs are entirely scanned images (0 extracted text).
         # We perform a quick heuristic check to see if we need OCR.
         if len(md_text.strip()) < 500:
-             # Fallback: force basic OCR extraction (requires Tesseract to be installed, 
-             # but PyMuPDF has basic image-to-text hooks if configured).
-             # A safer fallback for an AI pipeline without heavy OCR deps is to notify the agent.
-             return f"Error: PDF downloaded successfully, but the file appears to be a scanned image with no readable text. Cannot extract Markdown. Path: {pdf_path}"
+             print(f"PDF {pdf_path} appears to be a scanned image (<500 chars). Falling back to OCR...")
+             md_text = _ocr_pdf_to_markdown(pdf_path)
+             
+             if not md_text or len(md_text.strip()) < 500:
+                 return f"Error: PDF downloaded successfully, but the file appears to be a scanned image and OCR failed to extract meaningful text. Path: {pdf_path}"
 
         # Save Markdown
         with open(md_path, "w", encoding="utf-8") as f:
@@ -100,3 +106,31 @@ def download_and_convert_pdf(url: str, ticker: str) -> str:
 
     except Exception as e:
         return f"Error downloading or converting PDF from {url}: {str(e)}"
+
+def _ocr_pdf_to_markdown(pdf_path: str) -> str:
+    """Helper function to perform OCR on a scanned PDF using fitz and pytesseract."""
+    import fitz # PyMuPDF
+    import pytesseract
+    from PIL import Image
+    import io
+
+    print(f"Starting OCR extraction for {pdf_path}...")
+    text_content = []
+    
+    try:
+        doc = fitz.open(pdf_path)
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            # Render page to an image
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2)) # 2x zoom for better OCR
+            img_data = pix.tobytes("png")
+            img = Image.open(io.BytesIO(img_data))
+            
+            # Perform OCR (using Vietnamese language if installed)
+            page_text = pytesseract.image_to_string(img, lang="vie+eng")
+            text_content.append(f"## Page {page_num + 1}\n\n{page_text}\n\n")
+            
+        return "\n".join(text_content)
+    except Exception as e:
+        print(f"OCR Failed: {e}")
+        return ""
