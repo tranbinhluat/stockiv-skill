@@ -50,8 +50,10 @@ class SentimentAnalystCrew:
             memory=Memory(
                 llm=get_llm("qwen3-max-2026-01-23"),
                 embedder={
-                    "provider": "huggingface",
-                    "config": {"model": "sentence-transformers/all-MiniLM-L6-v2"},
+                    "provider": "sentence-transformer",
+                    "config": {
+                        "model_name": "all-MiniLM-L6-v2"
+                    },  # Using local sentence-transformers directly without HuggingFace Hub API
                 },
             ),
         )

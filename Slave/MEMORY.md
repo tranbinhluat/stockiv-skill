@@ -130,7 +130,10 @@ result = crew.crew().kickoff(inputs={"key": "value"})
   - *Why:* Prevents huge Context Window blowouts. Downstream Quant Analysts use `DatabaseSearchTool` with custom SQL queries.
 - **Unstructured Data (Brave Search/News):** Written to local JSON cache (`data/raw/cache/`).
   - *Why:* Easy for LLMs to read/summarize.
-  - To pass data persistently across completely separate runs, use `output_file: data/raw/context/{stock_symbols}_context.md` in `tasks.yaml` so the agent permanently writes its final compilation to disk instead of just holding it in prompt memory.
+  - To pass data persistently across completely separate runs, use `output_file: data/raw/context/{stock_symbols}_context.md`.
+- **Processed Sentiment Data:** The Sentiment Analyst crew writes outputs directly to disk:
+  - `data/processed/sentiment/market/{stock_symbols}_market_sentiment.md`
+  - `data/processed/sentiment/ticker/{stock_symbols}_ticker_sentiment.md`
 - **Strict API Rate Limiting:** External API calls (like Brave Search 30/day limit) MUST check the local JSON cache before firing `requests.get()`.
 
 **Data Fetching Constraints (vnstock):**
@@ -201,6 +204,17 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - Crews needing long-term memory across tasks should initialize with `memory=True` and configure a local embedder (e.g. `sentence-transformers/all-MiniLM-L6-v2` via HuggingFace provider).
 - **Note on CrewAI Memory**: The extraction of entities/summaries for the knowledge base defaults to OpenAI. If `OPENAI_API_KEY` is not present, the embedder will still work locally, but entity extraction will fail with a warning. This is acceptable for simple local document retrieval.
 - To read generated markdown contexts (like `FPT_macro_context.md`), agents MUST be explicitly equipped with the `FileReadTool` from `crewai_tools` and instructed to use it in `tasks.yaml`.
+
+**Orchestration & Scheduling (n8n Webhook Architecture):**
+- StockIV prefers decoupled architecture for execution triggers. Instead of writing complex cron scheduling inside Python, tasks are separated into individual `tasks.yaml` actions and executed via a simple FastAPI wrapper (`api.py`).
+- This allows external tools like **N8N** to handle Discord triggers or Cron timings and simply `POST` to the respective endpoint.
+  - *Weekly Market:* `POST /api/sentiment/market/weekly` (Cron Scheduled)
+  - *On-Demand Ticker:* `POST /api/sentiment/ticker` (Discord Triggered)
+
+**CrewAI Memory Tuning (2026-03-06):**
+- CrewAI's vector database relies heavily on the embedder provider. If the default `huggingface` API provider crashes with `ValueError: could not convert string to float: 'error'`, the proper fix is to explicitly configure `provider: "sentence-transformer"` with `config: {"model_name": "all-MiniLM-L6-v2"}` inside `memory=Memory(...)`.
+  - *Why:* This forces the application to download local ONNX/PyTorch models, running inference offline and completely isolating the database from HuggingFace rate limits.
+- Short-term memory retention is configured by passing explicit `recency_weight` configurations into the Crew DB parameters.
 
 ---
 

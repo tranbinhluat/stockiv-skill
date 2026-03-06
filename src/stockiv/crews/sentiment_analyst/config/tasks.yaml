@@ -1,8 +1,8 @@
 summarize_market:
   description: >
-    Analyze the overall macro market sentiment by reading the provided
+    Analyze the overall macro market sentiment for the PAST WEEK by reading the provided
     market context file. Identify broad economic trends, sector rotations,
-    and general market psychology that could impact the investment landscape.
+    and general market psychology that could impact the investment landscape over the coming week.
     Use your tools to read the file located at: {macro_context_file}
   expected_output: >
     A Macro Market Report formatted strictly as follows:
@@ -12,7 +12,7 @@ summarize_market:
     - **III. Sectoral Sentiment Analysis:** Use BLUF format for sector rotations, leaders, and laggards based on daily news flow.
     - **IV. Upcoming Macro Catalysts:** A markdown table with columns for `Timeframe`, `Event`, and `Expected Impact (High/Med/Low)`.
     **(CITATION REQUIREMENT: Every factual claim MUST be cited using a footnote system `[^1]`. At the very bottom of the document, you MUST include a "References" section. CRITICAL: ONLY include sources in the References section that were explicitly cited in the text above. DO NOT list all sources from the context. Each footnote in the References must correspond to a clickable markdown link containing the actual source URL. Format: `[^1]: [Article Title](URL)`.)**
-  output_file: data/processed/sentiment/market/{date}_market_sentiment.md
+  output_file: data/processed/sentiment/market/{year}_W{week}_market_sentiment.md
   agent: sentiment_analyst
 
 summarize_symbol:
