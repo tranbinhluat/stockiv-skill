@@ -33,11 +33,17 @@ fetch_market_context_task:
 
     Use your search tools to find recent news, industry trends, and global
     macroeconomic factors affecting these tickers and their sectors.
-    Be extremely selective with your search queries to conserve API limits.
-    Construct 1-2 highly effective composite queries rather than many simple ones.
+
+    CRITICAL: Do not just scrape the surface. After your first search, identify the
+    most impactful 1-2 storylines and use additional tool calls to search specifically
+    into those sub-topics to build a profound understanding. Take advantage of your
+    increased tool usage allocations.
   expected_output: >
-    A detailed Markdown or JSON report summarizing the key news, macro trends,
-    and market context for the requested tickers, ready to be consumed by the
-    Sentiment Crew.
+    A comprehensive RAW DATA COMPILATION containing the full text, critical claims,
+    direct quotes, supporting statistics, and URLs for all impactful market news and
+    macro trends related to the requested tickers.
+    DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found
+    across all of your deep-dive searches so that downstream Sentiment Analysts have
+    the unadulterated facts available to them on demand.
   agent: macro_micro_scout
-  max_iter: 3
+  max_iter: 5
