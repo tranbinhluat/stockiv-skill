@@ -63,6 +63,9 @@ src/stockiv/crews/<crew_name>/
 from stockiv.crews import CollectorCrew
 crew = CollectorCrew()
 result = crew.crew().kickoff(inputs={"key": "value"})
+
+# Critical Rule: All Crews MUST explicitly enable `tracing=True` 
+# in the @crew initialization so the user knows what's happening.
 ```
 
 **7 StockIV Crews:**
@@ -81,6 +84,7 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 4. Run pre-commit before committing
 
 **Git Workflow:**
+- **CRITICAL:** Always try testing your new features and code changes before committing them.
 - Pre-commit hooks automatically check for secrets
 - If hooks fail, fix issues and try again
 - Commit format: descriptive title + body with `By: luattb`
@@ -183,7 +187,7 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 **Orchestrator & Telemetry (2026-03-05)**
 - **LLM in Flow Routing:** Replaced simple regex routing with an LLM prompt that enforces JSON output syntax for robust dynamic routing. Always provide a legacy regex fallback.
 - **Telemetry:** Added `tracing=True` to all Crew classes so execution runs populate the dashboard at `app.crew.ai`.
-- **Self-Hosted Embeddings:** CrewAI memory (`memory=True`) usually expects an OpenAI-compatible API (which eats credits). If the user refuses paid embedders (like DashScope), use `langchain-huggingface` and `sentence-transformers/all-MiniLM-L6-v2` locally via the `embedder` config dictionary to bypass paid boundaries completely.
+
 
 **Tool Architecture (2026-03-05)**
 - **API Efficiency:** Before making external `requests.get()` calls, tools should execute a local SQLite `SELECT MAX()` cache-check.
