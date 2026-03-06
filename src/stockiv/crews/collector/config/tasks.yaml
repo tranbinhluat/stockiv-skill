@@ -72,10 +72,11 @@ fetch_annual_report_task:
   description: >
     Find and download the most recent Annual Report (Báo cáo thường niên) PDF for {stock_symbols}.
 
-    1. First, use `search_annual_report_pdf` with the ticker and the previous year (e.g., 2023). Look for direct URLs ending in `.pdf`.
-    2. Once you find a valid PDF URL, use `download_and_convert_pdf` to download and translate it into a local Markdown file.
+    1. First, calculate the most recent completed financial year (e.g., if today is mid 2026, you should search for the 2025 Annual Report).
+    2. Use `search_annual_report_pdf` with the ticker and that calculated year. Look for direct URLs ending in `.pdf`.
+    3. Once you find a valid PDF URL, use `download_and_convert_pdf` to download and translate it into a local Markdown file.
 
-    CRITICAL: Do NOT attempt multiple searches if the first one fails. You are strictly allowed only 1 search action to preserve API quotas. If the URL doesn't look like a PDF or the download fails, simply report failure.
+    CRITICAL: Do NOT attempt multiple searches if the first one fails. You are strictly allowed only 1 search action to preserve API quotas. If the URL doesn't look like a PDF, the download fails, or the tool reports it's an unreadable scanned image, simply report failure.
   expected_output: >
     A confirmation message that the Annual Report PDF has been successfully found, downloaded, and converted to Markdown, including the final file path (e.g. data/processed/annual_reports/FPT_annual_report.md).
   agent: market_data_fetcher

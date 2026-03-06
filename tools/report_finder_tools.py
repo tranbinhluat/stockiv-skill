@@ -81,8 +81,16 @@ def download_and_convert_pdf(url: str, ticker: str) -> str:
                 if chunk:
                     f.write(chunk)
 
-        # Convert to Markdown
+        # Try to convert to Markdown
         md_text = pymupdf4llm.to_markdown(pdf_path)
+
+        # Some Vietnamese PDFs are entirely scanned images (0 extracted text).
+        # We perform a quick heuristic check to see if we need OCR.
+        if len(md_text.strip()) < 500:
+             # Fallback: force basic OCR extraction (requires Tesseract to be installed, 
+             # but PyMuPDF has basic image-to-text hooks if configured).
+             # A safer fallback for an AI pipeline without heavy OCR deps is to notify the agent.
+             return f"Error: PDF downloaded successfully, but the file appears to be a scanned image with no readable text. Cannot extract Markdown. Path: {pdf_path}"
 
         # Save Markdown
         with open(md_path, "w", encoding="utf-8") as f:
