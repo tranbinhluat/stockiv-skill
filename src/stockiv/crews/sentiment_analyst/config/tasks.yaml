@@ -11,7 +11,7 @@ summarize_market:
     - **II. Key Market Sentiment Indicators:** Use BLUF (Bottom Line Up Front) format. For each bullet, bold the keyword, state the status in 1-2 words, then provide a single sentence of context (e.g., "**Breadth**: Positive. Manufacturing output prices hit a 45-month peak, driving growth...").
     - **III. Sectoral Sentiment Analysis:** Use BLUF format for sector rotations, leaders, and laggards based on daily news flow.
     - **IV. Upcoming Macro Catalysts:** A markdown table with columns for `Timeframe`, `Event`, and `Expected Impact (High/Med/Low)`.
-    **(CITATION REQUIREMENT: Every factual claim MUST be cited using a footnote system `[^1]`. At the very bottom of the document, you MUST include a "References" section where each footnote corresponds to a clickable markdown link containing the actual source URL. Format the reference list EXACTLY like this: `[^1]: [Article Title](URL)`.)**
+    **(CITATION REQUIREMENT: Every factual claim MUST be cited using a footnote system `[^1]`. At the very bottom of the document, you MUST include a "References" section. CRITICAL: ONLY include sources in the References section that were explicitly cited in the text above. DO NOT list all sources from the context. Each footnote in the References must correspond to a clickable markdown link containing the actual source URL. Format: `[^1]: [Article Title](URL)`.)**
   output_file: data/processed/sentiment/market/{date}_market_sentiment.md
   agent: sentiment_analyst
 
@@ -28,6 +28,6 @@ summarize_symbol:
     - **II. Event-Driven Catalysts:** A markdown table with columns for `Timeframe` (or Date), `Event`, and `Expected Impact (High/Med/Low)`.
     - **III. Aspect-Based Findings:** Use BLUF (Bottom Line Up Front) format. For each bullet, bold the aspect, state the status in 1-2 words, then provide a single sentence of context.
     - **IV. Institutional vs. Retail Perspectives:** A brief 2-3 sentence comparison contrasting professional analyst sentiment vs public/social momentum.
-    **(CITATION REQUIREMENT: Every factual claim MUST be cited using a footnote system `[^1]`. At the very bottom of the document, you MUST include a "References" section where each footnote corresponds to a clickable markdown link containing the actual source URL. Format the reference list EXACTLY like this: `[^1]: [Article Title](URL)`.)**
+    **(CITATION REQUIREMENT: Every factual claim MUST be cited using a footnote system `[^1]`. At the very bottom of the document, you MUST include a "References" section. CRITICAL: ONLY include sources in the References section that were explicitly cited in the text above. DO NOT list all sources from the context. Each footnote in the References must correspond to a clickable markdown link containing the actual source URL. Format: `[^1]: [Article Title](URL)`.)**
   output_file: data/processed/sentiment/ticker/{date}_{stock_symbols}_ticker_sentiment.md
   agent: sentiment_analyst
