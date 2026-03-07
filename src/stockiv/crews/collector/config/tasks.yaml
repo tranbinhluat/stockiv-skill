@@ -9,7 +9,6 @@ fetch_financials_task:
   expected_output: >
     A confirmation message that the financial data for the requested tickers
     has been successfully saved to the SQLite database.
-  agent: market_data_fetcher
   max_iter: 3
 
 fetch_daily_market_data_task:
@@ -28,17 +27,16 @@ fetch_daily_market_data_task:
   expected_output: >
     A confirmation message detailing that today's market metrics for VNINDEX, {stock_symbols}, and its top peers have been successfully updated in the SQLite database and verified.
   context: [fetch_financials_task]
-  agent: market_data_fetcher
   max_iter: 5
 
 fetch_macro_context_task:
   description: >
     Gather overarching global macroeconomic conditions, Vietnam domestic economy health,
-    and broad sector/industry trends related to {stock_symbols}.
+    and broad sector/industry trends.
 
-    CRITICAL INSTRUCTION: You MUST NOT search for the specific {stock_symbols} ticket.
+    CRITICAL INSTRUCTION: You MUST NOT search for the specific ticket.
     Your entire focus must be on the macro-environment, interest rates, industry trends,
-    and global supply chains that affect the sector.
+    and global supply chains.
 
     Do not just scrape the surface. After your first search, identify the
     most impactful 1-2 macro storylines and use additional tool calls to search specifically
@@ -47,10 +45,9 @@ fetch_macro_context_task:
     A comprehensive RAW DATA COMPILATION containing the full text, critical claims,
     direct quotes, supporting statistics, and URLs for all impactful macroeconomic
     and industry-wide news.
-    DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
-  output_file: data/raw/context/{stock_symbols}_macro_context.md
-  agent: macro_micro_scout
-  max_iter: 4
+    CRITICAL: DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
+  output_file: data/raw/context/macro_context.md
+  max_iter: 3
 
 fetch_ticker_context_task:
   description: >
@@ -66,11 +63,10 @@ fetch_ticker_context_task:
   expected_output: >
     A comprehensive RAW DATA COMPILATION containing the full text, critical claims,
     direct quotes, supporting statistics, and URLs for all impactful ticker-specific news.
-    DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
+    CRITICAL: DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
   output_file: data/raw/context/{stock_symbols}_ticker_context.md
   context: [fetch_macro_context_task]
-  agent: macro_micro_scout
-  max_iter: 4
+  max_iter: 3
 
 fetch_annual_report_task:
   description: >
@@ -83,5 +79,4 @@ fetch_annual_report_task:
     CRITICAL: Do NOT attempt multiple searches if the first one fails. You are strictly allowed only 1 search action to preserve API quotas. If the URL doesn't look like a PDF, the download fails, or the tool reports it's an unreadable scanned image, simply report failure.
   expected_output: >
     A confirmation message that the Annual Report PDF has been successfully found, downloaded, and converted to Markdown, including the final file path (e.g. data/processed/annual_reports/FPT_annual_report.md).
-  agent: market_data_fetcher
   max_iter: 1

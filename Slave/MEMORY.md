@@ -240,6 +240,8 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - **Batching Questions:** To save LLM tokens and execution time, instruct 'manager' agents to ask multiple questions in a single `ask_question_to_coworker` message.
 - **Strict Subordinate Output:** Since CrewAI delegation doesn't natively enforce nested `output_pydantic` schemas for coworkers, heavily prompt the subordinate agent's backstory with a strict text format (e.g. `Question | Status: MENTIONED/NOT_MENTIONED | Exact Quote | Summary`).
 - **Path Resolution:** Coworkers equipped with `FileReadTool()` natively read the current working directory but can struggle with relative paths. Always pass or ensure `os.path.abspath()` is used when testing file reads in standalone mode.
+- **Hierarchical Delegation Bug (CrewAI 1.10.1):** When `process=Process.hierarchical`, any task defined in `tasks.yaml` **must NOT** have a hardcoded `agent: [worker_name]`. If `agent:` is declared, the framework dynamically copies that worker's tools directly onto the Task itself. The Manager agent intercepts this tool-equipped Task, inherits the tools, and permanently bypasses its `Delegate` tool by simply executing the task APIs directly.
+  - *Fix:* Always leave `agent:` completely blank in `tasks.yaml` when using a Hierarchical workflow. Scoping tools exactly to the workers (`collector.py`) forces the toolless Manager to accurately fall back onto using its standard Delegation Tooling.
 
 ---
 

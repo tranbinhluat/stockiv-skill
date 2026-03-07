@@ -4,9 +4,8 @@ Sentiment Analyst Crew - Analyzes market sentiment and news.
 
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from crewai.memory import Memory
 
-from crewai_tools import FileReadTool
+from crewai_tools import FileReadTool, DirectoryReadTool
 
 from stockiv.agents.base import get_llm
 
@@ -19,23 +18,52 @@ class SentimentAnalystCrew:
     tasks_config = "config/tasks.yaml"
 
     @agent
-    def sentiment_analyst(self) -> Agent:
+    def macro_sentiment_analyst(self) -> Agent:
         return Agent(
-            config=self.agents_config["sentiment_analyst"],
+            config=self.agents_config["macro_sentiment_analyst"],
             llm=get_llm("qwen3-max-2026-01-23"),
             tools=[FileReadTool()],
+            reasoning=True,
+            max_reasoning_attempts=2,
+        )
+
+    @agent
+    def trend_analyst(self) -> Agent:
+        return Agent(
+            config=self.agents_config["trend_analyst"],
+            llm=get_llm("qwen3-max-2026-01-23"),
+            # Granting both so it can find historical files and read them
+            tools=[DirectoryReadTool(), FileReadTool()],
+            reasoning=True,
+            max_reasoning_attempts=2,
+        )
+
+    @agent
+    def ticker_sentiment_analyst(self) -> Agent:
+        return Agent(
+            config=self.agents_config["ticker_sentiment_analyst"],
+            llm=get_llm("qwen3-max-2026-01-23"),
+            tools=[FileReadTool()],
+            reasoning=True,
+            max_reasoning_attempts=3,
         )
 
     @task
-    def summarize_market(self) -> Task:
+    def summarize_current_week_macro(self) -> Task:
         return Task(
-            config=self.tasks_config["summarize_market"],
+            config=self.tasks_config["summarize_current_week_macro"],
         )
 
     @task
-    def summarize_symbol(self) -> Task:
+    def synthesize_recent_trends(self) -> Task:
         return Task(
-            config=self.tasks_config["summarize_symbol"],
+            config=self.tasks_config["synthesize_recent_trends"],
+        )
+
+    @task
+    def summarize_symbol_sentiment(self) -> Task:
+        return Task(
+            config=self.tasks_config["summarize_symbol_sentiment"],
         )
 
     @crew
@@ -47,13 +75,5 @@ class SentimentAnalystCrew:
             process=Process.sequential,
             verbose=True,
             tracing=True,
-            memory=Memory(
-                llm=get_llm("qwen3-max-2026-01-23"),
-                embedder={
-                    "provider": "sentence-transformer",
-                    "config": {
-                        "model_name": "all-MiniLM-L6-v2"
-                    },  # Using local sentence-transformers directly without HuggingFace Hub API
-                },
-            ),
+            # Memory removed to prevent Qwen JSON parsing crashes
         )

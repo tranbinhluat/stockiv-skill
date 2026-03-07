@@ -1,5 +1,5 @@
-import datetime
 from vnstock import Quote, Company
+
 
 def test_vci():
     print("Testing Quote history for VNINDEX with VCI...")
@@ -25,6 +25,7 @@ def test_vci():
         print(df)
     except Exception as e:
         print(f"Error events VNINDEX: {e}")
+
 
 if __name__ == "__main__":
     test_vci()

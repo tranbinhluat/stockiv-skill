@@ -36,3 +36,12 @@ def get_llm(model: str = DEFAULT_MODEL, base_url: str = DEFAULT_BASE_URL) -> LLM
 
 # Default LLM instance
 primary_llm = get_llm()
+
+# light LLM instance
+light_llm = get_llm("qwen3-coder-plus")
+
+# Advanced llm
+advanced_llm = get_llm("qwen3-max-2026-01-23")
+
+# Orchestrator LLM
+orchestrator_llm = get_llm("qwen2.5-vl-72b-instruct")
