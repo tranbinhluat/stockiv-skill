@@ -112,12 +112,25 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 
 **Key constraint:** Each task can only use ONE output format.
 
+**⚠️ KNOWN BUG (CrewAI + Qwen/Anthropic):**
+- Using `output_pydantic` forces `tool_choice="required"` in the Anthropic API call.
+- If you use a reasoning model (like `qwen-max` or `qwen3.5-plus`) in "thinking mode," it will reject the `tool_choice=required` parameter or abruptly crash by returning a raw `ToolUseBlock` array instead of a string.
+- *Workaround:* Remove `output_pydantic` from the Task. Let the LLM output raw JSON text, and use `json.loads()` + manual Pydantic validation inside your python code.
+
 **Recommended pattern:**
 - Use `output_pydantic` for decision/data pipeline tasks (Director, Orchestrator)
 - Use `output_file` for final deliverables (Reporter)
 - Combine: Pydantic for parsing + `.to_markdown()` for human review
 - Define models in `models.py` within crew directory
 - Import and use in task: `output_pydantic=MyModel`
+
+**CrewAI Flow Architecture Pattern (2026-03-07):**
+- **Purpose**: To orchestrate single or multi-crew interactions securely and manage state consistently.
+- **Class Structure:** Create `MyCrewFlow(Flow[MyState])` and manage internal inputs/outputs with `@start()` and `@listen(task_name)` decorators.
+- **Pattern**:
+  - Sub-task `@listen(init)` runs `crew.kickoff()`
+  - Sub-task `@listen(crew_run)` extracts `result.pydantic` and physically saves markdown to disk.
+- Exposes `await flow.kickoff_async(inputs={...})` to `api.py` callers.
 
 **Shared LLM Configuration Pattern:**
 - Create `src/stockiv/agents/` package with `base.py`
@@ -140,6 +153,7 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 - **Must use `vnstock` 3.x (e.g. `3.4.2`).**
 - **Authentication Required:** VCI and KBS upstream APIs currently return 401/403 for 10-year financial statements without a paid account. The `VNSTOCK_API_KEY` must be loaded via `os.environ.get()` to bypass this.
 - **Syntax:** Use OOP `Quote(symbol, source="KBS")` for prices and `Finance(symbol, source="KBS")` for statements. Melt wide DataFrames into narrow SQLite tables.
+- **Market Indices limitation:** The `VCI` and `KBS` providers explicitly restrict fetching the `ratio_summary` or `events` for broad market indices (e.g., `VNINDEX`). Avoid requesting explicit P/E or P/B ratios for indices; instead rely entirely on the price `Quote.history()` data.
 
 **Knowledge Base Pattern:**
 ```
@@ -220,6 +234,11 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - CrewAI's vector database relies heavily on the embedder provider. If the default `huggingface` API provider crashes with `ValueError: could not convert string to float: 'error'`, the proper fix is to explicitly configure `provider: "sentence-transformer"` with `config: {"model_name": "all-MiniLM-L6-v2"}` inside `memory=Memory(...)`.
   - *Why:* This forces the application to download local ONNX/PyTorch models, running inference offline and completely isolating the database from HuggingFace rate limits.
 - Short-term memory retention is configured by passing explicit `recency_weight` configurations into the Crew DB parameters.
+
+**Hierarchical Delegation Pattern (Synthesizer Q&A 2026-03-07):**
+- **Batching Questions:** To save LLM tokens and execution time, instruct 'manager' agents to ask multiple questions in a single `ask_question_to_coworker` message.
+- **Strict Subordinate Output:** Since CrewAI delegation doesn't natively enforce nested `output_pydantic` schemas for coworkers, heavily prompt the subordinate agent's backstory with a strict text format (e.g. `Question | Status: MENTIONED/NOT_MENTIONED | Exact Quote | Summary`).
+- **Path Resolution:** Coworkers equipped with `FileReadTool()` natively read the current working directory but can struggle with relative paths. Always pass or ensure `os.path.abspath()` is used when testing file reads in standalone mode.
 
 ---
 

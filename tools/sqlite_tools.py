@@ -32,3 +32,95 @@ class QueryStockDatabaseTool(BaseTool):
             return df.to_markdown(index=False)
         except Exception as e:
             return f"Error executing query: {str(e)}"
+
+
+class FetchRecentFinancialsSchema(BaseModel):
+    ticker: str = Field(
+        ..., description="The stock ticker to fetch recent financials for."
+    )
+
+
+class FetchRecentFinancialsTool(BaseTool):
+    name: str = "Fetch Recent Financials"
+    description: str = "Gets the last 4 quarters and last 2 years of financial statements and ratios for a ticker."
+    args_schema: Type[BaseModel] = FetchRecentFinancialsSchema
+    db_path: str = "data/stockiv.db"
+
+    def _run(self, ticker: str) -> str:
+        try:
+            conn = sqlite3.connect(self.db_path)
+            df = pd.read_sql_query(
+                f"SELECT * FROM financial_statements WHERE ticker='{ticker}' ORDER BY period DESC LIMIT 100",
+                conn,
+            )
+            ratios_df = pd.read_sql_query(
+                f"SELECT * FROM financial_ratios WHERE ticker='{ticker}' ORDER BY period DESC LIMIT 50",
+                conn,
+            )
+            conn.close()
+            res = f"### Financials for {ticker}\n{df.to_markdown(index=False)}\n\n"
+            res += f"### Ratios for {ticker}\n{ratios_df.to_markdown(index=False)}"
+            return res
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+
+class FetchPeerComparisonsSchema(BaseModel):
+    target_ticker: str = Field(..., description="The main stock ticker.")
+
+
+class FetchPeerComparisonsTool(BaseTool):
+    name: str = "Fetch Peer Comparisons"
+    description: str = "Fetches the latest Ratio Summary (P/E, P/B, Market Cap) for the target and its top domestic peers."
+    args_schema: Type[BaseModel] = FetchPeerComparisonsSchema
+    db_path: str = "data/stockiv.db"
+
+    def _run(self, target_ticker: str) -> str:
+        try:
+            conn = sqlite3.connect(self.db_path)
+            # Fetch ratio summary for target AND its peers from ratio_summary table
+            df = pd.read_sql_query(
+                "SELECT ticker, date, metrics_json FROM ratio_summary "
+                "WHERE date = (SELECT MAX(date) FROM ratio_summary)",
+                conn,
+            )
+
+            # Include VNINDEX as well
+            idx_df = pd.read_sql_query(
+                "SELECT * FROM historical_prices WHERE ticker='VNINDEX' ORDER BY date DESC LIMIT 1",
+                conn,
+            )
+            conn.close()
+
+            res = f"### Latest Peer Ratio Summaries\n{df.to_markdown(index=False)}\n\n"
+            res += f"### Latest VNINDEX\n{idx_df.to_markdown(index=False)}"
+            return res
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+
+class FetchMarketIndexSchema(BaseModel):
+    days_back: int = Field(
+        30, description="Number of days of historical index data to fetch."
+    )
+
+
+class FetchMarketIndexTool(BaseTool):
+    name: str = "Fetch Market Index"
+    description: str = "Fetches the recent daily VNINDEX prices (open, close, volume) to analyze overarching market trends."
+    args_schema: Type[BaseModel] = FetchMarketIndexSchema
+    db_path: str = "data/stockiv.db"
+
+    def _run(self, days_back: int = 30) -> str:
+        try:
+            conn = sqlite3.connect(self.db_path)
+            idx_df = pd.read_sql_query(
+                f"SELECT date, open, high, low, close, volume FROM historical_prices WHERE ticker='VNINDEX' ORDER BY date DESC LIMIT {days_back}",
+                conn,
+            )
+            conn.close()
+            if idx_df.empty:
+                return "No VNINDEX data found in the database. Collector may need to run first."
+            return f"### Recent VNINDEX (Last {days_back} days)\n{idx_df.to_markdown(index=False)}"
+        except Exception as e:
+            return f"Error: {str(e)}"

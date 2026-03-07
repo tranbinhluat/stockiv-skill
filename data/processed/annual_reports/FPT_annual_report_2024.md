@@ -1519,6 +1519,8 @@ Quy mô và phạm vi hoạt động của FPT không ngừng được mở rộ
 
 
 
+
+
 **BÁO CÁO THƯỜNG NIÊN 2024**
 
 
@@ -3297,8 +3299,6 @@ Tập đoàn
 
 
 
-
-
 Trước những biến động khó lường của nền kinh tế toàn cầu trong năm 2024, FPT đã chủ động xây dựng chiến lược linh hoạt, sẵn sàng thích ứng với mọi thách thức và tận dụng hiệu
 quả cơ hội mới. Nhờ sự chuẩn bị vững chắc và tầm nhìn chiến lược dài hạn, Tập đoàn không chỉ vượt qua sóng gió thị trường mà còn duy trì đà tăng trưởng ấn tượng vượt mục tiêu đề
 ra với mức tăng trưởng doanh thu 19,4% so với năm trước.
@@ -3502,8 +3502,6 @@ kinh doanh 2024 và nhận định 2025
 
 Đánh giá của HĐQT về hoạt động của
 Tập đoàn
-
-
 
 
 
@@ -6059,7 +6057,7 @@ Trả nợ vay 4.350.000.000.000
 Chia sẻ chi phí và tiện ích 1.274.982.208
 dùng chung
 
-Mua dịch vụ
+Mua dịch vụ 
 Lãi cho vay 1.480.344.300
 
 Lãi đi vay 63.558.747
@@ -6070,7 +6068,7 @@ Thu hồi khoản cho vay 213.500.000.000
 
 Vay 57.000.000.000
 
-Trả nợ vay
+Trả nợ vay 
 Cung cấp dịch vụ, chia sẻ chi 1.747.952.538
 phí và tiện ích dùng chung
 
@@ -6930,11 +6928,11 @@ _Đơn vị: VNĐ_
 
 STT Nội dung Ngân sách được duyệt Đã ứng chi trả
 
-1 Thuê tư vấn bên ngoài 100.000.000
+1 Thuê tư vấn bên ngoài 100.000.000                                      
 2 Thù lao hoạt động 1.456.000.000 1.456.000.000
 thành viên BKS
 
-3 Đi lại, công tác phí 75.000.000
+3 Đi lại, công tác phí 75.000.000                                      
 Tổng 1.631.000.000 1.456.000.000
 
 #### **KẾ HOẠCH VÀ HOẠT ĐỘNG CỦA BAN KIỂM SOÁT 2025**
@@ -10415,9 +10413,9 @@ KX01(*) KX02(*) KX03(*)
 
 Tiếng ồn (dBA) 61,4 69,6 58,1 70
 
-Nhiệt độ (̊C) 20,6 25,1 20,7
-Độ ẩm (%) 70,4 56,0 72,1
-Tốc độ gió (m/s) 1,5 0,9 0,8
+Nhiệt độ (̊C) 20,6 25,1 20,7  
+Độ ẩm (%) 70,4 56,0 72,1  
+Tốc độ gió (m/s) 1,5 0,9 0,8  
 Tổng bụi lơ lửng (μg/m3) 155 130 153 300
 
 CO (μg/m3) <9000* <9000* <9000* 30.000
@@ -11292,7 +11290,7 @@ VND VND
 
 210 Các khoản phải thu dài hạn 331.646.166.008 247.392.102.550
 
-215 Phải thu về cho vay dài hạn 2.509.722.351
+215 Phải thu về cho vay dài hạn 2.509.722.351 
 216 Phải thu dài hạn khác 9(b) 381.508.926.294 299.764.585.187
 
 219 Dự phòng phải thu dài hạn khó đòi 10 (52.372.482.637) (52.372.482.637)
@@ -13601,15 +13599,15 @@ hạn khó đòi
 Giá gốc Dự phòng Giá gốc Dự phòng
 VND VND VND VND
 
-Hàng mua đang đi trên đường 74.651.331.133 - 59.684.474.802
+Hàng mua đang đi trên đường 74.651.331.133 - 59.684.474.802 
 Nguyên vật liệu 965.653.469.626 (17.126.007.656) 641.356.835.365 (16.797.484.252)
 
-Công cụ, dụng cụ 63.703.537.780 - 38.681.335.502
+Công cụ, dụng cụ 63.703.537.780 - 38.681.335.502 
 Chi phí sản xuất kinh doanh dở dang 571.889.493.134 (62.230.314.918) 589.560.542.426 (62.230.314.918)
 
 Hàng hóa 313.880.711.271 (54.111.214.909) 395.219.953.007 (52.518.050.268)
 
-Hàng gửi bán 445.943.569 - 453.783.569
+Hàng gửi bán 445.943.569 - 453.783.569 
 1.990.224.486.513 (133.467.537.483) 1.724.956.924.671 (131.545.849.438)
 
 
@@ -13905,7 +13903,7 @@ Chi tiết số dư của chi phí xây dựng cơ bản dở dang cuối năm t
 31/12/2024 31/12/2023
 VND VND
 
-Dự án AI Factory 979.758.464.658
+Dự án AI Factory 979.758.464.658 
 Dự án F-Town 3 446.585.871.610 83.036.272.577
 
 Trung tâm dữ liệu Quận 9 255.192.260.444 244.969.980.018
@@ -13943,7 +13941,7 @@ Phân bổ (175.819.337.548) (190.721.871.870)
 
 
 
-(416.465.572.777)
+(416.465.572.777) 
 
 
 
@@ -13990,8 +13988,8 @@ Chi tiết số dư nhà cung cấp bên thứ ba chiếm hơn 2% tổng số d�
 31/12/2024 31/12/20223
 VND VND
 
-Công ty Asus Global Pte. Ltd. 757.339.455.600
-Công ty Sharker Technology Pte. Ltd. 180.135.333.832
+Công ty Asus Global Pte. Ltd. 757.339.455.600 
+Công ty Sharker Technology Pte. Ltd. 180.135.333.832 
 Công ty Cổ phần Phát triển Công nghệ Viễn thông Tin học Sun Việt 160.491.492.060 59.993.001.200
 
 Công ty Hisense Broadband Multimedia Technologies Co., Ltd 144.916.123.936 44.694.710.000
@@ -14276,7 +14274,7 @@ Trừ: số phải trả trong vòng 12 tháng (128.186.966.341) (1.304.944.926.
 Nguyên tệ Tương đương Nguyên tệ Tương đương
 VND VND
 
-Euro ("EUR") 207.346,24 5.658.694.530 -
+Euro ("EUR") 207.346,24 5.658.694.530 - 
 Đô la Mỹ (“USD”) 32.900.000,00 817.599.308.852 60.150.000,00 1.426.525.326.164
 
 Yên Nhật Bản (“JPY”) 8.905.992.694,00 1.445.353.554.309 11.738.076.950,00 2.231.103.200.778
@@ -14316,7 +14314,7 @@ JPY 73.230.679.857,00 52.101.251.890,00
 
 
 
-Số lượng cổ phiếu đã mua lại -
+Số lượng cổ phiếu đã mua lại - 
 Số lượng cổ phiếu đang lưu hành 1.471.069.183 1.269.968.875
 
 Cổ phiếu phổ thông 1.471.069.183 1.269.968.875
@@ -14477,7 +14475,7 @@ Trích quỹ khen thưởng, phúc lợi - - - - - - (557.312.424.593) (557.312.
 Trích và sử dụng quỹ đầu tư phát triển - - - - 495.539.584.866 - (162.183.355.560) 333.356.229.306
 
 
-Chia cổ tức bằng cổ phiếu 1.656.372.530.000 - 749.537.290.000 - (31.959.370.994) - (2.373.950.449.006)
+Chia cổ tức bằng cổ phiếu 1.656.372.530.000 - 749.537.290.000 - (31.959.370.994) - (2.373.950.449.006) 
 
 Chia cổ tức bằng tiền - - - - - - (2.374.300.497.000) (2.374.300.497.000)
 
@@ -14500,7 +14498,7 @@ Trích quỹ khen thưởng, phúc lợi - - - - - - (624.987.179.579) (624.987.
 Trích và sử dụng quỹ đầu tư phát triển - - - - 483.438.201.615 - (188.268.828.315) 295.169.373.300
 
 
-Chia cổ tức bằng cổ phiếu (ii) 1.904.791.910.000 - - - - - (1.904.791.910.000)
+Chia cổ tức bằng cổ phiếu (ii) 1.904.791.910.000 - - - - - (1.904.791.910.000) 
 
 Chia cổ tức bằng tiền (ii) - - - - - - (2.741.038.058.000) (2.741.038.058.000)
 
@@ -14662,7 +14660,7 @@ Chia cổ tức bằng tiền (553.843.649.346) (558.534.523.785)
 
 
 
-33.453.322.461
+33.453.322.461 
 
 
 
@@ -14674,7 +14672,7 @@ công ty con sau ngày mua
 
 
 
-Tăng vốn trong năm 57.131.819.874
+Tăng vốn trong năm 57.131.819.874 
 Khác 4.821.155.169 (5.247.138.816)
 
 Số dư cuối năm 5.933.309.621.004 4.958.854.855.687
@@ -15344,9 +15342,9 @@ VND VND
 
 Thù lao thành viên Hội đồng quản trị
 
-1 Ông Trương Gia Bình Chủ tịch -
-2 Ông Bùi Quang Ngọc Phó Chủ tịch -
-3 Ông Đỗ Cao Bảo Ủy viên -
+1 Ông Trương Gia Bình Chủ tịch - 
+2 Ông Bùi Quang Ngọc Phó Chủ tịch - 
+3 Ông Đỗ Cao Bảo Ủy viên - 
 4 Ông Jean Charles Belliol Ủy viên 960.000.000 960.000.000
 
 5 Bà Trần Thị Hồng Lĩnh Ủy viên 360.000.000 360.000.000
@@ -16544,3 +16542,7 @@ Email: rimahg@fpt.com or tony.berro@fpt.com
 
 
 **BÁO CÁO THƯỜNG NIÊN 2024**
+
+
+
+

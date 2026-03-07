@@ -4,30 +4,115 @@ Synthesizer Crew - Interprets and evaluates data directly against the GCCP frame
 
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+from crewai.flow.flow import Flow, listen, start, and_
 
 from pydantic import BaseModel, Field
 
 from stockiv.agents.base import get_llm
 from stockiv.knowledge.base import kb
-from crewai_tools import FileReadTool
+from crewai_tools import FileReadTool, DirectoryReadTool
+from crewai.tools import tool
 import sys
+import os
+import subprocess
+import tempfile
 from pathlib import Path
+
+
+@tool("execute_python_code")
+def execute_python_code(code: str) -> str:
+    """Execute pandas/matplotlib python code. It runs in a temporary file and returns stdout/stderr. Do NOT use plt.show(), save to a .png file instead."""
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write(code)
+            temp_path = f.name
+
+        result = subprocess.run(
+            ["uv", "run", "python", temp_path],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        os.remove(temp_path)
+
+        if result.returncode == 0:
+            return f"Execution successful. Output:\n{result.stdout}"
+        else:
+            return f"Execution failed. Error:\n{result.stderr}"
+    except Exception as e:
+        return f"Execution error: {str(e)}"
+
+
+@tool("read_file")
+def read_file(file_path: str) -> str:
+    """Read the content of a file given its absolute or relative path."""
+    if not os.path.exists(file_path):
+        return f"Error: File not found at {file_path}"
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
+
 
 # Add project root to sys.path so we can import from `tools` directory
 project_root = str(Path(__file__).parent.parent.parent.parent.parent)
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from tools.sqlite_tools import QueryStockDatabaseTool  # noqa: E402
+from tools.sqlite_tools import (  # noqa: E402
+    QueryStockDatabaseTool,
+    FetchRecentFinancialsTool,
+    FetchPeerComparisonsTool,
+)
+from tools.brave_tools import search_market_context  # noqa: E402
+
+
+class BaselineMetrics(BaseModel):
+    """Raw, comprehensive data extraction from the Data Specialist."""
+
+    current_price_data: str = Field(
+        ...,
+        description="Current trading price of the stock, exact date, and 1-year momentum.",
+    )
+    current_vnindex: str = Field(
+        ..., description="Current VNINDEX value and recent momentum."
+    )
+    fundamental_ratios: str = Field(
+        ...,
+        description="Table or list of all recent fundamental ratios (P/E, P/B, ROE, etc).",
+    )
+    multi_year_comparisons: str = Field(
+        ...,
+        description="Table or list of financials across the last 4 quarters and  max years (if enough data), including YoY growth percentages.",
+    )
+    peer_competitors: str = Field(
+        ...,
+        description="Table or list comparing target ratios to top domestic competitors.",
+    )
+
+    def to_markdown(self) -> str:
+        md = "## Data Specialist Baseline Metrics\n\n"
+        md += f"### Current Market Metrics\n{self.current_price_data}\n\n"
+        md += f"### VNINDEX Baseline\n{self.current_vnindex}\n\n"
+        md += f"### Fundamental Ratios\n{self.fundamental_ratios}\n\n"
+        md += f"### Multi-Year Comparisons & YoY\n{self.multi_year_comparisons}\n\n"
+        md += f"### Peer Competitors\n{self.peer_competitors}\n"
+        return md
 
 
 class SynthesizerReport(BaseModel):
     """The final structured evaluation report from the Synthesizer crew."""
 
     stock_symbol: str = Field(..., description="The stock symbol being evaluated.")
-    industry_classification: str = Field(
+    current_metrics: str = Field(
         ...,
-        description="Classification of the industry (Slow, Sustainable, Fast, Cyclical).",
+        description="The current trading price, current date, and active market cap.",
+    )
+    quantitative_metrics_summary: str = Field(
+        ...,
+        description="A markdown table citing the exact financial metrics (revenue, profit, debt, margins) you extracted from the database.",
+    )
+    quantitative_anomaly_flags: str = Field(
+        ...,
+        description="Explicitly detail any anomalies YOU found in the database metrics (e.g., sudden margin drops, debt spikes, or bizarre ROE). State 'No quantitative anomalies detected' if the numbers are stable.",
     )
 
     # Business Model
@@ -51,6 +136,16 @@ class SynthesizerReport(BaseModel):
     )
     management_analysis: str = Field(
         ..., description="Analysis of shareholder structure, board, and reputation."
+    )
+
+    # Industry Analysis
+    industry_classification: str = Field(
+        ...,
+        description="Classification of the industry (Slow, Sustainable, Fast, Cyclical).",
+    )
+    industry_dynamics_analysis: str = Field(
+        ...,
+        description="Deep analysis of the industry risks and tailwinds, explicitly incorporating qualitative data from the sentiment reports.",
     )
 
     # Financial Health
@@ -81,6 +176,14 @@ class SynthesizerReport(BaseModel):
         ...,
         description="Current market phase (Crisis, Fair, Bubble) and how it affects the valuation.",
     )
+    investment_criteria_analysis: str = Field(
+        ...,
+        description="Explicit computation of specific investment criteria: Benjamin Graham's safe conditions (e.g. P/E * P/B < 22.5) OR Peter Lynch's classifications (e.g. PEG ratio for Fast Growers).",
+    )
+    competitive_peer_comparison: str = Field(
+        ...,
+        description="Explicit benchmarking of the company's valuation metrics against its sector peers or an explanation of its monopoly status.",
+    )
     relative_valuation_analysis: str = Field(
         ...,
         description="Analysis of P/E, P/B, and EV/EBITDA against sector benchmarks and growth rate.",
@@ -89,14 +192,30 @@ class SynthesizerReport(BaseModel):
         ..., description="Conclusion on Margin of Safety based on market phase."
     )
 
-    # Summary
+    # Summary and Suggestions
     summary_of_findings: str = Field(
         ...,
         description="A final BLUF outlining the overall facts found during synthesis without stating a definitive pass/fail decision.",
     )
+    actionable_suggestion: str = Field(
+        ...,
+        description="A clear, direct action recommendation based on the current Margin of Safety (e.g., 'BUY NOW', 'WAIT FOR P/E TO DROP TO 14x', 'AVOID').",
+    )
+    calculated_target_price: str = Field(
+        ...,
+        description="Explicit calculation of the Fair Value and the suggested Buy Price after applying the required Margin of Safety (MoS) discount based on the market context and business risks.",
+    )
+    critical_warnings: str = Field(
+        ...,
+        description="Explicitly state 'What to wait for' and 'What to be careful about' regarding this investment.",
+    )
     delegated_visuals: str = Field(
         ...,
         description="Links or descriptions of embedded visuals/tables delegated to the Visualization Specialist.",
+    )
+    citations_and_footnotes: str = Field(
+        ...,
+        description="Write the detailed footnote definitions here (e.g., '[^1]: According to... (Source: SQLite DB)'). If no footnotes were used, leave this empty, but you MUST use footnotes for your quantitative claims.",
     )
 
     def to_markdown(self) -> str:
@@ -106,34 +225,54 @@ class SynthesizerReport(BaseModel):
             return "🟢 **PASS**" if val else "🔴 **FAIL**"
 
         md = f"# GCCP Synthesis Report: {self.stock_symbol}\n\n"
+        md += f"**Current Metrics:** {self.current_metrics}\n"
         md += f"**Industry Classification:** {self.industry_classification}\n\n"
 
-        md += f"## 1. Business Model & Moat | Status: {bool_to_badge(self.business_model_is_good)}\n"
+        md += "## Part I: Quantitative Summary & Industry Dynamics\n"
+        md += f"{self.quantitative_metrics_summary}\n\n"
+        md += f"### Quantitative Anomaly Flags:\n{self.quantitative_anomaly_flags}\n\n"
+        md += f"### Industry Context & Sentiment Risk:\n{self.industry_dynamics_analysis}\n\n"
+
+        md += f"## Part II: Good Company (Qualitative) | Overall Status: {bool_to_badge(self.business_model_is_good and self.management_is_good)}\n"
+        md += f"### 1. Business Model & Moat | Status: {bool_to_badge(self.business_model_is_good)}\n"
         md += f"- **Input (Raw Materials):** {self.business_model_input_analysis}\n"
         md += (
             f"- **Output (Product/Customers):** {self.business_model_output_analysis}\n"
         )
         md += f"- **Core Engine:** {self.business_model_core_engine_analysis}\n\n"
 
-        md += f"## 2. Management & Governance | Status: {bool_to_badge(self.management_is_good)}\n"
+        md += f"### 2. Management & Governance | Status: {bool_to_badge(self.management_is_good)}\n"
         md += f"- **Analysis:** {self.management_analysis}\n\n"
 
-        md += f"## 3. Financial Health & Forensics | Status: {bool_to_badge(self.is_good)}\n"
+        md += f"## Part III: Good Company (Quantitative) | Financial Health Status: {bool_to_badge(self.is_good)}\n"
         md += f"- **Capital Structure (Debt):** {self.capital_structure}\n"
         md += f"- **Profitability (Margins/ROE):** {self.profitability}\n"
         md += f"- **Cash Generation (OCF/FCF):** {self.cash_generation}\n"
         md += f"- **Accounting Forensics (Anomalies):** {self.forensic_anomalies}\n\n"
 
-        md += f"## 4. Valuation & Margin of Safety | Status: {bool_to_badge(self.valuation_is_cheap)}\n"
-        md += f"- **Market Phase:** {self.market_phase_context}\n"
+        md += f"## Part IV: Cheap Price | Overall Status: {bool_to_badge(self.valuation_is_cheap)}\n"
+        md += "### Market Phase & Criteria Validation\n"
+        md += f"- **Market Context:** {self.market_phase_context}\n"
+        md += f"- **Strategy Criteria (Graham/Lynch):** {self.investment_criteria_analysis}\n"
+        md += f"- **Peer Comparison:** {self.competitive_peer_comparison}\n"
         md += f"- **Relative Valuation:** {self.relative_valuation_analysis}\n"
         md += f"- **Margin of Safety:** {self.margin_of_safety_analysis}\n\n"
 
-        md += "## 5. Final Synthesis Summary\n"
-        md += f"{self.summary_of_findings}\n\n"
+        md += "## Part V: Final Synthesis Summary & Actionable Advice\n"
+        md += f"**Overall BLUF:** {self.summary_of_findings}\n\n"
 
-        md += "## 6. Delegated Visualizations\n"
-        md += f"{self.delegated_visuals}\n"
+        md += "### Valuation Target & Margin of Safety\n"
+        md += f"- **Target/Suggested Entry Price:** {self.calculated_target_price}\n\n"
+
+        md += "### Actionable Suggestion\n"
+        md += f"> **{self.actionable_suggestion}**\n\n"
+
+        md += "### Critical Warnings & Observations\n"
+        md += f"{self.critical_warnings}\n\n"
+
+        md += "## Part VI: Visuals, Footnotes and Citation Sources\n"
+        md += f"{self.delegated_visuals}\n\n"
+        md += f"{self.citations_and_footnotes}\n"
 
         return md
 
@@ -153,42 +292,281 @@ class SynthesizerCrew:
         kb_text = f"--- FRAMEWORK ---\n{kb.framework}\n\n--- CRITERIA ---\n{kb.criteria}\n\n--- INDUSTRY GUIDES ---\n{kb.industry_guides}\n\n--- EVIDENCE STANDARD ---\n{kb.evidence_standard}\n\n--- FINANCIAL READING GUIDE ---\n{kb.financial_reading_guide}"
         config["backstory"] = config["backstory"].replace("{gccp_knowledge}", kb_text)
 
+        sentiment_dir_tool = DirectoryReadTool(directory="data/processed/sentiment")
+
         return Agent(
             config=config,
             llm=get_llm("qwen3-max-2026-01-23"),
-            tools=[FileReadTool(), QueryStockDatabaseTool()],
+            tools=[
+                FileReadTool(),
+                sentiment_dir_tool,
+                search_market_context,
+            ],
         )
 
     @agent
     def forensic_accountant(self) -> Agent:
+        annual_report_dir_tool = DirectoryReadTool(
+            directory="data/processed/annual_reports"
+        )
         return Agent(
             config=self.agents_config["forensic_accountant"],
             llm=get_llm("qwen3-coder-plus"),
-            tools=[FileReadTool()],
-            max_iter=3,
+            tools=[annual_report_dir_tool, read_file],
+            max_iter=5,
         )
 
     @agent
-    def visualization_specialist(self) -> Agent:
+    def data_specialist(self) -> Agent:
         return Agent(
-            config=self.agents_config["visualization_specialist"],
-            llm=get_llm("qwen3-max-2026-01-23"),
+            config=self.agents_config["data_specialist"],
+            llm=get_llm("qwen3.5-plus"),
+            tools=[
+                execute_python_code,
+                QueryStockDatabaseTool(),
+                FetchRecentFinancialsTool(),
+                FetchPeerComparisonsTool(),
+            ],
+            max_iter=5,
+        )
+
+    @task
+    def data_specialist_collect_metrics(self) -> Task:
+        return Task(
+            config=self.tasks_config["data_specialist_collect_metrics"],
+        )
+
+    @task
+    def manager_plan_directives(self) -> Task:
+        return Task(
+            config=self.tasks_config["manager_plan_directives"],
+        )
+
+    @task
+    def accountant_answer_questions(self) -> Task:
+        return Task(
+            config=self.tasks_config["accountant_answer_questions"],
+        )
+
+    @task
+    def visualizer_create_charts(self) -> Task:
+        return Task(
+            config=self.tasks_config["visualizer_create_charts"],
         )
 
     @task
     def compile_evaluation_report(self) -> Task:
+        task_config = self.tasks_config["compile_evaluation_report"].copy()
+        schema_str = SynthesizerReport.model_json_schema()
+        task_config["description"] += (
+            f"\n\nCRITICAL: Your JSON output MUST explicitly follow this flat schema:\n{schema_str}"
+        )
         return Task(
-            config=self.tasks_config["compile_evaluation_report"],
-            output_pydantic=SynthesizerReport,
+            config=task_config,
         )
 
     @crew
     def crew(self) -> Crew:
-        """Creates the monolithic Synthesizer Crew"""
+        """Creates the Synthesizer crew orchestrating the evaluation flow."""
         return Crew(
-            agents=self.agents,
-            tasks=self.tasks,
+            agents=[
+                self.lead_synthesizer(),
+                self.forensic_accountant(),
+                self.data_specialist(),
+            ],
+            tasks=[
+                self.data_specialist_collect_metrics(),
+                self.manager_plan_directives(),
+                self.accountant_answer_questions(),
+                self.visualizer_create_charts(),
+                self.compile_evaluation_report(),
+            ],
             process=Process.sequential,
             verbose=True,
             tracing=True,
         )
+
+
+class SynthesizerState(BaseModel):
+    stock_symbols: str = ""
+    date: str = ""
+    financial_summary: str = ""
+    manager_directives: str = ""
+    accountant_findings: str = ""
+    chart_links: str = ""
+    report: SynthesizerReport | None = None
+    markdown: str = ""
+
+
+class SynthesizerFlow(Flow[SynthesizerState]):
+    """Flow orchestrator for the Synthesizer module."""
+
+    @start()
+    def collect_data_step(self):
+        print(
+            f"🚀 [Step 1] Initializing Data Collection for {self.state.stock_symbols}..."
+        )
+        crew_def = SynthesizerCrew()
+        crew = Crew(
+            agents=[crew_def.data_specialist()],
+            tasks=[crew_def.data_specialist_collect_metrics()],
+            verbose=True,
+            tracing=True,
+        )
+        result = crew.kickoff(
+            inputs={"stock_symbols": self.state.stock_symbols, "date": self.state.date}
+        )
+
+        # Manual Pydantic validation to bypass CrewAI's tool_choice='required' Anthropic crash
+        raw_text = str(result)
+        try:
+            import json
+            import re
+
+            match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+            if match:
+                parsed_json = json.loads(match.group(0))
+                metrics = BaselineMetrics(**parsed_json)
+                self.state.financial_summary = metrics.to_markdown()
+                print("\n✅ Manual BaselineMetrics Pydantic extraction successful.")
+            else:
+                self.state.financial_summary = raw_text
+        except Exception as e:
+            print(
+                f"\n⚠️ Warning: Manual Pydantic extraction failed ({e}). Falling back to raw text."
+            )
+            self.state.financial_summary = raw_text
+
+        # Save the baseline to disk for forensics
+        output_dir = f"data/processed/synthesizer/{self.state.stock_symbols}"
+        os.makedirs(output_dir, exist_ok=True)
+        with open(
+            f"{output_dir}/{self.state.stock_symbols}_financial_summary.md",
+            "w",
+            encoding="utf-8",
+        ) as f:
+            f.write(self.state.financial_summary)
+
+        return self.state.financial_summary
+
+    @listen(collect_data_step)
+    def manager_directives_step(self, financial_summary):
+        print("🚀 [Step 2] Manager analyzing baseline to generate directives...")
+        crew_def = SynthesizerCrew()
+        crew = Crew(
+            agents=[crew_def.lead_synthesizer()],
+            tasks=[crew_def.manager_plan_directives()],
+            verbose=True,
+            tracing=True,
+        )
+        result = crew.kickoff(
+            inputs={
+                "stock_symbols": self.state.stock_symbols,
+                "financial_summary": self.state.financial_summary,
+            }
+        )
+        self.state.manager_directives = str(result)
+        return self.state.manager_directives
+
+    @listen(manager_directives_step)
+    def accountant_qa_step(self, directives):
+        print("🚀 [Step 3a] Forensic Accountant answering Manager's questions...")
+        crew_def = SynthesizerCrew()
+        crew = Crew(
+            agents=[crew_def.forensic_accountant()],
+            tasks=[crew_def.accountant_answer_questions()],
+            verbose=True,
+            tracing=True,
+        )
+        result = crew.kickoff(
+            inputs={
+                "stock_symbols": self.state.stock_symbols,
+                "manager_directives": directives,
+            }
+        )
+        self.state.accountant_findings = str(result)
+        return self.state.accountant_findings
+
+    @listen(manager_directives_step)
+    def visualizer_charts_step(self, directives):
+        print("🚀 [Step 3b] Visualizer drawing requested charts...")
+        crew_def = SynthesizerCrew()
+        crew = Crew(
+            agents=[crew_def.data_specialist()],
+            tasks=[crew_def.visualizer_create_charts()],
+            verbose=True,
+            tracing=True,
+        )
+        result = crew.kickoff(
+            inputs={
+                "stock_symbols": self.state.stock_symbols,
+                "manager_directives": directives,
+            }
+        )
+        self.state.chart_links = str(result)
+        return self.state.chart_links
+
+    @listen(and_(accountant_qa_step, visualizer_charts_step))
+    def compile_report_step(self, inputs):
+        print("🚀 [Step 4] Manager synthesizing final GCCP Report...")
+        crew_def = SynthesizerCrew()
+        crew = Crew(
+            agents=[crew_def.lead_synthesizer()],
+            tasks=[crew_def.compile_evaluation_report()],
+            verbose=True,
+            tracing=True,
+        )
+
+        result = crew.kickoff(
+            inputs={
+                "stock_symbols": self.state.stock_symbols,
+                "date": self.state.date,
+                "financial_summary": self.state.financial_summary,
+                "accountant_findings": self.state.accountant_findings,
+                "chart_links": self.state.chart_links,
+            }
+        )
+
+        raw_text = str(result)
+        try:
+            import json
+            import re
+
+            match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+            if match:
+                parsed_json = json.loads(match.group(0))
+                self.state.report = SynthesizerReport(**parsed_json)
+                print("\n✅ Manual SynthesizerReport Pydantic extraction successful.")
+            else:
+                self.state.markdown = raw_text
+                print("\n⚠️ Warning: No JSON found in output. Falling back to raw text.")
+        except Exception as e:
+            self.state.markdown = raw_text
+            print(
+                f"\n⚠️ Warning: Manual Pydantic extraction failed ({e}). Falling back to raw text."
+            )
+
+        return self.state.report
+
+    @listen(compile_report_step)
+    def save_report(self, report):
+        if not report:
+            return "No report to save."
+
+        try:
+            md_content = report.to_markdown()
+            self.state.markdown = md_content
+
+            symbol = self.state.stock_symbols
+            output_dir = f"data/processed/synthesizer/{symbol}"
+            # Ensure the symbol-specific directory exists
+            os.makedirs(output_dir, exist_ok=True)
+
+            file_path = f"{output_dir}/{symbol}_GCCP_report.md"
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(md_content)
+            print(f"\n✅ Final Synthesizer GCCP Report saved to: {file_path}")
+            return f"Report physically saved at {file_path}"
+        except Exception as e:
+            print(f"❌ Failed to save report: {e}")
+            return f"Error saving report: {e}"

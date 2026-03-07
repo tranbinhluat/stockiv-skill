@@ -17,15 +17,19 @@ fetch_daily_market_data_task:
     Retrieve the latest daily trading data, company overview (size/industry),
     current P/E, P/B, and live market metrics for {stock_symbols}.
 
-    This data is highly time-sensitive. Use the provided tools (including
-    fetch_company_overview and fetch_ratio_summary) to hit the API
-    directly and update the local SQLite database with today's values.
+    CRITICAL INSTRUCTION: You represent the UPSTREAM DATA AUTHORITY. You MUST guarantee all holistic data is present for downstream analytics.
+    1. First, use `fetch_market_index` to fetch the real-time `VNINDEX` and store it in the database.
+    2. Second, hit the API directly using `fetch_company_overview` and `fetch_ratio_summary` to update the local SQLite database with today's values for {stock_symbols}.
+    3. Third, identify 1-2 top domestic competitors (peers in the same industry in Vietnam) for {stock_symbols} and execute `fetch_ratio_summary` on those peers so the database is pre-loaded for downstream peer comparisons.
+
+    VERIFICATION PROTOCOL: Before finishing this task, you MUST independently query the `data/stockiv.db` (if you possess a database reading tool) OR verify your raw output logs to absolutely confirm that:
+    - VNINDEX price rows exist today.
+    - {stock_symbols}'s ratio summary (which contains the P/E and P/B ratios) has been successfully inserted.
   expected_output: >
-    A confirmation message that today's market metrics for the requested tickers
-    have been successfully updated in the SQLite database.
+    A confirmation message detailing that today's market metrics for VNINDEX, {stock_symbols}, and its top peers have been successfully updated in the SQLite database and verified.
   context: [fetch_financials_task]
   agent: market_data_fetcher
-  max_iter: 3
+  max_iter: 5
 
 fetch_macro_context_task:
   description: >

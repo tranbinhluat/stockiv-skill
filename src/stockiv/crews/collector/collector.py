@@ -23,6 +23,7 @@ from tools.vnstock_tools import (
     fetch_company_overview,
     fetch_ratio_summary,
     fetch_dividend_history,
+    fetch_market_index,
 )
 from tools.brave_tools import search_market_context
 from tools.report_finder_tools import search_annual_report_pdf, download_and_convert_pdf
@@ -47,6 +48,7 @@ class CollectorCrew:
                 fetch_company_overview,
                 fetch_ratio_summary,
                 fetch_dividend_history,
+                fetch_market_index,
                 search_annual_report_pdf,
                 download_and_convert_pdf,
             ],

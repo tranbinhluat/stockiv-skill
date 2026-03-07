@@ -1,18 +1,85 @@
+  data_specialist_collect_metrics:
+    description: >
+      Step 1: Execute your `FetchRecentFinancialsTool` for `{stock_symbols}` to get the latest fundamental metrics and ratios.
+      Step 2: Execute your `FetchPeerComparisonsTool` for `{stock_symbols}` to gather broad market index contexts (VNINDEX) and top competitor ratios.
+      Step 3: Organize all of this data as exact, raw facts. You must extract multi-year comparisons, YoY growth percentages, top competitors, and the VNINDEX baseline.
+      CRITICAL INSTRUCTION: Do NOT perform any analysis, synthesis, or write qualitative summaries. Your job is ONLY to extract and organize the raw data facts.
+    expected_output: >
+      A rigidly structured output perfectly matching the `BaselineMetrics` pydantic model. You must explicitly populate all fields with rich markdown tables and exact numbers. Do not write prose or summaries.
+    agent: data_specialist
+
+  manager_plan_directives:
+    description: >
+      Step 1: Read the comprehensive baseline financial summary provided by the Data Specialist. Use your `read_file` tool to exactly read the file at: `data/processed/synthesizer/{stock_symbols}/{stock_symbols}_financial_summary.md`. Do not plan your directives until you have read this exact file.
+      Step 2: Generate a list of EXACTLY 3 forensic questions for the `forensic_accountant` to hunt down in the annual report based on what you see in the baseline (e.g., "Why did margins drop?", "What are these other payables?").
+      Step 3: Generate a list of EXACTLY 2 explicit chart drawing commands for the `visualization_specialist`. (e.g., "Draw a bar chart of 4-year Revenue vs COGS").
+    expected_output: >
+      A highly structured Markdown document containing:
+      1. A numbered list of EXACT questions for the Accountant.
+      2. A numbered list of EXACT chart drawing directives for the Visualizer.
+    agent: lead_synthesizer
+
+  accountant_answer_questions:
+    description: >
+      Read the `{manager_directives}` from the Manager. You will see a specific list of questions directed at you.
+
+      CRITICAL RESTRICTION: You MUST ONLY read files from the `data/processed/annual_reports/` directory. You are STRICTLY FORBIDDEN from reading files in the `sentiment` directory to avoid hallucination.
+      Step 1: Use your `DirectoryReadTool` to list the files in `data/processed/annual_reports/`. Find the exact filename for `{stock_symbols}`.
+      Step 2: Use your `read_file` tool to read the markdown content of that exact Annual Report.
+      Step 3: Answer the Manager's *exact* questions based ONLY on the evidence in the Annual Report.
+    expected_output: >
+      A structured Q&A response. For every question asked by the manager, state Status (MENTIONED or NOT_MENTIONED), provide Exact Quotes from the Annual Report, and give a brief summary.
+    agent: forensic_accountant
+
+  visualizer_create_charts:
+    description: >
+      Read the `{manager_directives}` from the Manager. You will see specific chart drawing directives directed at you.
+
+      Step 1: Write a Python script using pandas and matplotlib to generate the exact charts the manager requested.
+      Step 2: ONLY query the local SQLite database (`data/stockiv.db`) for your required data using `QueryStockDatabaseTool`.
+      Step 3: Use the `execute_python_code` tool to run your script.
+      Step 4: Your script MUST save the charts as `.png` images in the `data/processed/synthesizer/{stock_symbols}/` directory (e.g., `data/processed/synthesizer/{stock_symbols}/{stock_symbols}_revenue.png`). Do NOT use `plt.show()`.
+    expected_output: >
+      A SHORT MARKDOWN STRING ONLY.
+      CRITICAL INSTRUCTION: YOU MUST NEVER RETURN A RAW TOOL CALL AS YOUR FINAL ANSWER.
+      Once your `execute_python_code` tool succeeds, you MUST write "Thought: I now have the final answer" and output a PLAIN TEXT response containing the markdown image embeds (e.g. `![Chart](data/processed/synthesizer/{stock_symbols}/{stock_symbols}_revenue.png)`).
+    agent: data_specialist
+
   compile_evaluation_report:
     description: >
-      Synthesize a full GCCP report for `{stock_symbols}`.
+      Synthesize the final GCCP report for `{stock_symbols}`.
 
-      Step 1: Locate and extract the latest financial metrics from the local SQLite DB (`data/stockiv.db`) and the qualitative sentiment from (`data/processed/sentiment/`).
-      Step 2: You MUST determine the forensic accounting integrity (auditor notes, depreciation changes, related party transactions). DO NOT guess this. Delegate a batch of specific questions to your specific coworker `forensic_accountant`. To save API calls, you MUST ask ALL your forensic questions in a single batch message to them. You are allowed a maximum of 2 clarifying rounds.
-      Step 3: Cross-reference all metrics and the accountant's evidence directly against the limits defined in your GCCP knowledge base.
-      Step 4: Delegate any necessary chart creation or data table exports to the Visualization Specialist.
-      Step 5: Compile the final Markdown report. DO NOT include a final "Pass" or "Fail" approval flag (save this for the Director).
+      As the Manager, you have access to:
+      1. `{financial_summary}` from the Data Specialist.
+      2. `{accountant_findings}` from the Forensic Accountant.
+      3. `{chart_links}` from the Visualizer.
+      4. `DirectoryReadTool("data/processed/sentiment")` to read the market context.
+      5. `search_market_context` (Brave Tool) to independently search the web for up to 3 clarifications.
+
+      Step 1: Cross-reference all limits defined in your GCCP knowledge base.
+      Step 2: You MUST compile the final Markdown report embedding the Visualizer's images.
+
+      CRITICAL CITATION RULE:
+      You MUST use CLICKABLE INLINE MARKDOWN LINKS for EVERY single financial number, ratio, peer comparison, title, and sentiment claim!
+      For example, write: `[According to the FY2024 Revenue drop](http://vnstock-KBS-database)`. or `[FPT Wins New Contract](https://actual-news-link.com)`.
+      You are STRICTLY FORBIDDEN from using plain text footnotes like `[^1]`. Every citation must be a hyperlinked markdown tag. Report headers derived from news must also be hyperlinked!
     expected_output: >
       A highly structured report perfectly matching the `SynthesizerReport` format.
+      CRITICAL INSTRUCTION: You MUST output your entire response as a single, valid JSON object matching the `SynthesizerReport` schema. Do NOT write conversational text outside the JSON block.
+      You MUST explicitly populate the `current_metrics` field using the precise current trading price, VNINDEX, and date captured by the baseline.
+      You MUST use explicit `[Link Text](URL)` markdown links for all citations.
+      You MUST explicitly declare any quantitative anomalies.
+      You MUST embed the charts generated by the Visualizer using their explicit Markdown image embed links.
       You MUST process the data section-by-section according to the GCCP framework:
       1. Classify the Industry Dynamics.
-      2. Evaluate "Good Company": Business Model (Input/Output/Engine), Management Governance, and Financial Health (Capital/Profit/Cash and Forensic Anomalies).
-      3. Evaluate "Cheap Price": Market Context, Relative Valuation against Growth/Sectors, and Margin of Safety.
+      2. Evaluate "Good Company" (Qualitative): Business Model (Input/Output/Engine), Management Governance.
+      3. Evaluate "Good Company" (Quantitative): Financial Health (Capital/Profit/Cash and Forensic Anomalies).
+      4. Evaluate "Cheap Price": Market Context, Relative Valuation against Growth/Sectors, and Margin of Safety.
       For each major section, you must determine its specific `is_good` or `is_cheap` flag based on the framework rules.
       Do NOT provide an overall Pass/Fail for the whole stock.
+
+      FINALLY, in your summary, you MUST:
+      - Calculate and state a specific suggested buy price (Fair Value minus Required Margin of Safety) based on your valuation models.
+      - Provide a crystal-clear `actionable_suggestion` (e.g. "BUY NOW", "WAIT FOR DIP TO X", "SELL").
+      - Provide explicit `critical_warnings` detailing exactly "what you need to wait for" (e.g., lower P/E, specific catalyst) and "what you need to be careful about" (e.g., rising debt, macro risks, sector cyclicality).
     agent: lead_synthesizer

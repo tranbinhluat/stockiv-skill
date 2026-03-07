@@ -5,10 +5,14 @@ Test script to validate the monolithic Chief Synthesizer's capability
 to analyze and evaluate quantitative/qualitative data concurrently against the injected `kb`.
 """
 
+import os
 from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew
 
 
 def test_synthesizer():
+    # Force tracing on for this test run
+    os.environ["CREWAI_TRACING_ENABLED"] = "true"
+
     print("🚀 Instantiating Monolithic Synthesizer Crew...")
     crew = SynthesizerCrew().crew()
 
@@ -27,7 +31,6 @@ def test_synthesizer():
         print(md_text)
 
         # Physically save the markdown report
-        import os
 
         out_dir = "data/processed/synthesizer"
         os.makedirs(out_dir, exist_ok=True)

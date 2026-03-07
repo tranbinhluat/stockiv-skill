@@ -39,8 +39,10 @@ Each session, you wake up fresh. These files _are_ your memory. Read them. Updat
 **Your memory responsibility:**
 - Read `MEMORY.md` at start of main sessions for long-term context
 - Read `memory/YYYY-MM-DD.md` for recent project status
+- **Read `Slave/Plan/`** for active or approved implementation plans and task tracking
 - **Update `MEMORY.md`** with significant lessons, decisions, and patterns worth keeping
 - **Update `memory/YYYY-MM-DD.md`** with daily progress, changes, and current state
+- **Update `Slave/Plan/`** ONLY when an implementation plan is APPROVED by the user. Draft proposals must be kept as system artifacts (`implementation_plan.md`).
 - These files are your continuity — maintain them diligently
 
 If you change this file, tell the user — it's your soul, and they should know.
