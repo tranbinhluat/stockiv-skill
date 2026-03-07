@@ -55,6 +55,7 @@ uv run pre-commit run --all-files  # Run security hooks
 # Each crew follows this structure:
 src/stockiv/crews/<crew_name>/
 ├── <crew_name>.py        # @CrewBase class
+├── README.md             # Visual doc with Mermaid diagrams of data flow
 ├── config/
 │   ├── agents.yaml       # role/goal/backstory
 │   └── tasks.yaml        # description/expected_output
