@@ -71,9 +71,6 @@ class WeeklyReportFlow(Flow[PipelineState]):
         )
         os.makedirs(context_dir, exist_ok=True)
         self.state.market_context_path = os.path.join(context_dir, "market_context.md")
-        self.state.ticker_context_path = os.path.join(
-            context_dir, "generic_ticker_context.md"
-        )
 
         if self.state.is_mock:
             print("[WeeklyReport Flow - MOCK] Bypassing Collector Crew...")
@@ -102,7 +99,6 @@ class WeeklyReportFlow(Flow[PipelineState]):
             result = crew_inst.kickoff(
                 inputs={
                     "market_context_path": self.state.market_context_path,
-                    "ticker_context_path": self.state.ticker_context_path,
                 }
             )
             self.state.history += (
@@ -152,7 +148,6 @@ class WeeklyReportFlow(Flow[PipelineState]):
                         "overall_report_md_path"
                     ],
                     "market_context_path": self.state.market_context_path,
-                    "ticker_context_path": self.state.ticker_context_path,
                 }
             )
             self.state.shared_data["news_sentiment_analysis"] = str(result)
