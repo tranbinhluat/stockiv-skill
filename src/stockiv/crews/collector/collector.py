@@ -13,11 +13,21 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
 
 from dotenv import load_dotenv
-from langtrace_python_sdk import langtrace
-from crewai import Agent, Crew, Process, Task
-from crewai.project import CrewBase, agent, crew, task
-from stockiv.agents import primary_llm, light_llm
-from tools.vnstock_tools import (
+
+load_dotenv()
+from langtrace_python_sdk import langtrace  # noqa: E402
+
+if os.getenv("LANGTRACE_API_KEY"):
+    print("Found langtrace api key.")
+    langtrace.init(
+        api_key=os.getenv("LANGTRACE_API_KEY"),
+        disable_instrumentations={"all_except": ["openai"]},
+    )
+
+from crewai import Agent, Crew, Process, Task  # noqa: E402
+from crewai.project import CrewBase, agent, crew, task  # noqa: E402
+from stockiv.agents import primary_llm, light_llm  # noqa: E402
+from tools.vnstock_tools import (  # noqa: E402
     fetch_historical_prices,
     fetch_financial_statements,
     fetch_financial_ratios,
@@ -26,17 +36,8 @@ from tools.vnstock_tools import (
     fetch_dividend_history,
     fetch_market_index,
 )
-from tools.brave_tools import search_market_context
-from tools.report_finder_tools import search_annual_report_pdf, download_and_convert_pdf
-
-load_dotenv()
-
-if os.getenv("LANGTRACE_API_KEY"):
-    print("Found langtrace api key.")
-    langtrace.init(
-        api_key=os.getenv("LANGTRACE_API_KEY"),
-        disable_instrumentations={"all_except": ["openai"]},
-    )
+from tools.brave_tools import search_market_context  # noqa: E402
+from tools.report_finder_tools import search_annual_report_pdf, download_and_convert_pdf  # noqa: E402
 
 
 @CrewBase

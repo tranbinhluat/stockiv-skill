@@ -4,13 +4,9 @@ Sentiment Analyst Crew - Analyzes market sentiment and news.
 
 import os
 from dotenv import load_dotenv
-from langtrace_python_sdk import langtrace
-from crewai import Agent, Crew, Process, Task
-from crewai.project import CrewBase, agent, crew, task
-from crewai_tools import FileReadTool, DirectoryReadTool
-from stockiv.agents.base import get_llm
 
 load_dotenv()
+from langtrace_python_sdk import langtrace  # noqa: E402
 
 if os.getenv("LANGTRACE_API_KEY"):
     print("Found langtrace api key.")
@@ -18,6 +14,11 @@ if os.getenv("LANGTRACE_API_KEY"):
         api_key=os.getenv("LANGTRACE_API_KEY"),
         disable_instrumentations={"all_except": ["openai"]},
     )
+
+from crewai import Agent, Crew, Process, Task  # noqa: E402
+from crewai.project import CrewBase, agent, crew, task  # noqa: E402
+from crewai_tools import FileReadTool, DirectoryReadTool  # noqa: E402
+from stockiv.agents.base import get_llm  # noqa: E402
 
 
 @CrewBase

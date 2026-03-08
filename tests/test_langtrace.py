@@ -1,12 +1,10 @@
 import os
 from dotenv import load_dotenv
 
-# MUST BE IMPORTED BEFORE CREWAI
-from langtrace_python_sdk import langtrace
-from crewai import Agent, Crew, Process, Task
-from stockiv.agents.base import primary_llm
-
 load_dotenv()
+
+# MUST BE IMPORTED BEFORE CREWAI
+from langtrace_python_sdk import langtrace  # noqa: E402
 
 if os.getenv("LANGTRACE_API_KEY"):
     print("Initializing Langtrace...")
@@ -16,6 +14,9 @@ if os.getenv("LANGTRACE_API_KEY"):
     )
 else:
     print("No LANGTRACE_API_KEY found.")
+
+from crewai import Agent, Crew, Process, Task  # noqa: E402
+from stockiv.agents.base import primary_llm  # noqa: E402
 
 
 def run_test():
