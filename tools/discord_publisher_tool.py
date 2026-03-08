@@ -30,22 +30,24 @@ def send_discord_message(channel_id: str, content: str) -> str:
     current_length = 0
 
     for line in content.split("\n"):
-        # Force a break before major Markdown headings to keep topics grouped nicely
-        is_heading = line.strip().startswith(("# ", "## ", "### "))
-
         # +1 for the newline character that will be added back when joined
         line_length = len(line) + 1
 
-        # If adding this line exceeds the limit, OR it is a new heading, finalize the current chunk
+        is_empty_line = line.strip() == ""
+
+        # If adding this line exceeds the limit, OR it is an empty line (paragraph break), finalize the current chunk
         if current_chunk and (
-            is_heading or (current_length + line_length > chunk_size)
+            is_empty_line or (current_length + line_length > chunk_size)
         ):
             chunks.append("\n".join(current_chunk))
-            current_chunk = [line]
-            current_length = line_length
+            current_chunk = [line] if not is_empty_line else []
+            current_length = line_length if not is_empty_line else 0
         else:
-            current_chunk.append(line)
-            current_length += line_length
+            if not (
+                not current_chunk and is_empty_line
+            ):  # avoid starting a chunk with an empty line
+                current_chunk.append(line)
+                current_length += line_length
 
     if current_chunk:
         chunks.append("\n".join(current_chunk))
