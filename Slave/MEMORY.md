@@ -250,6 +250,14 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - **FileReadTool Argument Parsing:** When instructing LLMs to use `FileReadTool` with specific paths, explicitly forbid them from passing the optional `start_line` and `line_count` arguments as empty strings (e.g., `""`). Passing empty strings to these fields throws a fatal Pydantic integer parsing error in CrewAI `v0.100+`.
 - **Quality Gates & Chunking:** Before an Agent publishes to Discord, implement a "CRITICAL QUALITY BOUNDARY" prompt to ensure it actually parses the document and verifies it is a report (preventing stack traces from reaching the channel). Furthermore, explicitly instruct the LLM to chunk any Markdown payload longer than 1900 characters and call the `discord_send_message` tool multiple times sequentially to bypass the hard 2000-character Discord API limit.
 
+**Dynamic Output Path Injection (2026-03-08):**
+- **Pattern:** Passing `self.state.shared_data["my_path"]` down to Crew initialization `kickoff(inputs=self.state.shared_data)`.
+- **YAML Mapping:** In `tasks.yaml`, use double quotes around variables to interpolate strings instead of crashing PyYAML parser into dictionaries:
+  ```yaml
+  output_file: "{my_path}"
+  ```
+- **PDF Exporting:** Standardize rendering local markdown directly into executive PDFs using `markdown` & `weasyprint` injected inside a CrewAI Tool instead of relying on external API document parsing.
+
 ---
 
 ## Critical Rules

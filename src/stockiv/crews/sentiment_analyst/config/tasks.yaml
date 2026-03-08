@@ -7,19 +7,19 @@ summarize_current_week_macro:
   expected_output: >
     A Macro Market Report formatted strictly as follows:
     - **I. Executive Summary:** A brief 2-3 sentence summary of the dominant market environment this week (e.g. Reflation, Stagflation, specific sector headwinds).
-    - **Market Dashboard:** A concise markdown table or list of key data points (e.g., VN-Index closing price, WoW change, VIX level, USD/VND rate).
+    - **Market Dashboard:** A concise markdown table of key data points (e.g., VN-Index closing price, WoW change, VIX level, USD/VND rate). The table MUST have exactly 3 columns: `Indicator`, `Value` (must contain the data value PLUS the inline citation, e.g. "3.64% [[1]](URL)"), and `Note` (a short textual explanation of context/impact. DO NOT just put the footnote/citation in the Note column).
     - **II. Key Macro Indicators:** Use BLUF (Bottom Line Up Front) format. For each bullet, bold the keyword, state the status in 1-2 words, then provide a single sentence of context explaining its long-term impact on capital allocation.
     - **III. Structural Shifts:** Identify any early signs of structural shifts in the economy based solely on this week's news flow.
     - **IV. Upcoming Macro Catalysts:** A markdown table with columns for `Timeframe`, `Event`, and `Expected Impact (High/Med/Low)`.
     **(CITATION REQUIREMENT: Every factual claim MUST be cited using standard markdown inline links as numbers, e.g., `[[1]](URL)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax because it is not universally clickable in all previewers. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. Format each reference as: `1. [Article Title](URL)`.)**
-  output_file: data/processed/sentiment/market/{year}_W{week}_market_sentiment.md
+  output_file: "{report_md_path}"
   agent: macro_sentiment_analyst
 
 synthesize_recent_trends:
   description: >
     Synthesize a cohesive overall market sentiment report for the year by analyzing recent trends.
     You MUST use your DirectoryReadTool to scan the `data/processed/sentiment/market/` directory for previously generated weekly
-    market sentiment files (e.g. `{year}_W*_market_sentiment.md`).
+    market sentiment files (e.g. `{year}_W*_market_report.md`).
     Identify the most recent 3-4 weeks of reports you find, read their contents, and synthesize them.
   expected_output: >
     A synthesized Overall Recent Market Situation Report formatted strictly as follows:
@@ -35,7 +35,7 @@ synthesize_recent_trends:
     - **IV. The Consensus Fallacy (Contrarian View):** Identify where consensus is crowded. What happens if the market "base case" pricing is wrong?
     - **V. Strategic Allocation Playbook:** Bullet points detailing which sectors/themes to Overweight and Underweight for long-term investing based on these trends.
     DO NOT generate individual weekly summaries. Provide a single, unified view of the market's trajectory.
-  output_file: data/processed/sentiment/market/{year}_overall_market_sentiment.md
+  output_file: "{overall_report_md_path}"
   agent: trend_analyst
 
 summarize_symbol_sentiment:
@@ -48,7 +48,7 @@ summarize_symbol_sentiment:
   expected_output: >
     A Specific Ticker Report formatted strictly as follows:
     - **I. Macro Resilience Summary:** A brief 2-3 sentence summary explicitly stating how vulnerable or resilient this specific business is to the macroeconomic trends and Bear Case scenarios identified in the overall market report.
-    - **Ticker Dashboard:** A concise markdown table or list of key data points.
+    - **Ticker Dashboard:** A concise markdown table of key data points. The table MUST have exactly 3 columns: `Metric`, `Value` (must contain the data value PLUS the inline citation, e.g. "3.64% [[1]](URL)"), and `Note` (a short textual explanation of context/impact. DO NOT just put the footnote/citation in the Note column).
     - **II. Scenario Stress Testing:** How does this specific stock theoretically perform under the overall market scenarios?
       - *Base Case Impact:* [Expected business performance]
       - *Bear Case Impact:* [How badly is revenue/margin affected?]

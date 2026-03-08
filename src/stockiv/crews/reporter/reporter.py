@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 from stockiv.agents import primary_llm, light_llm
 from tools.discord_publisher_tool import send_discord_message
+from tools.pdf_exporter_tool import markdown_to_pdf
 
 load_dotenv()
 
@@ -46,6 +47,14 @@ class ReporterCrew:
         )
 
     @agent
+    def pdf_generator(self) -> Agent:
+        return Agent(
+            config=self.agents_config["pdf_generator"],
+            llm=light_llm,
+            tools=[markdown_to_pdf],
+        )
+
+    @agent
     def formatter(self) -> Agent:
         return Agent(
             config=self.agents_config["formatter"],
@@ -71,6 +80,12 @@ class ReporterCrew:
         )
 
     @task
+    def export_to_pdf(self) -> Task:
+        return Task(
+            config=self.tasks_config["export_to_pdf"],
+        )
+
+    @task
     def format_report(self) -> Task:
         return Task(
             config=self.tasks_config["format_report"],
@@ -86,9 +101,15 @@ class ReporterCrew:
     def crew(self) -> Crew:
         """Creates the Reporter Crew pipeline. Note: Generate Report task is omitted here as it's assumed to run in another place or replaced by the incoming context."""
         return Crew(
-            agents=[self.translator(), self.formatter(), self.discord_publisher()],
+            agents=[
+                self.translator(),
+                self.pdf_generator(),
+                self.formatter(),
+                self.discord_publisher(),
+            ],
             tasks=[
                 self.translate_report(),
+                self.export_to_pdf(),
                 self.format_report(),
                 self.publish_to_discord(),
             ],

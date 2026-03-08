@@ -5,6 +5,7 @@ Weekly Report Flow - Runs Collector (context tasks only) and Sentiment Analyst.
 from crewai.flow.flow import Flow, listen, start
 import sys
 import os
+from datetime import datetime
 
 # Ensure the root package is accessible
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
@@ -27,6 +28,40 @@ class WeeklyReportFlow(Flow[PipelineState]):
         Run Collector Crew, but restrict it to only the macro news context task.
         """
         print("\n[WeeklyReport Flow] 🚀 Launching Collector Crew (Macro News Only)...")
+
+        # 1. GENERATE PIPELINE STATE AND CENTRALIZED PATHS
+        now = datetime.now()
+        year = now.strftime("%Y")
+        _, week_num, _ = now.isocalendar()
+
+        self.state.report_year = year
+        self.state.report_week = f"{week_num:02d}"
+
+        # Standard Weekly Report Formatting Example: 2026_W10_market_report
+        if self.state.is_mock:
+            self.state.report_title = "2026_W10_market_report"
+        else:
+            self.state.report_title = f"{year}_W{week_num:02d}_market_report"
+
+        output_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "../../../data/processed/sentiment/market",
+            )
+        )
+        os.makedirs(output_dir, exist_ok=True)
+
+        self.state.report_md_path = os.path.join(
+            output_dir, f"{self.state.report_title}.md"
+        )
+        self.state.report_pdf_path = os.path.join(
+            output_dir, f"{self.state.report_title}.pdf"
+        )
+
+        # Define overall report path for the synthesize_recent_trends task
+        self.state.shared_data["overall_report_md_path"] = os.path.join(
+            output_dir, f"{year}_overall_market_sentiment.md"
+        )
 
         if self.state.is_mock:
             print("[WeeklyReport Flow - MOCK] Bypassing Collector Crew...")
@@ -61,14 +96,10 @@ class WeeklyReportFlow(Flow[PipelineState]):
 
     @listen(execute_collector_news)
     def execute_sentiment(self):
-        from datetime import datetime
-
-        now = datetime.now()
-        current_date = now.strftime("%Y-%m-%d")
-        year, week_num, _ = now.isocalendar()
+        current_date = datetime.now().strftime("%Y-%m-%d")
 
         print(
-            f"\n[WeeklyReport Flow] 🚀 Launching Sentiment Analyst Crew (Macro Phase)... (Year: {year}, Week: {week_num})..."
+            f"\n[WeeklyReport Flow] 🚀 Launching Sentiment Analyst Crew (Macro Phase)... (Year: {self.state.report_year}, Week: {self.state.report_week})..."
         )
 
         if self.state.is_mock:
@@ -94,7 +125,16 @@ class WeeklyReportFlow(Flow[PipelineState]):
             crew_inst.tasks = filtered_tasks
 
             result = crew_inst.kickoff(
-                inputs={"date": current_date, "year": str(year), "week": str(week_num)}
+                inputs={
+                    "date": current_date,
+                    "year": self.state.report_year,
+                    "week": self.state.report_week,
+                    "report_title": self.state.report_title,
+                    "report_md_path": self.state.report_md_path,
+                    "overall_report_md_path": self.state.shared_data[
+                        "overall_report_md_path"
+                    ],
+                }
             )
             self.state.shared_data["news_sentiment_analysis"] = str(result)
             self.state.history += (
@@ -115,32 +155,18 @@ class WeeklyReportFlow(Flow[PipelineState]):
             reporter_inst = ReporterCrew()
             crew_inst = reporter_inst.crew()
 
-            # Use the output from the sentiment analyst step as input
-            # If in mock mode, use a hardcoded path to the existing report
             if self.state.is_mock:
                 print(
                     "[WeeklyReport Flow - MOCK] Passing mock sentiment file path to Reporter..."
                 )
-                # Note: The file path must be absolute to avoid path resolution issues with FileReadTool
-                report_file_path = os.path.abspath(
-                    os.path.join(
-                        os.path.dirname(__file__),
-                        "../../../data/processed/sentiment/market/2026_overall_market_sentiment.md",
-                    )
-                )
-            else:
-                from datetime import datetime
 
-                now = datetime.now()
-                year = now.strftime("%Y")
-                report_file_path = os.path.abspath(
-                    os.path.join(
-                        os.path.dirname(__file__),
-                        f"../../../data/processed/sentiment/market/{year}_overall_market_sentiment.md",
-                    )
-                )
-
-            crew_inst.kickoff(inputs={"report_file_path": report_file_path})
+            crew_inst.kickoff(
+                inputs={
+                    "report_file_path": self.state.report_md_path,
+                    "pdf_output_path": self.state.report_pdf_path,
+                    "report_title": self.state.report_title,
+                }
+            )
             self.state.history += "Reporter executed. Sent payload to Discord.\n"
         except Exception as e:
             self.state.history += f"Reporter Failed: {str(e)}\n"

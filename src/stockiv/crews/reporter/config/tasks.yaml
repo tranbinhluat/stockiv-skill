@@ -45,42 +45,56 @@ translate_report:
 
 format_report:
   description: >
-    You must take the fully translated Vietnamese report from the previous task and apply advanced Discord Markdown styling to it.
+    You must read the fully translated Vietnamese report from the previous task and generate a HIGHLY CONDENSED, engaging summary for Discord.
+    We are sending the full report as an attached PDF, so this Discord message serves ONLY as a hook/executive summary.
 
     CRITICAL STYLING RULES:
-    1. DO NOT CHANGE THE MEANING: You must not alter the financial data, the analyst's conclusions, or the core message.
-    2. DISCORD-NATIVE HEADINGS: Discord only supports H1 (#), H2 (##), and H3 (###). DO NOT use H4 (####) or horizontal rules (---) as they render poorly. Convert any #### to ### or use bold text (**text**).
-    3. PROPER SPACING: Break up long paragraphs using real blank lines (by pressing Enter twice). **NEVER type the literal characters "\n" or "\n\n" in your output.**
-    4. COHESIVE LISTS (CRITICAL): When creating bullet points (`- `), you MUST merge fragmented sentences or related clauses into a SINGLE, continuous line. Do NOT break a single bullet point's concept into multiple lines or multiple bullets. For example:
-       WRONG:
-       - Các công ty Việt Nam hưởng lợi
-       Đặc biệt là những công ty AI
-       RIGHT:
-       - Các công ty Việt Nam hưởng lợi, đặc biệt là những công ty AI.
-    5. EMOJIS (HEADINGS ONLY): ONLY inject emojis at the start of Headings (e.g., `## 📊 Tóm tắt`). DO NOT use emojis on individual bullet points, inline text, or standalone lines. Keep it extremely clean.
-    6. NO HALLUCINATION: You only change how the text looks on the screen. Do not add conversational filler.
+    1. EXTREMELY BRIEF: The final output should be at most 150-250 words. Do not reproduce the full report.
+    2. KEY HIGHLIGHTS ONLY: Extract the 3-4 most critical points (e.g., overall sentiment, major macro shifts, key industry impact).
+    3. DISCORD-NATIVE HEADINGS: Use a single H1 (#) or H2 (##) as a catchy title. Generate a natural Vietnamese title (e.g. "BÁO CÁO THỊ TRƯỜNG TUẦN..."). DO NOT include the raw string '{report_title}'. DO NOT use H4 (####) or horizontal rules (---).
+    4. EMOJIS: Liberally use professional emojis (📈, 📉, 🏦, 🚀, 🇻🇳, 💡) to make the text pop and draw attention.
+    5. CALL TO ACTION: End the message by explicitly telling the users to "Mở tệp PDF đính kèm để xem báo cáo chi tiết" (Open the attached PDF to view the detailed report).
+    6. PROPER SPACING: Break up the text using real blank lines (by pressing Enter twice).
+    7. NO HALLUCINATION: Only summarize insights actually present in the provided report.
 
-    Your goal is to make a non-financial user actually want to read this report on their phone, so ensure it looks visually clean and well-spaced.
+    Your goal is to make a non-financial user quickly grasp the market pulse on their phone and entice them to click the attached PDF.
   expected_output: >
-    The final styled Markdown text, ready to be sent to Discord, featuring emojis, bullet points, headers, and generous line breaks.
+    A short, punchy, visually engaging summary of the market report in Vietnamese, heavily utilizing emojis, ending with a prompt to read the attached PDF.
   agent: formatter
+  context:
+    - translate_report
+
+export_to_pdf:
+  description: >
+    Take the raw translated Vietnamese report from the translation task and safely export it to a PDF file using the `markdown_to_pdf` tool.
+    Output path: `{pdf_output_path}`.
+
+    CRITICAL INSTRUCTION: You MUST use the `markdown_to_pdf` tool exactly once. Pass the entire text content as `markdown_content` and `{pdf_output_path}` as the `output_file_path`.
+  expected_output: >
+    The absolute file path of the generated PDF document, e.g., `{pdf_output_path}`.
+  agent: pdf_generator
+  context:
+    - translate_report
 
 publish_to_discord:
   description: >
     CRITICAL QUALITY BOUNDARY: Before doing anything else, inspect the text you received from the previous formatting task.
     You MUST verify the following:
     1. Is it a professional, structured Markdown report?
-    2. Is it in Vietnamese?
+    2. Is it in Vietnamese? (Note: It is perfectly acceptable to have emojis, numbers, financial shorthand, English terms like FDI/AI, and other financial terms like 外资 (foreign capital)).
     3. Does it contain actual financial/sentiment analysis?
     4. DOES IT AVOID looking like a raw error message, a stack trace, or simple conversational filler?
 
     If the text FAILS any of these checks, DO NOT SEND IT to Discord. Instead, output an error message stating why the quality check failed.
 
     If the text PASSES these checks, use the `send_discord_message` tool to safely publish it.
-    The tool will automatically handle breaking down the message if it exceeds Discord's 2000 character limit, so you just need to call it ONCE.
+    - Provide the Discord styled summary from the formatting task as `content`.
+    - Provide `{pdf_output_path}` as `file_path`.
 
     Target Channel ID: '1477341143766143128'
-    Content to send: The FULL translated text.
   expected_output: >
-    Confirmation that the FULL translated report has been successfully sent to the Discord channel, OR a rejection notice explaining why the payload failed the quality gate.
+    Confirmation that the brief summary has been successfully sent to the Discord channel along with the full PDF attachment, OR a rejection notice explaining why the payload failed the quality gate.
   agent: discord_publisher
+  context:
+    - format_report
+    - export_to_pdf

@@ -14,5 +14,12 @@ class PipelineState(BaseModel):
     history: str = ""
     is_mock: bool = False
 
+    # Centralized Weekly Report Metadata
+    report_year: str = ""
+    report_week: str = ""
+    report_title: str = ""
+    report_md_path: str = ""
+    report_pdf_path: str = ""
+
     # Generic dictionary for storing any workflow-specific outputs
     shared_data: dict = {}

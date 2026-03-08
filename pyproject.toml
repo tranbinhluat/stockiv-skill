@@ -29,6 +29,8 @@ dependencies = [
     "pillow>=12.1.1",
     "setuptools<70",
     "langtrace-python-sdk>=3.8.21",
+    "markdown>=3.10.2",
+    "weasyprint>=68.1",
 ]
 
 [build-system]
