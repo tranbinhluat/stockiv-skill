@@ -6,16 +6,17 @@ quantitative financial data and qualitative market context. Populates local
 storage for downstream crews.
 """
 
-from crewai import Agent, Crew, Process, Task
-from crewai.project import CrewBase, agent, crew, task
-
-from stockiv.agents import primary_llm, light_llm
-import sys
 import os
+import sys
 
 # Ensure tools can be imported
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
 
+from dotenv import load_dotenv
+from langtrace_python_sdk import langtrace
+from crewai import Agent, Crew, Process, Task
+from crewai.project import CrewBase, agent, crew, task
+from stockiv.agents import primary_llm, light_llm
 from tools.vnstock_tools import (
     fetch_historical_prices,
     fetch_financial_statements,
@@ -27,6 +28,15 @@ from tools.vnstock_tools import (
 )
 from tools.brave_tools import search_market_context
 from tools.report_finder_tools import search_annual_report_pdf, download_and_convert_pdf
+
+load_dotenv()
+
+if os.getenv("LANGTRACE_API_KEY"):
+    print("Found langtrace api key.")
+    langtrace.init(
+        api_key=os.getenv("LANGTRACE_API_KEY"),
+        disable_instrumentations={"all_except": ["openai"]},
+    )
 
 
 @CrewBase

@@ -1,4 +1,4 @@
-**I. Macro Resilience Summary:**  
+**I. Macro Resilience Summary:**
 FPT is highly resilient to the macroeconomic headwinds and Bear Case scenarios outlined in the overall market report. Its strategic focus on high-value, domestic-demand-driven sectors like AI, semiconductors, and digital transformation directly aligns with Vietnam's national "Make in Vietnam" policy and its shift towards a high-tech economy. While a Fed pause could trigger short-term foreign capital outflows, FPT's business model is fundamentally insulated by robust domestic growth (8-9% GDP) and its role as a critical enabler of Vietnam's sovereign technology infrastructure, making it far less vulnerable than low-margin, export-oriented manufacturers.
 
 **Ticker Dashboard:**
@@ -18,7 +18,7 @@ FPT is highly resilient to the macroeconomic headwinds and Bear Case scenarios o
 - **Global Strategic Alliances:** **Status: Deepening.** FPT is forging high-value partnerships with global tech giants like Qualcomm (for AI-native 6G and automotive tech) and Agora (for banking AI solutions), which validate its technical expertise and expand its market reach beyond cost arbitrage [[15]](https://synnexfpt.com/en/fpt-joins-qualcomm%E2%80%91led-coalition-to-accelerate-ai%E2%80%91native-6g-networks/)[[16]](https://www.asiabiztoday.com/2026/02/24/agora-partners-fpt-to-accelerate-ai-adoption-across-southeast-asias-banking-sector/).
 - **Financial Performance:** **Status: Robust.** FPT closed 2025 with record-breaking financial results, posting double-digit growth in both revenue and profit before tax, providing a solid foundation for its ambitious 2026 investment plans [[11]](https://www.prnewswire.com/news-releases/g42-and-vietnamese-consortium-commit-to-build-national-ai-infrastructure-and-develop-southeast-asias-intelligence-capacity-302682101.html).
 
-**IV. Thesis Invalidation (The "Sell" Triggers):**  
+**IV. Thesis Invalidation (The "Sell" Triggers):**
 The long-term investment thesis for FPT would be invalidated by: (1) A failure to execute on its semiconductor roadmap, such as significant delays or cost overruns in its new packaging and testing plant that prevent it from becoming a viable node in the global supply chain [[14]](https://fpt-is.com/en/fpt-advanced-semiconductor-testing-and-packaging/). (2) A strategic misstep in its AI partnerships, where its collaborations with G42 or others fail to generate tangible commercial contracts or technological leadership, reducing it to a mere infrastructure landlord rather than an innovation driver [[13]](https://technode.global/2026/02/09/abu-dhabis-g42-partners-vietnamese-consortium-to-form-1b-ai-data-center-in-vietnam/). (3) A material deterioration in its core IT services business, evidenced by a sustained decline in global market share or a significant drop in its high-margin digital transformation project backlog, indicating a loss of competitive edge.
 
 ### References

@@ -14,3 +14,50 @@ generate_report:
     detailed findings, clear recommendations, risk assessment, and
     actionable insights for investment decisions.
   agent: reporter
+
+translate_report:
+  description: >
+    You must first use your FileReader tool to carefully read the Markdown file located at the following path:
+    {report_file_path}
+
+    CRITICAL TOOL INSTRUCTION: When calling the FileReader tool, ONLY provide the `file_path` argument. Do NOT provide `start_line` or `line_count` arguments under any circumstances. Passing empty strings for those fields will cause a fatal integer validation error.
+
+    CRITICAL TRANSLATION RULES:
+        1. MEANING-BASED ADAPTATION (PHÓNG TÁC): Do NOT translate word-by-word. Focus on the underlying financial meaning and rewrite it naturally in Vietnamese. Avoid literal translations like "tăng trưởng ấm áp" (warm growth) or "gián đoạn" (disrupted/interrupted).
+        2. USE LOCAL FINANCIAL JARGON:
+          - "Goldilocks Growth / Economy" -> "Tăng trưởng cân bằng" or "Nền kinh tế lý tưởng (Goldilocks)".
+          - "Disrupt / Disruption" (in tech/business) -> "Đột phá", "Định hình lại", or "Thay đổi cấu trúc".
+          - "Disconnect" -> "Sự phân kỳ", "Sự lệch pha".
+          - "Painful disconnect" -> "Sự phân kỳ rủi ro cao" or "Sự lệch pha tiêu cực".
+          - "Consensus Fallacy" -> "Góc nhìn trái chiều về sự đồng thuận" or "Rủi ro từ góc nhìn đồng thuận".
+          - Instead of "Điều khiến tình hình tồi tệ hơn/tốt hơn" (What makes it worse/better), use "Rủi ro suy yếu" (Downside risks) / "Động lực thúc đẩy" (Upside drivers).
+          - Translate "Bull Case / Bear Case / Base Case" to "Kịch bản Tích cực / Kịch bản Tiêu cực / Kịch bản Cơ sở".
+          - Translate "Overweight / Underweight" to "Khuyến nghị Tăng tỷ trọng / Khuyến nghị Giảm tỷ trọng".
+          - Translate "Hawkish / Dovish" to "Thắt chặt (Hawkish) / Nới lỏng (Dovish)".
+          - Translate "Headwinds / Tailwinds" to "Rào cản / Động lực hỗ trợ".
+        3. ENGLISH RETENTION: Keep specific technical terms or globally recognized names (like AI, FDI, IT Outsourcing, Fed, FTSE Russell, MSCI) in English, or put them in parentheses next to the Vietnamese translation.
+
+    Make sure to maintain the formatting (Markdown) and numerical data exactly as they appear in the source text. The final text must flow smoothly for a native Vietnamese investor.
+  expected_output: >
+    The fully translated version of the report into natural Vietnamese, preserving the original Markdown structure and professional tone.
+  agent: translator
+
+publish_to_discord:
+  description: >
+    CRITICAL QUALITY BOUNDARY: Before doing anything else, inspect the text you received from the previous translation task.
+    You MUST verify the following:
+    1. Is it a professional, structured Markdown report?
+    2. Is it in Vietnamese?
+    3. Does it contain actual financial/sentiment analysis?
+    4. DOES IT AVOID looking like a raw error message, a stack trace, or simple conversational filler?
+
+    If the text FAILS any of these checks, DO NOT SEND IT to Discord. Instead, output an error message stating why the quality check failed.
+
+    If the text PASSES these checks, use the `send_discord_message` tool to safely publish it.
+    The tool will automatically handle breaking down the message if it exceeds Discord's 2000 character limit, so you just need to call it ONCE.
+
+    Target Channel ID: '1477341143766143128'
+    Content to send: The FULL translated text.
+  expected_output: >
+    Confirmation that the FULL translated report has been successfully sent to the Discord channel, OR a rejection notice explaining why the payload failed the quality gate.
+  agent: discord_publisher

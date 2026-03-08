@@ -11,7 +11,7 @@ from crewai import LLM
 # Default model configuration
 DEFAULT_MODEL = "qwen3.5-plus"
 DEFAULT_BASE_URL = os.getenv(
-    "ANTHROPIC_BASE_URL", "https://coding-intl.dashscope.aliyuncs.com/apps/anthropic"
+    "ANTHROPIC_BASE_URL", "https://coding-intl.dashscope.aliyuncs.com/v1"
 )
 
 

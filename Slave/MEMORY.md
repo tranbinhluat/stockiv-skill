@@ -243,6 +243,13 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - **Hierarchical Delegation Bug (CrewAI 1.10.1):** When `process=Process.hierarchical`, any task defined in `tasks.yaml` **must NOT** have a hardcoded `agent: [worker_name]`. If `agent:` is declared, the framework dynamically copies that worker's tools directly onto the Task itself. The Manager agent intercepts this tool-equipped Task, inherits the tools, and permanently bypasses its `Delegate` tool by simply executing the task APIs directly.
   - *Fix:* Always leave `agent:` completely blank in `tasks.yaml` when using a Hierarchical workflow. Scoping tools exactly to the workers (`collector.py`) forces the toolless Manager to accurately fall back onto using its standard Delegation Tooling.
 
+**Discord MCP Integration Pattern (2026-03-08):**
+- **Transport Setup:** Use `MCPServerStdio` with `command="npx"` and `args=["-y", "discord-mcp"]`.
+- **Token Prefix Requirement:** The `discord-mcp` package directly passes the token to the Discord HTTP `Authorization` header. You **must** prefix it with `"Bot "` (e.g. `env={"DISCORD_BOT_TOKEN": f"Bot {discord_token}"}`). If you pass just the raw token string, Discord will return `401 Unauthorized`.
+- **Bot Permissions:** Ensure the Discord Bot has "Message Content Intent" turned on in the developer portal, and has explicit channel read/write permissions where the tests/tools are being run.
+- **FileReadTool Argument Parsing:** When instructing LLMs to use `FileReadTool` with specific paths, explicitly forbid them from passing the optional `start_line` and `line_count` arguments as empty strings (e.g., `""`). Passing empty strings to these fields throws a fatal Pydantic integer parsing error in CrewAI `v0.100+`.
+- **Quality Gates & Chunking:** Before an Agent publishes to Discord, implement a "CRITICAL QUALITY BOUNDARY" prompt to ensure it actually parses the document and verifies it is a report (preventing stack traces from reaching the channel). Furthermore, explicitly instruct the LLM to chunk any Markdown payload longer than 1900 characters and call the `discord_send_message` tool multiple times sequentially to bypass the hard 2000-character Discord API limit.
+
 ---
 
 ## Critical Rules

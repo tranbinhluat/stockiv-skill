@@ -4,6 +4,7 @@ Main Entry Point & Master Flow Orchestrator for StockIV.
 
 from stockiv.flows.deepdive import DeepDiveFlow
 from stockiv.flows.weekly import WeeklyReportFlow
+from stockiv.flows.report_loop import SynthesizerReporterFlow
 
 
 def kickoff():
@@ -20,7 +21,7 @@ def kickoff():
     parser.add_argument(
         "--flow",
         type=str,
-        choices=["deepdive", "weekly"],
+        choices=["deepdive", "weekly", "reportloop"],
         default="deepdive",
         help="Which orchestration flow to run.",
     )
@@ -28,6 +29,12 @@ def kickoff():
         "--mock",
         action="store_true",
         help="Run the pipeline in Mock Mode to bypass expensive LLM executions.",
+    )
+    parser.add_argument(
+        "--max_loops",
+        type=int,
+        default=5,
+        help="Max retries if Director rejects analysis (ReportLoop flow only).",
     )
     args = parser.parse_args()
 
@@ -37,13 +44,18 @@ def kickoff():
     elif args.flow == "weekly":
         print("[System] Initializing Weekly Report Flow...")
         flow = WeeklyReportFlow()
+    elif args.flow == "reportloop":
+        print("[System] Initializing Synthesizer->Director Loop Flow...")
+        flow = SynthesizerReporterFlow()
+        flow.state.max_loops = args.max_loops
+        flow.state.target_ticker = "FPT"  # Test default
     else:
         print("[System] Unknown flow requested.")
         return
 
     flow.state.request = args.request
     flow.state.is_mock = args.mock
-    
+
     result = flow.kickoff()
     print(f"\n[{args.flow.capitalize()} Flow Result]:\n{result}")
 
