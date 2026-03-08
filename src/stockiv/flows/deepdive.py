@@ -44,7 +44,7 @@ class DeepDiveFlow(Flow[PipelineState]):
         print(f"\n[DeepDive Flow] Received request: '{self.state.request}'")
         self.state.history += f"Initial Request: {self.state.request}\n"
 
-        if self.state.is_mock:
+        if "all" in self.state.mock_crews or "orchestrator" in self.state.mock_crews:
             print("[DeepDive Flow - MOCK] Bypassing Orchestrator LLM...")
             self.state.target_ticker = "FPT"
             return "FPT"
@@ -75,9 +75,30 @@ class DeepDiveFlow(Flow[PipelineState]):
             )
             return None
 
-    @router(analyze_request)
+    @listen(analyze_request)
+    def setup_paths(self, ticker):
+        """Initializes shared state paths after orchestrator extraction."""
+        if not ticker:
+            return None
+
+        context_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "../../../data/raw/context",
+            )
+        )
+        os.makedirs(context_dir, exist_ok=True)
+        self.state.shared_data["market_context_path"] = os.path.join(
+            context_dir, "market_context.md"
+        )
+        self.state.shared_data["ticker_context_path"] = os.path.join(
+            context_dir, f"{ticker}_ticker_context.md"
+        )
+        return ticker
+
+    @router(setup_paths)
     def handle_routing(self, ticker):
-        """Routes execution after `analyze_request` based on state."""
+        """Routes execution after `setup_paths` based on state."""
         print(f"[DeepDive Flow] Debug: Ticker is '{ticker}'")
         if ticker:
             return "route_to_collector"
@@ -88,20 +109,14 @@ class DeepDiveFlow(Flow[PipelineState]):
         ticker = self.state.target_ticker
         print(f"\n[DeepDive Flow] 🚀 Launching Collector Crew for {ticker}...")
 
-        context_dir = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "../../../data/raw/context",
-            )
-        )
-        os.makedirs(context_dir, exist_ok=True)
-        self.state.market_context_path = os.path.join(context_dir, "market_context.md")
-        self.state.ticker_context_path = os.path.join(
-            context_dir, f"{ticker}_ticker_context.md"
-        )
-
-        if self.state.is_mock:
+        if "all" in self.state.mock_crews or "collector" in self.state.mock_crews:
             print("[DeepDive Flow - MOCK] Bypassing Collector Crew...")
+            dummy_m_path = self.state.shared_data["market_context_path"]
+            with open(dummy_m_path, "w", encoding="utf-8") as f:
+                f.write("# MOCK MACRO CONTEXT\n")
+            dummy_t_path = self.state.shared_data["ticker_context_path"]
+            with open(dummy_t_path, "w", encoding="utf-8") as f:
+                f.write(f"# MOCK TICKER CONTEXT FOR {ticker}\n")
             self.state.history += "Collector executed (MOCK). Result: Mocked Dataset\n"
             return "route_to_sentiment"
 
@@ -110,8 +125,12 @@ class DeepDiveFlow(Flow[PipelineState]):
             result = collector.crew().kickoff(
                 inputs={
                     "stock_symbols": ticker,
-                    "market_context_path": self.state.market_context_path,
-                    "ticker_context_path": self.state.ticker_context_path,
+                    "market_context_path": self.state.shared_data[
+                        "market_context_path"
+                    ],
+                    "ticker_context_path": self.state.shared_data[
+                        "ticker_context_path"
+                    ],
                 }
             )
             self.state.history += f"Collector executed. Result: {str(result)}\n"
@@ -147,10 +166,24 @@ class DeepDiveFlow(Flow[PipelineState]):
         )
         os.makedirs(output_dir, exist_ok=True)
         report_title = f"{year}_W{week:02d}_market_report"
-        report_md_path = os.path.join(output_dir, f"{report_title}.md")
-        overall_report_md_path = os.path.join(
+        self.state.shared_data["report_title"] = report_title
+        self.state.shared_data["report_md_path"] = os.path.join(
+            output_dir, f"{report_title}.md"
+        )
+        self.state.shared_data["overall_report_md_path"] = os.path.join(
             output_dir, f"{year}_overall_market_sentiment.md"
         )
+
+        if "all" in self.state.mock_crews or "sentiment" in self.state.mock_crews:
+            print("[DeepDive Flow - MOCK] Bypassing Sentiment Analyst Crew...")
+            self.state.shared_data["news_sentiment_analysis"] = "MOCK Sentiment Data"
+            dummy_path = self.state.shared_data["overall_report_md_path"]
+            with open(dummy_path, "w", encoding="utf-8") as f:
+                f.write("# MOCK OVERALL MARKET SENTIMENT\n")
+            self.state.history += (
+                "Sentiment Analyst executed (MOCK). Result recorded in State.\n"
+            )
+            return
 
         try:
             sentiment_crew = SentimentAnalystCrew()
@@ -160,11 +193,17 @@ class DeepDiveFlow(Flow[PipelineState]):
                     "date": current_date,
                     "year": str(year),
                     "week": str(week),
-                    "report_title": report_title,
-                    "report_md_path": report_md_path,
-                    "overall_report_md_path": overall_report_md_path,
-                    "market_context_path": self.state.market_context_path,
-                    "ticker_context_path": self.state.ticker_context_path,
+                    "report_title": self.state.shared_data["report_title"],
+                    "report_md_path": self.state.shared_data["report_md_path"],
+                    "overall_report_md_path": self.state.shared_data[
+                        "overall_report_md_path"
+                    ],
+                    "market_context_path": self.state.shared_data[
+                        "market_context_path"
+                    ],
+                    "ticker_context_path": self.state.shared_data[
+                        "ticker_context_path"
+                    ],
                 }
             )
             self.state.shared_data["news_sentiment_analysis"] = str(result)
@@ -183,7 +222,16 @@ class DeepDiveFlow(Flow[PipelineState]):
 
         print(f"\n[DeepDive Flow] 🚀 Launching Synthesizer Crew for {ticker}...")
 
-        if self.state.is_mock:
+        self.state.shared_data["financial_summary_path"] = (
+            f"data/processed/synthesizer/{ticker}/{ticker}_financial_summary.md"
+        )
+        self.state.shared_data["annual_reports_dir"] = "data/processed/annual_reports/"
+        self.state.shared_data["synthesizer_output_dir"] = (
+            f"data/processed/synthesizer/{ticker}/"
+        )
+        self.state.shared_data["sentiment_dir"] = "data/processed/sentiment"
+
+        if "all" in self.state.mock_crews or "synthesizer" in self.state.mock_crews:
             print("[DeepDive Flow - MOCK] Bypassing Synthesizer Crew...")
             self.state.history += "Synthesizer executed (MOCK). Result: Mocked Report\n"
             return
@@ -194,10 +242,14 @@ class DeepDiveFlow(Flow[PipelineState]):
                 inputs={
                     "stock_symbols": ticker,
                     "date": current_date,
-                    "financial_summary_path": f"data/processed/synthesizer/{ticker}/{ticker}_financial_summary.md",
-                    "annual_reports_dir": "data/processed/annual_reports/",
-                    "synthesizer_output_dir": f"data/processed/synthesizer/{ticker}/",
-                    "sentiment_dir": "data/processed/sentiment",
+                    "financial_summary_path": self.state.shared_data[
+                        "financial_summary_path"
+                    ],
+                    "annual_reports_dir": self.state.shared_data["annual_reports_dir"],
+                    "synthesizer_output_dir": self.state.shared_data[
+                        "synthesizer_output_dir"
+                    ],
+                    "sentiment_dir": self.state.shared_data["sentiment_dir"],
                 }
             )
             self.state.history += f"Synthesizer executed. Result: {str(result)}\n"

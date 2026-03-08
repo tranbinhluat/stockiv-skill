@@ -27,8 +27,9 @@ def kickoff():
     )
     parser.add_argument(
         "--mock",
-        action="store_true",
-        help="Run the pipeline in Mock Mode to bypass expensive LLM executions.",
+        type=str,
+        default="",
+        help="Comma-separated list of crews to mock (e.g., 'all', 'collector', 'sentiment', 'reporter', 'synthesizer').",
     )
     parser.add_argument(
         "--max_loops",
@@ -54,7 +55,9 @@ def kickoff():
         return
 
     flow.state.request = args.request
-    flow.state.is_mock = args.mock
+
+    mock_crews_list = [c.strip().lower() for c in args.mock.split(",") if c.strip()]
+    flow.state.mock_crews = mock_crews_list
 
     result = flow.kickoff()
     print(f"\n[{args.flow.capitalize()} Flow Result]:\n{result}")

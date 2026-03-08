@@ -23,25 +23,21 @@ class WeeklyReportFlow(Flow[PipelineState]):
     """
 
     @start()
-    def execute_collector_news(self):
+    def setup_flow(self):
         """
-        Run Collector Crew, but restrict it to only the macro news context task.
+        1. GENERATE PIPELINE STATE AND CENTRALIZED PATHS
         """
-        print("\n[WeeklyReport Flow] 🚀 Launching Collector Crew (Macro News Only)...")
-
-        # 1. GENERATE PIPELINE STATE AND CENTRALIZED PATHS
+        print("\n[WeeklyReport Flow] ⚙️ Initializing State and Output Paths...")
         now = datetime.now()
         year = now.strftime("%Y")
         _, week_num, _ = now.isocalendar()
 
-        self.state.report_year = year
-        self.state.report_week = f"{week_num:02d}"
+        self.state.shared_data["report_year"] = year
+        self.state.shared_data["report_week"] = f"{week_num:02d}"
 
         # Standard Weekly Report Formatting Example: 2026_W10_market_report
-        if self.state.is_mock:
-            self.state.report_title = "2026_W10_market_report"
-        else:
-            self.state.report_title = f"{year}_W{week_num:02d}_market_report"
+        report_title = f"{year}_W{week_num:02d}_market_report"
+        self.state.shared_data["report_title"] = report_title
 
         output_dir = os.path.abspath(
             os.path.join(
@@ -51,14 +47,12 @@ class WeeklyReportFlow(Flow[PipelineState]):
         )
         os.makedirs(output_dir, exist_ok=True)
 
-        self.state.report_md_path = os.path.join(
-            output_dir, f"{self.state.report_title}.md"
+        self.state.shared_data["report_md_path"] = os.path.join(
+            output_dir, f"{report_title}.md"
         )
-        self.state.report_pdf_path = os.path.join(
-            output_dir, f"{self.state.report_title}.pdf"
+        self.state.shared_data["report_pdf_path"] = os.path.join(
+            output_dir, f"{report_title}.pdf"
         )
-
-        # Define overall report path for the synthesize_recent_trends task
         self.state.shared_data["overall_report_md_path"] = os.path.join(
             output_dir, f"{year}_overall_market_sentiment.md"
         )
@@ -70,10 +64,24 @@ class WeeklyReportFlow(Flow[PipelineState]):
             )
         )
         os.makedirs(context_dir, exist_ok=True)
-        self.state.market_context_path = os.path.join(context_dir, "market_context.md")
+        self.state.shared_data["market_context_path"] = os.path.join(
+            context_dir, "market_context.md"
+        )
 
-        if self.state.is_mock:
+    @listen(setup_flow)
+    def execute_collector_news(self):
+        """
+        Run Collector Crew, but restrict it to only the macro news context task.
+        """
+        print("\n[WeeklyReport Flow] 🚀 Launching Collector Crew (Macro News Only)...")
+
+        if "all" in self.state.mock_crews or "collector" in self.state.mock_crews:
             print("[WeeklyReport Flow - MOCK] Bypassing Collector Crew...")
+            dummy_path = self.state.shared_data["market_context_path"]
+            with open(dummy_path, "w", encoding="utf-8") as f:
+                f.write(
+                    "# MOCK MACRO CONTEXT\n\nThis is a mocked dataset for the market context to allow downstream crews to test effectively."
+                )
             self.state.history += "Collector executed (MOCK). Result: Mocked Dataset\n"
             return
 
@@ -98,7 +106,9 @@ class WeeklyReportFlow(Flow[PipelineState]):
 
             result = crew_inst.kickoff(
                 inputs={
-                    "market_context_path": self.state.market_context_path,
+                    "market_context_path": self.state.shared_data[
+                        "market_context_path"
+                    ],
                 }
             )
             self.state.history += (
@@ -112,10 +122,16 @@ class WeeklyReportFlow(Flow[PipelineState]):
         current_date = datetime.now().strftime("%Y-%m-%d")
 
         print(
-            f"\n[WeeklyReport Flow] 🚀 Launching Sentiment Analyst Crew (Macro Phase)... (Year: {self.state.report_year}, Week: {self.state.report_week})..."
+            f"\n[WeeklyReport Flow] 🚀 Launching Sentiment Analyst Crew (Macro Phase)... (Year: {self.state.shared_data.get('report_year')}, Week: {self.state.shared_data.get('report_week')})..."
         )
 
-        if self.state.is_mock:
+        if "all" in self.state.mock_crews or "sentiment" in self.state.mock_crews:
+            print("[WeeklyReport Flow - MOCK] Bypassing Sentiment Analyst Crew...")
+            dummy_path = self.state.shared_data["report_md_path"]
+            with open(dummy_path, "w", encoding="utf-8") as f:
+                f.write(
+                    f"# MOCK WEEKLY REPORT\n\nGenerated for Week {self.state.shared_data.get('report_week', '00')} of {self.state.shared_data.get('report_year', '0000')}."
+                )
             self.state.history += "Sentiment Analyst executed (MOCK).\n"
             return
 
@@ -140,14 +156,16 @@ class WeeklyReportFlow(Flow[PipelineState]):
             result = crew_inst.kickoff(
                 inputs={
                     "date": current_date,
-                    "year": self.state.report_year,
-                    "week": self.state.report_week,
-                    "report_title": self.state.report_title,
-                    "report_md_path": self.state.report_md_path,
+                    "year": self.state.shared_data["report_year"],
+                    "week": self.state.shared_data["report_week"],
+                    "report_title": self.state.shared_data["report_title"],
+                    "report_md_path": self.state.shared_data["report_md_path"],
                     "overall_report_md_path": self.state.shared_data[
                         "overall_report_md_path"
                     ],
-                    "market_context_path": self.state.market_context_path,
+                    "market_context_path": self.state.shared_data[
+                        "market_context_path"
+                    ],
                 }
             )
             self.state.shared_data["news_sentiment_analysis"] = str(result)
@@ -163,22 +181,25 @@ class WeeklyReportFlow(Flow[PipelineState]):
             "\n[WeeklyReport Flow] 🚀 Launching Reporter Crew (Translation & Publishing Phase)..."
         )
 
+        if "all" in self.state.mock_crews or "reporter" in self.state.mock_crews:
+            print("[WeeklyReport Flow - MOCK] Bypassing Reporter Crew...")
+            dummy_pdf = self.state.shared_data["report_pdf_path"]
+            with open(dummy_pdf, "w", encoding="utf-8") as f:
+                f.write("MOCK PDF BINARY OMITTED")
+            self.state.history += "Reporter executed (MOCK). Sent payload to Discord.\n"
+            return
+
         try:
             from stockiv.crews.reporter.reporter import ReporterCrew
 
             reporter_inst = ReporterCrew()
             crew_inst = reporter_inst.crew()
 
-            if self.state.is_mock:
-                print(
-                    "[WeeklyReport Flow - MOCK] Passing mock sentiment file path to Reporter..."
-                )
-
             crew_inst.kickoff(
                 inputs={
-                    "report_file_path": self.state.report_md_path,
-                    "pdf_output_path": self.state.report_pdf_path,
-                    "report_title": self.state.report_title,
+                    "report_file_path": self.state.shared_data["report_md_path"],
+                    "pdf_output_path": self.state.shared_data["report_pdf_path"],
+                    "report_title": self.state.shared_data["report_title"],
                 }
             )
             self.state.history += "Reporter executed. Sent payload to Discord.\n"
