@@ -13,7 +13,7 @@ from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import FileReadTool
 from dotenv import load_dotenv
 
-from stockiv.agents import primary_llm
+from stockiv.agents import primary_llm, light_llm
 from tools.discord_publisher_tool import send_discord_message
 
 load_dotenv()
@@ -43,15 +43,20 @@ class ReporterCrew:
             config=self.agents_config["translator"],
             llm=primary_llm,
             tools=[FileReadTool()],
-            reasoning=True,
-            max_reasoning_attempts=3,
+        )
+
+    @agent
+    def formatter(self) -> Agent:
+        return Agent(
+            config=self.agents_config["formatter"],
+            llm=light_llm,
         )
 
     @agent
     def discord_publisher(self) -> Agent:
         return Agent(
             config=self.agents_config["discord_publisher"],
-            llm=primary_llm,
+            llm=light_llm,
             tools=[send_discord_message],
         )
 
@@ -66,6 +71,12 @@ class ReporterCrew:
         )
 
     @task
+    def format_report(self) -> Task:
+        return Task(
+            config=self.tasks_config["format_report"],
+        )
+
+    @task
     def publish_to_discord(self) -> Task:
         return Task(
             config=self.tasks_config["publish_to_discord"],
@@ -75,8 +86,12 @@ class ReporterCrew:
     def crew(self) -> Crew:
         """Creates the Reporter Crew pipeline. Note: Generate Report task is omitted here as it's assumed to run in another place or replaced by the incoming context."""
         return Crew(
-            agents=[self.translator(), self.discord_publisher()],
-            tasks=[self.translate_report(), self.publish_to_discord()],
+            agents=[self.translator(), self.formatter(), self.discord_publisher()],
+            tasks=[
+                self.translate_report(),
+                self.format_report(),
+                self.publish_to_discord(),
+            ],
             process=Process.sequential,
             verbose=True,
             tracing=True,

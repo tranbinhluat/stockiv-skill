@@ -3,6 +3,9 @@ import requests
 from crewai.tools import tool
 
 
+import time
+
+
 @tool("send_discord_message")
 def send_discord_message(channel_id: str, content: str) -> str:
     """
@@ -23,35 +26,42 @@ def send_discord_message(channel_id: str, content: str) -> str:
     }
     url = f"https://discord.com/api/v10/channels/{channel_id}/messages"
 
-    # Discord limit is 2000 characters. We use smart chunking by lines/headers.
     chunk_size = 1900
     chunks = []
-    current_chunk = []
-    current_length = 0
+    current_chunk = ""
 
-    for line in content.split("\n"):
-        # +1 for the newline character that will be added back when joined
-        line_length = len(line) + 1
+    # Split by newline to preserve line breaks
+    lines = content.split("\n")
 
-        is_empty_line = line.strip() == ""
+    for line in lines:
+        # Edge case: A single line is longer than the chunk size
+        if len(line) > chunk_size:
+            # If we have accumulated text, save it as a chunk first
+            if current_chunk:
+                chunks.append(current_chunk)
+                current_chunk = ""
 
-        # If adding this line exceeds the limit, OR it is an empty line (paragraph break), finalize the current chunk
-        if current_chunk and (
-            is_empty_line or (current_length + line_length > chunk_size)
-        ):
-            chunks.append("\n".join(current_chunk))
-            current_chunk = [line] if not is_empty_line else []
-            current_length = line_length if not is_empty_line else 0
+            # Force-split the massive line by characters
+            for i in range(0, len(line), chunk_size):
+                chunks.append(line[i : i + chunk_size])
+            continue
+
+        # Normal case: check if adding this line exceeds the limit
+        # +1 accounts for the newline character we will add
+        if len(current_chunk) + len(line) + 1 > chunk_size:
+            chunks.append(current_chunk)
+            current_chunk = line  # Start new chunk with the current line
         else:
-            if not (
-                not current_chunk and is_empty_line
-            ):  # avoid starting a chunk with an empty line
-                current_chunk.append(line)
-                current_length += line_length
+            if current_chunk:
+                current_chunk += "\n" + line
+            else:
+                current_chunk = line
 
+    # Catch any remaining text
     if current_chunk:
-        chunks.append("\n".join(current_chunk))
+        chunks.append(current_chunk)
 
+    # --- API Sending Logic ---
     success_count = 0
     errors = []
 
@@ -62,12 +72,16 @@ def send_discord_message(channel_id: str, content: str) -> str:
             response.raise_for_status()
             success_count += 1
 
-            # Rate limit backoff (simple) if many chunks
-            import time
+            # Simple rate limit backoff
+            if len(chunks) > 1 and idx < len(chunks) - 1:
+                time.sleep(0.5)
 
-            time.sleep(0.5)
         except requests.exceptions.RequestException as e:
-            err_text = response.text if hasattr(response, "text") else "None"
+            err_text = (
+                response.text
+                if "response" in locals() and hasattr(response, "text")
+                else "None"
+            )
             errors.append(
                 f"Failed to send chunk {idx + 1}/{len(chunks)}: {str(e)} - Response: {err_text}"
             )

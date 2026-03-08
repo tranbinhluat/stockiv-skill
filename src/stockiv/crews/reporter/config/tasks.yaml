@@ -24,7 +24,8 @@ translate_report:
 
     CRITICAL TRANSLATION RULES:
         1. MEANING-BASED ADAPTATION (PHÓNG TÁC): Do NOT translate word-by-word. Focus on the underlying financial meaning and rewrite it naturally in Vietnamese. Avoid literal translations like "tăng trưởng ấm áp" (warm growth) or "gián đoạn" (disrupted/interrupted).
-        2. USE LOCAL FINANCIAL JARGON:
+        2. SIMPLIFY FOR BEGINNERS: Your audience does NOT have a finance degree. If you encounter complex macroeconomic or quantitative terms, simplify them or provide a very brief, plain-Vietnamese inline explanation. Keep sentences relatively short and easy to digest.
+        3. USE LOCAL FINANCIAL CONCEPTS:
           - "Goldilocks Growth / Economy" -> "Tăng trưởng cân bằng" or "Nền kinh tế lý tưởng (Goldilocks)".
           - "Disrupt / Disruption" (in tech/business) -> "Đột phá", "Định hình lại", or "Thay đổi cấu trúc".
           - "Disconnect" -> "Sự phân kỳ", "Sự lệch pha".
@@ -32,19 +33,41 @@ translate_report:
           - "Consensus Fallacy" -> "Góc nhìn trái chiều về sự đồng thuận" or "Rủi ro từ góc nhìn đồng thuận".
           - Instead of "Điều khiến tình hình tồi tệ hơn/tốt hơn" (What makes it worse/better), use "Rủi ro suy yếu" (Downside risks) / "Động lực thúc đẩy" (Upside drivers).
           - Translate "Bull Case / Bear Case / Base Case" to "Kịch bản Tích cực / Kịch bản Tiêu cực / Kịch bản Cơ sở".
-          - Translate "Overweight / Underweight" to "Khuyến nghị Tăng tỷ trọng / Khuyến nghị Giảm tỷ trọng".
+          - Translate "Overweight / Underweight" to "Khuyến nghị Tăng tỷ trọng / Khuyến nghị Giảm tỷ trọng" (or simply "Khuyên Mua / Khuyên Bán" if context allows).
           - Translate "Hawkish / Dovish" to "Thắt chặt (Hawkish) / Nới lỏng (Dovish)".
           - Translate "Headwinds / Tailwinds" to "Rào cản / Động lực hỗ trợ".
-        3. ENGLISH RETENTION: Keep specific technical terms or globally recognized names (like AI, FDI, IT Outsourcing, Fed, FTSE Russell, MSCI) in English, or put them in parentheses next to the Vietnamese translation.
+        4. ENGLISH RETENTION: Keep specific technical terms or globally recognized names (like AI, FDI, IT Outsourcing, Fed, FTSE Russell, MSCI) in English, or put them in parentheses next to the Vietnamese translation.
 
-    Make sure to maintain the formatting (Markdown) and numerical data exactly as they appear in the source text. The final text must flow smoothly for a native Vietnamese investor.
+    Make sure to maintain the formatting (Markdown) and numerical data exactly as they appear in the source text. The final text must flow smoothly and be easily understood by a non-financial Vietnamese investor.
   expected_output: >
     The fully translated version of the report into natural Vietnamese, preserving the original Markdown structure and professional tone.
   agent: translator
 
+format_report:
+  description: >
+    You must take the fully translated Vietnamese report from the previous task and apply advanced Discord Markdown styling to it.
+
+    CRITICAL STYLING RULES:
+    1. DO NOT CHANGE THE MEANING: You must not alter the financial data, the analyst's conclusions, or the core message.
+    2. DISCORD-NATIVE HEADINGS: Discord only supports H1 (#), H2 (##), and H3 (###). DO NOT use H4 (####) or horizontal rules (---) as they render poorly. Convert any #### to ### or use bold text (**text**).
+    3. PROPER SPACING: Break up long paragraphs using real blank lines (by pressing Enter twice). **NEVER type the literal characters "\n" or "\n\n" in your output.**
+    4. COHESIVE LISTS (CRITICAL): When creating bullet points (`- `), you MUST merge fragmented sentences or related clauses into a SINGLE, continuous line. Do NOT break a single bullet point's concept into multiple lines or multiple bullets. For example:
+       WRONG:
+       - Các công ty Việt Nam hưởng lợi
+       Đặc biệt là những công ty AI
+       RIGHT:
+       - Các công ty Việt Nam hưởng lợi, đặc biệt là những công ty AI.
+    5. EMOJIS (HEADINGS ONLY): ONLY inject emojis at the start of Headings (e.g., `## 📊 Tóm tắt`). DO NOT use emojis on individual bullet points, inline text, or standalone lines. Keep it extremely clean.
+    6. NO HALLUCINATION: You only change how the text looks on the screen. Do not add conversational filler.
+
+    Your goal is to make a non-financial user actually want to read this report on their phone, so ensure it looks visually clean and well-spaced.
+  expected_output: >
+    The final styled Markdown text, ready to be sent to Discord, featuring emojis, bullet points, headers, and generous line breaks.
+  agent: formatter
+
 publish_to_discord:
   description: >
-    CRITICAL QUALITY BOUNDARY: Before doing anything else, inspect the text you received from the previous translation task.
+    CRITICAL QUALITY BOUNDARY: Before doing anything else, inspect the text you received from the previous formatting task.
     You MUST verify the following:
     1. Is it a professional, structured Markdown report?
     2. Is it in Vietnamese?
