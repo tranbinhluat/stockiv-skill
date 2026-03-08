@@ -21,5 +21,9 @@ class PipelineState(BaseModel):
     report_md_path: str = ""
     report_pdf_path: str = ""
 
+    # Centralized Context Paths
+    market_context_path: str = ""
+    ticker_context_path: str = ""
+
     # Generic dictionary for storing any workflow-specific outputs
     shared_data: dict = {}

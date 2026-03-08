@@ -63,6 +63,18 @@ class WeeklyReportFlow(Flow[PipelineState]):
             output_dir, f"{year}_overall_market_sentiment.md"
         )
 
+        context_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "../../../data/raw/context",
+            )
+        )
+        os.makedirs(context_dir, exist_ok=True)
+        self.state.market_context_path = os.path.join(context_dir, "market_context.md")
+        self.state.ticker_context_path = os.path.join(
+            context_dir, "generic_ticker_context.md"
+        )
+
         if self.state.is_mock:
             print("[WeeklyReport Flow - MOCK] Bypassing Collector Crew...")
             self.state.history += "Collector executed (MOCK). Result: Mocked Dataset\n"
@@ -87,7 +99,12 @@ class WeeklyReportFlow(Flow[PipelineState]):
             # Since fetch_macro doesn't depend on financials, and fetch_ticker depends on macro,
             # this subset stands alone properly.
 
-            result = crew_inst.kickoff()
+            result = crew_inst.kickoff(
+                inputs={
+                    "market_context_path": self.state.market_context_path,
+                    "ticker_context_path": self.state.ticker_context_path,
+                }
+            )
             self.state.history += (
                 f"Collector (Macro News Only) executed. Result: {str(result)}\n"
             )
@@ -134,6 +151,8 @@ class WeeklyReportFlow(Flow[PipelineState]):
                     "overall_report_md_path": self.state.shared_data[
                         "overall_report_md_path"
                     ],
+                    "market_context_path": self.state.market_context_path,
+                    "ticker_context_path": self.state.ticker_context_path,
                 }
             )
             self.state.shared_data["news_sentiment_analysis"] = str(result)

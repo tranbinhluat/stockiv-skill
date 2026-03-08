@@ -46,7 +46,7 @@ fetch_macro_context_task:
     direct quotes, supporting statistics, and URLs for all impactful macroeconomic
     and industry-wide news.
     CRITICAL: DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
-  output_file: data/raw/context/macro_context.md
+  output_file: "{market_context_path}"
   max_iter: 3
 
 fetch_ticker_context_task:
@@ -64,7 +64,7 @@ fetch_ticker_context_task:
     A comprehensive RAW DATA COMPILATION containing the full text, critical claims,
     direct quotes, supporting statistics, and URLs for all impactful ticker-specific news.
     CRITICAL: DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
-  output_file: data/raw/context/{stock_symbols}_ticker_context.md
+  output_file: "{ticker_context_path}"
   context: [fetch_macro_context_task]
   max_iter: 3
 

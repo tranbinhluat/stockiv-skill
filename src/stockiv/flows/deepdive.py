@@ -88,6 +88,18 @@ class DeepDiveFlow(Flow[PipelineState]):
         ticker = self.state.target_ticker
         print(f"\n[DeepDive Flow] 🚀 Launching Collector Crew for {ticker}...")
 
+        context_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "../../../data/raw/context",
+            )
+        )
+        os.makedirs(context_dir, exist_ok=True)
+        self.state.market_context_path = os.path.join(context_dir, "market_context.md")
+        self.state.ticker_context_path = os.path.join(
+            context_dir, f"{ticker}_ticker_context.md"
+        )
+
         if self.state.is_mock:
             print("[DeepDive Flow - MOCK] Bypassing Collector Crew...")
             self.state.history += "Collector executed (MOCK). Result: Mocked Dataset\n"
@@ -95,7 +107,13 @@ class DeepDiveFlow(Flow[PipelineState]):
 
         try:
             collector = CollectorCrew()
-            result = collector.crew().kickoff(inputs={"stock_symbols": ticker})
+            result = collector.crew().kickoff(
+                inputs={
+                    "stock_symbols": ticker,
+                    "market_context_path": self.state.market_context_path,
+                    "ticker_context_path": self.state.ticker_context_path,
+                }
+            )
             self.state.history += f"Collector executed. Result: {str(result)}\n"
         except Exception as e:
             self.state.history += f"Collector Failed: {str(e)}\n"
@@ -120,6 +138,20 @@ class DeepDiveFlow(Flow[PipelineState]):
         #     self.state.sentiment_finished = True
         #     return
 
+        # Provide requisite paths for sentiment analyst
+        output_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "../../../data/processed/sentiment/market",
+            )
+        )
+        os.makedirs(output_dir, exist_ok=True)
+        report_title = f"{year}_W{week:02d}_market_report"
+        report_md_path = os.path.join(output_dir, f"{report_title}.md")
+        overall_report_md_path = os.path.join(
+            output_dir, f"{year}_overall_market_sentiment.md"
+        )
+
         try:
             sentiment_crew = SentimentAnalystCrew()
             result = sentiment_crew.crew().kickoff(
@@ -128,6 +160,11 @@ class DeepDiveFlow(Flow[PipelineState]):
                     "date": current_date,
                     "year": str(year),
                     "week": str(week),
+                    "report_title": report_title,
+                    "report_md_path": report_md_path,
+                    "overall_report_md_path": overall_report_md_path,
+                    "market_context_path": self.state.market_context_path,
+                    "ticker_context_path": self.state.ticker_context_path,
                 }
             )
             self.state.shared_data["news_sentiment_analysis"] = str(result)
@@ -154,7 +191,14 @@ class DeepDiveFlow(Flow[PipelineState]):
         try:
             synthesizer = SynthesizerCrew()
             result = synthesizer.crew().kickoff(
-                inputs={"stock_symbols": ticker, "date": current_date}
+                inputs={
+                    "stock_symbols": ticker,
+                    "date": current_date,
+                    "financial_summary_path": f"data/processed/synthesizer/{ticker}/{ticker}_financial_summary.md",
+                    "annual_reports_dir": "data/processed/annual_reports/",
+                    "synthesizer_output_dir": f"data/processed/synthesizer/{ticker}/",
+                    "sentiment_dir": "data/processed/sentiment",
+                }
             )
             self.state.history += f"Synthesizer executed. Result: {str(result)}\n"
         except Exception as e:

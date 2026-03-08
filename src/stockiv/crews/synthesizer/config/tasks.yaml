@@ -10,7 +10,7 @@
 
   manager_plan_directives:
     description: >
-      Step 1: Read the comprehensive baseline financial summary provided by the Data Specialist. Use your `read_file` tool to exactly read the file at: `data/processed/synthesizer/{stock_symbols}/{stock_symbols}_financial_summary.md`. Do not plan your directives until you have read this exact file.
+      Step 1: Read the comprehensive baseline financial summary provided by the Data Specialist. Use your `read_file` tool to exactly read the file at: `{financial_summary_path}`. Do not plan your directives until you have read this exact file.
       Step 2: Generate a list of EXACTLY 3 forensic questions for the `forensic_accountant` to hunt down in the annual report based on what you see in the baseline (e.g., "Why did margins drop?", "What are these other payables?").
       Step 3: Generate a list of EXACTLY 2 explicit chart drawing commands for the `visualization_specialist`. (e.g., "Draw a bar chart of 4-year Revenue vs COGS").
     expected_output: >
@@ -23,8 +23,8 @@
     description: >
       Read the `{manager_directives}` from the Manager. You will see a specific list of questions directed at you.
 
-      CRITICAL RESTRICTION: You MUST ONLY read files from the `data/processed/annual_reports/` directory. You are STRICTLY FORBIDDEN from reading files in the `sentiment` directory to avoid hallucination.
-      Step 1: Use your `DirectoryReadTool` to list the files in `data/processed/annual_reports/`. Find the exact filename for `{stock_symbols}`.
+      CRITICAL RESTRICTION: You MUST ONLY read files from the `{annual_reports_dir}` directory. You are STRICTLY FORBIDDEN from reading files in the `sentiment` directory to avoid hallucination.
+      Step 1: Use your `DirectoryReadTool` to list the files in `{annual_reports_dir}`. Find the exact filename for `{stock_symbols}`.
       Step 2: Use your `read_file` tool to read the markdown content of that exact Annual Report.
       Step 3: Answer the Manager's *exact* questions based ONLY on the evidence in the Annual Report.
     expected_output: >
@@ -38,11 +38,11 @@
       Step 1: Write a Python script using pandas and matplotlib to generate the exact charts the manager requested.
       Step 2: ONLY query the local SQLite database (`data/stockiv.db`) for your required data using `QueryStockDatabaseTool`.
       Step 3: Use the `execute_python_code` tool to run your script.
-      Step 4: Your script MUST save the charts as `.png` images in the `data/processed/synthesizer/{stock_symbols}/` directory (e.g., `data/processed/synthesizer/{stock_symbols}/{stock_symbols}_revenue.png`). Do NOT use `plt.show()`.
+      Step 4: Your script MUST save the charts as `.png` images in the `{synthesizer_output_dir}` directory (e.g., `{synthesizer_output_dir}{stock_symbols}_revenue.png`). Do NOT use `plt.show()`.
     expected_output: >
       A SHORT MARKDOWN STRING ONLY.
       CRITICAL INSTRUCTION: YOU MUST NEVER RETURN A RAW TOOL CALL AS YOUR FINAL ANSWER.
-      Once your `execute_python_code` tool succeeds, you MUST write "Thought: I now have the final answer" and output a PLAIN TEXT response containing the markdown image embeds (e.g. `![Chart](data/processed/synthesizer/{stock_symbols}/{stock_symbols}_revenue.png)`).
+      Once your `execute_python_code` tool succeeds, you MUST write "Thought: I now have the final answer" and output a PLAIN TEXT response containing the markdown image embeds (e.g. `![Chart]({synthesizer_output_dir}{stock_symbols}_revenue.png)`).
     agent: data_specialist
 
   compile_evaluation_report:
@@ -53,7 +53,7 @@
       1. `{financial_summary}` from the Data Specialist.
       2. `{accountant_findings}` from the Forensic Accountant.
       3. `{chart_links}` from the Visualizer.
-      4. `DirectoryReadTool("data/processed/sentiment")` to read the market context.
+      4. `DirectoryReadTool("{sentiment_dir}")` to read the market context.
       5. `search_market_context` (Brave Tool) to independently search the web for up to 3 clarifications.
 
       Step 1: Cross-reference all limits defined in your GCCP knowledge base.

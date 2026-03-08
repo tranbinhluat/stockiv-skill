@@ -3,7 +3,7 @@ summarize_current_week_macro:
     Analyze the overall macro market sentiment for the CURRENT WEEK by reading the provided
     raw market context file. Identify broad economic trends, sector rotations,
     and general market psychology that could impact the investment landscape over the coming week.
-    Use your tools to read the file located at: data/raw/context/macro_context.md
+    Use your tools to read the file located at: {market_context_path}
   expected_output: >
     A Macro Market Report formatted strictly as follows:
     - **I. Executive Summary:** A brief 2-3 sentence summary of the dominant market environment this week (e.g. Reflation, Stagflation, specific sector headwinds).
@@ -43,7 +43,7 @@ summarize_symbol_sentiment:
     Analyze the sentiment specific to {stock_symbols} by reviewing its dedicated ticker context file AND the overall market situation report.
     Evaluate recent localized news, events, and management actions against the backdrop of the overall market trend to determine how they affect the stock's near-term outlook.
     Use your tools to read the files located at:
-    - data/raw/context/{stock_symbols}_ticker_context.md
+    - {ticker_context_path}
     - data/processed/sentiment/market/{year}_overall_market_sentiment.md
   expected_output: >
     A Specific Ticker Report formatted strictly as follows:
