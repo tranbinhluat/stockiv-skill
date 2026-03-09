@@ -1,147 +1,100 @@
 # Collector Crew
 
-The **Collector Crew** is the foundation of the StockIV analytics pipeline. Acting as the "Data Gathering Authority," its primary objective is to autonomously fetch, validate, and store all raw quantitative financial data and qualitative market context required by downstream analytical crews (like the Quant Analyst and Synthesizer).
+The **Collector Crew** is the foundation of the StockIV analytics pipeline. Acting as the "Data Gathering Authority," its primary objective is to autonomously fetch, validate, and store all raw quantitative financial data and qualitative market context required by downstream analytical crews.
 
-## Overview Architecture
+## 🏗️ Architecture & Data Flow
 
-The Crew operates on a **Hierarchical Process**. A central Manager Agent receives all tasks and delegates them to specialized subordinate agents based on their tools and expertise.
+The Crew operates on a **Hierarchical Process**. A central Manager Agent receives all tasks and intelligently delegates them to the appropriate specialized subordinate based on their tools and expertise.
 
 ```mermaid
-flowchart LR
+flowchart TD
     %% Grouping Agents
-    subgraph Agents ["Collector Crew (Hierarchical)"]
+    subgraph Agents ["Collector Crew (4 Agents Total)"]
         direction TB
-        MGR["Chief Data Orchestrator (Manager)"]
-        MDF["Market Data Fetcher"]
-        MMS["Macro Micro Scout"]
-        ARA["Annual Report Analyst"]
+        MGR["👔 Chief Data Orchestrator\n(Manager)"]
+        MDF["📊 Market Data Fetcher\n(Worker)"]
+        MMS["🔍 Macro Micro Scout\n(Worker)"]
+        ARA["📖 Annual Report Analyst\n(Worker)"]
 
-        MGR -. "Delegates" .-> MDF
-        MGR -. "Delegates" .-> MMS
-        MGR -. "Delegates" .-> ARA
+        MGR -- "Delegates tasks" --> MDF
+        MGR -- "Delegates tasks" --> MMS
+        MGR -- "Delegates tasks" --> ARA
     end
 
     %% Grouping External Sources
-    subgraph Sources ["External APIs & Web"]
+    subgraph Sources ["External APIs & Web (Inputs)"]
         direction TB
-        VNSTOCK["vnstock API"]
-        WEB["Brave Search"]
-        PDF["Official Reports"]
+        VNSTOCK["vnstock API (VCI)"]
+        WEB["Brave Search API"]
+        PDF["Official Corporate Sites"]
     end
 
     %% Grouping Local Storage
-    subgraph Storage ["Local Storage"]
+    subgraph Storage ["Local Storage (Outputs)"]
         direction TB
-        DB[("stockiv.db")]
-        MD1["macro_context.md"]
-        MD2["ticker_context.md"]
+        DB[("stockiv.db\n(SQLite)")]
+        MD1["{market_context_path}"]
+        MD2["{ticker_context_path}"]
         MD3["annual_report.md"]
     end
 
-    %% Relationships
-    MDF -- "Quantitative Tools" --> VNSTOCK
+    %% Data Relationships
+    MDF -- "Numerical Queries" --> VNSTOCK
     VNSTOCK -- "Structured Metrics" --> DB
 
-    ARA -- "PDF Tools" --> PDF
-    PDF -- "OCR extracted text" --> MD3
+    ARA -- "PDF Download Tool" --> PDF
+    PDF -- "OCR Extracted Markdown" --> MD3
 
-    MMS -- "Search Tools" --> WEB
+    MMS -- "Search Tool" --> WEB
     WEB -- "Macro News" --> MD1
     WEB -- "Ticker News" --> MD2
 ```
 
 ---
 
-## 🧑‍🤝‍🧑 The Agents
+## 🧑‍🤝‍🧑 The Agents (4 Total)
 
-### 0. Chief Data Orchestrator (`collector_manager`)
-**Role:** Efficiently manage the data collection crew, ensure all necessary information is gathered, and maintain the highest standard of accuracy.
-- **Workflow:** Receives all defined tasks. Since it has no direct data gathering tools, it evaluates the task requirements and uses the `Delegate work to co-worker` tool to assign the job to the correct specialist below.
+The crew is composed of exactly **4 agents**: 1 Manager and 3 Specialized Workers.
+
+### 0. Chief Data Orchestrator (Manager)
+- **Role:** Safely orchestrate and delegate all data gathering without executing tasks itself.
+- **Tools Included:** None directly. Uses `Delegate work to co-worker` to manage the pipeline.
 
 ### 1. Quantitative Market Data Specialist (`market_data_fetcher`)
-**Role:** Extracts precise numerical data from stock APIs and populates the local database with high accuracy.
+- **Role:** Extracts precise numerical data from stock APIs and populates the local database. Only handles numerical parameters and structured tables.
 - **Tools Included:**
-  - `fetch_historical_prices`: Captures OHLCV price history (stocks).
-  - `fetch_market_index`: Captures macroeconomic index baselines (VNINDEX).
-  - `fetch_financial_statements`: Pulls 10-year quarterly/annual Income, Balance, and Cash Flow assertions.
-  - `fetch_financial_ratios`: Pulls historical ROE, ROA, and margin percentages.
-  - `fetch_ratio_summary`: Grabs the deep 46-metric summary (P/E, P/B, EV/EBITDA).
-  - `fetch_company_overview`: Collects static industry classification and shares outstanding.
-  - `fetch_dividend_history`: Scrapes historical dividend payout cash values.
+  - `fetch_historical_prices`
+  - `fetch_market_index`
+  - `fetch_financial_statements`
+  - `fetch_financial_ratios`
+  - `fetch_ratio_summary`
+  - `fetch_company_overview`
+  - `fetch_dividend_history`
 
 ### 2. Macroeconomic & Market Context Researcher (`macro_micro_scout`)
-**Role:** Hunts down global events, domestic news, and macroeconomic indicators that impact the target stock or its industry.
+- **Role:** Hunts down global events, domestic news, and qualitative macro/micro text context.
 - **Tools Included:**
-  - `search_market_context`: Autonomously searches the web (e.g., via Brave Search) to read news articles, management interviews, and macroeconomic reports. Uncovers the qualitative narrative behind the numbers.
+  - `search_market_context`
 
 ### 3. Corporate Archive Retrieval Specialist (`annual_report_analyst`)
-**Role:** Secure the latest Annual Report (Báo cáo thường niên) PDF for the specified stock and safely convert it into an accessible format.
+- **Role:** Finds, downloads, and converts physical Annual Report PDFs into readable Markdown formats.
 - **Tools Included:**
-  - `search_annual_report_pdf` & `download_and_convert_pdf`: Automates finding and converting physical Annual Report PDFs into readable Markdown.
+  - `search_annual_report_pdf`
+  - `download_and_convert_pdf`
 
 ---
 
-## 📋 Task Execution Pipeline
+## 📋 Task Breakdown (Input & Output Mapping)
 
-The Collector Crew executes its tasks using a Hierarchical Process. Tasks are defined *without* hardcoded agents, forcing the Manager to intelligently delegate based on agent capabilities.
+The table below breaks down the 5 main tasks, matching exactly which agent is delegated the work, their inputs, outputs, and the specific tools used. *(Note: The manager assigns all of these initially.)*
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant MGR as Manager
-    participant MDF as Data Fetcher
-    participant MMS as Context Scout
-    participant ARA as Report Analyst
-    participant DB as SQLite
-    participant Disk as File System
-
-    note over MGR: Initializes fetch_financials_task
-    MGR->>MDF: Delegate task
-    MDF->>DB: INSERT Statements, Ratios, Dividends
-    MDF-->>MGR: Task Complete
-
-    note over MGR: Initializes fetch_daily_market_data_task
-    MGR->>MDF: Delegate task
-    MDF->>DB: INSERT VNINDEX, P/E, Peers
-    MDF-->>MGR: Task Complete
-
-    note over MGR: Initializes fetch_macro_context_task
-    MGR->>MMS: Delegate task
-    MMS->>Disk: Write macro_context.md
-    MMS-->>MGR: Task Complete
-
-    note over MGR: Initializes fetch_ticker_context_task
-    MGR->>MMS: Delegate task
-    MMS->>Disk: Write ticker_context.md
-    MMS-->>MGR: Task Complete
-
-    note over MGR: Initializes fetch_annual_report_task
-    MGR->>ARA: Delegate task
-    ARA->>Disk: Write parsed annual_report.md
-    ARA-->>MGR: Task Complete
-```
-
-### Detailed Task Breakdown
-
-1. **`fetch_financials_task`**
-   - **Goal:** Build the historical foundation.
-   - **Action:** The Manager delegates to the **Data Fetcher**, who utilizes `vnstock` tools to pull 10-year financial records and ratios, caching them directly into `stockiv.db` to prevent repetitive, expensive API calls down the line.
-
-2. **`fetch_daily_market_data_task`**
-   - **Goal:** Capture the "Today" snapshot.
-   - **Action:** The Manager delegates to the **Data Fetcher**, who pulls current daily prices for VNINDEX and the target stock. Updates the `ratio_summary` with live valuation metrics (P/E, P/B). It also identifies and retrieves data for top domestic competitors for instant peer comparisons.
-
-3. **`fetch_macro_context_task`**
-   - **Goal:** Big picture qualitative research.
-   - **Action:** The Manager delegates to the **Context Scout**. The Scout explicitly avoids researching the specific ticker. Instead, it looks at US Fed rates, Vietnam's domestic economy, and broad sector/industry headwinds/tailwinds. Outputs raw, comprehensive narratives to `data/raw/context/`.
-
-4. **`fetch_ticker_context_task`**
-   - **Goal:** Narrow qualitative research.
-   - **Action:** The Manager delegates to the **Context Scout**. With macro context understood, the Scout searches for specific news events, product launches, or earnings leaks explicitly tied to the target ticker. Results are physically saved to `data/raw/context/`.
-
-5. **`fetch_annual_report_task`**
-   - **Goal:** Deep fundamental document retrieval.
-   - **Action:** The Manager delegates to the **Archive Retrieval Specialist**, who calculates the most recent fiscal year, hunts the web for the official Vietnamese "Báo cáo thường niên" PDF, downloads it, and utilizes extraction tools to convert the heavy PDF into an LLM-friendly Markdown file stored in `data/processed/annual_reports/`.
+| Task Name | Assigned Agent | Input Variables | Expected Output | Tools Principally Used |
+|:---|:---|:---|:---|:---|
+| **`fetch_financials_task`** | `market_data_fetcher` | `{stock_symbols}` | **Confirmation Message:** Historical financial statements saved directly to SQLite `stockiv.db`. | `fetch_financial_statements`, `fetch_historical_prices`, `fetch_financial_ratios` |
+| **`fetch_daily_market_data_task`** | `market_data_fetcher` | `{stock_symbols}` | **Confirmation Message:** Live trading values, VNINDEX, metrics (P/E, P/B), and top peers saved to `stockiv.db`. *(Depends on `fetch_financials_task`)* | `fetch_market_index`, `fetch_company_overview`, `fetch_ratio_summary` |
+| **`fetch_macro_context_task`** | `macro_micro_scout` | None *(Focuses broadly on VN economy / Global trends)* | **Raw Markdown File:** Full un-summarized compilation of text, quotes, and URLs globally & domestically. Saved to `{market_context_path}`. | `search_market_context` |
+| **`fetch_ticker_context_task`** | `macro_micro_scout` | `{stock_symbols}` *(Also reads context from macro task)* | **Raw Markdown File:** Specific news, management interviews, and events about the exact ticker. Saved to `{ticker_context_path}`. | `search_market_context` |
+| **`fetch_annual_report_task`** | `annual_report_analyst` | `{stock_symbols}` | **Confirmation Message:** PDF found, downloaded, extracted, and Markdown file path returned (e.g., `data/processed/...`). | `search_annual_report_pdf`, `download_and_convert_pdf` |
 
 ---
 
@@ -149,6 +102,5 @@ sequenceDiagram
 
 **Rule of Thumb for Downstream Crews:** *If the Collector Crew ran successfully, you do NOT need API tools. Read from disk.*
 
-- **Quantitative Analysts / Synthesizer:** Use the `QueryStockDatabaseTool` and `FetchMarketIndexTool` to execute SQL queries directly against `data/stockiv.db`.
-- **Sentiment Analysts / Reporting:** Use the `DirectoryReadTool` or `FileReadTool` to read the context `.md` files residing in `data/raw/` and `data/processed/`.
-![alt text](image.png)
+- **Quantitative Analysts / Synthesizer:** Use SQLite database tools to query `data/stockiv.db`.
+- **Sentiment Analysts / Reporting:** Use File Read tools to read the markdown outputs in `data/raw/` and `data/processed/`.

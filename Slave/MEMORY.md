@@ -86,6 +86,7 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 
 **Git Workflow:**
 - **CRITICAL:** Always try testing your new features and code changes before committing them.
+- **CRITICAL:** Always create a new branch before developing a new feature. This isolates the work and makes rollbacks easy.
 - Pre-commit hooks automatically check for secrets
 - If hooks fail, fix issues and try again
 - Commit format: descriptive title + body with `By: luattb`

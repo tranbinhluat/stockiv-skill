@@ -101,25 +101,27 @@ def search_annual_report_pdf(ticker: str, year: str) -> str:
 
 
 @tool("Download and Convert PDF to Markdown")
-def download_and_convert_pdf(url: str, ticker: str) -> str:
+def download_and_convert_pdf(url: str, ticker: str, md_path: str, pdf_dir: str) -> str:
     """
     Downloads a PDF file from a given URL and converts it to Markdown using pymupdf4llm.
-    Saves the output to data/processed/annual_reports/{ticker}_annual_report_{year}.md.
 
     Args:
         url: The direct URL to the PDF file.
         ticker: The stock symbol (e.g., 'FPT')
+        md_path: The exact path where the markdown output should be saved.
+        pdf_dir: The directory where the raw downloaded PDF should be temporarily saved.
 
     Returns:
         A success message with the path to the saved markdown file, or an error message.
     """
     import zipfile
     import re
+    import os
 
-    output_md_dir = "data/processed/annual_reports"
-    output_pdf_dir = "data/raw/annual_reports"
-    os.makedirs(output_md_dir, exist_ok=True)
-    os.makedirs(output_pdf_dir, exist_ok=True)
+    output_md_dir = os.path.dirname(md_path)
+    if output_md_dir:
+        os.makedirs(output_md_dir, exist_ok=True)
+    os.makedirs(pdf_dir, exist_ok=True)
 
     # Determine extension from URL
     ext = url.split(".")[-1].lower()
@@ -132,8 +134,7 @@ def download_and_convert_pdf(url: str, ticker: str) -> str:
     if year_match:
         year = year_match.group(1)
 
-    download_path = f"{output_pdf_dir}/{ticker}_annual_report_{year}.{ext}"
-    md_path = f"{output_md_dir}/{ticker}_annual_report_{year}.md"
+    download_path = f"{pdf_dir}/{ticker}_annual_report_{year}.{ext}"
 
     # CACHE CHECK: If the Markdown already exists, just return it
     if os.path.exists(md_path):
@@ -161,7 +162,7 @@ def download_and_convert_pdf(url: str, ticker: str) -> str:
                     if file_info.filename.lower().endswith(".pdf"):
                         print(f"Extracting PDF {file_info.filename} from ZIP...")
                         target_pdf_path = (
-                            f"{output_pdf_dir}/{ticker}_extracted_annual_report.pdf"
+                            f"{pdf_dir}/{ticker}_extracted_annual_report.pdf"
                         )
                         with open(target_pdf_path, "wb") as f_out:
                             f_out.write(zip_ref.read(file_info.filename))

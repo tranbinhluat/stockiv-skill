@@ -18,7 +18,7 @@ Luat is a software engineer working on AI agent orchestration using CrewAI. He's
 * **Preferences:**
   * Uses uv for dependency management (not pip/poetry)
   * Values security (pre-commit hooks to prevent credential leaks)
-  * Likes clean git history with meaningful commits
+  * Likes clean git history with meaningful commits, and prefers creating branches before developing features for easy rollbacks.
   * Prefers concise communication
   * Tests should use CrewAI `Flow` where possible to demonstrate how agents/crews are connected via flows
 

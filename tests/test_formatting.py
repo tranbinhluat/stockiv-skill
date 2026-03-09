@@ -11,7 +11,12 @@ def main():
         if "PMT" in file:
             os.remove(os.path.join("data/processed/annual_reports", file))
 
-    res = download_and_convert_pdf.func(url, "PMT")
+    res = download_and_convert_pdf.func(
+        url,
+        "PMT",
+        "data/processed/annual_reports/PMT_annual_report_2025.md",
+        "data/raw/annual_reports",
+    )
     print(res)
 
     print("\nChecking generated files:")

@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 from stockiv.flows.state import PipelineState
 from stockiv.crews.orchestrator.orchestrator import OrchestratorCrew
 from stockiv.crews.collector.collector import CollectorCrew
-from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew
+from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew, SynthesizerReport
 from stockiv.crews.sentiment_analyst.sentiment_analyst import SentimentAnalystCrew
 
 
@@ -94,6 +94,31 @@ class DeepDiveFlow(Flow[PipelineState]):
         self.state.shared_data["ticker_context_path"] = os.path.join(
             context_dir, f"{ticker}_ticker_context.md"
         )
+
+        # Paths for Synthesizer and Reporter
+        self.state.shared_data["report_title"] = f"{ticker}_GCCP_report"
+
+        synthesizer_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                f"../../../data/processed/synthesizer/{ticker}",
+            )
+        )
+        self.state.shared_data["synthesizer_md_path"] = os.path.join(
+            synthesizer_dir, f"{ticker}_GCCP_report.md"
+        )
+        self.state.shared_data["synthesizer_output_dir"] = synthesizer_dir
+
+        pdf_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__), f"../../../data/processed/reports/{ticker}"
+            )
+        )
+        os.makedirs(pdf_dir, exist_ok=True)
+        self.state.shared_data["synthesizer_pdf_path"] = os.path.join(
+            pdf_dir, f"{ticker}_GCCP_Report.pdf"
+        )
+
         return ticker
 
     @router(setup_paths)
@@ -131,6 +156,8 @@ class DeepDiveFlow(Flow[PipelineState]):
                     "ticker_context_path": self.state.shared_data[
                         "ticker_context_path"
                     ],
+                    "annual_report_md_dir": "data/processed/annual_reports",
+                    "annual_report_pdf_dir": "data/raw/annual_reports",
                 }
             )
             self.state.history += f"Collector executed. Result: {str(result)}\n"
@@ -252,9 +279,89 @@ class DeepDiveFlow(Flow[PipelineState]):
                     "sentiment_dir": self.state.shared_data["sentiment_dir"],
                 }
             )
-            self.state.history += f"Synthesizer executed. Result: {str(result)}\n"
+
+            raw_text = str(result)
+            try:
+                import json
+                import re
+
+                match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+                if match:
+                    parsed_json = json.loads(match.group(0))
+                    report = SynthesizerReport(**parsed_json)
+                    md_content = report.to_markdown()
+                    print(
+                        "\n✅ SynthesizerReport Pydantic extraction successful in DeepDive Flow."
+                    )
+
+                    os.makedirs(
+                        self.state.shared_data["synthesizer_output_dir"], exist_ok=True
+                    )
+                    with open(
+                        self.state.shared_data["synthesizer_md_path"],
+                        "w",
+                        encoding="utf-8",
+                    ) as f:
+                        f.write(md_content)
+                else:
+                    print("\n⚠️ Warning: No JSON found in output. Saving raw text.")
+                    os.makedirs(
+                        self.state.shared_data["synthesizer_output_dir"], exist_ok=True
+                    )
+                    with open(
+                        self.state.shared_data["synthesizer_md_path"],
+                        "w",
+                        encoding="utf-8",
+                    ) as f:
+                        f.write(raw_text)
+            except Exception as e:
+                print(
+                    f"\n⚠️ Warning: Pydantic extraction failed ({e}). Saving raw text."
+                )
+                os.makedirs(
+                    self.state.shared_data["synthesizer_output_dir"], exist_ok=True
+                )
+                with open(
+                    self.state.shared_data["synthesizer_md_path"], "w", encoding="utf-8"
+                ) as f:
+                    f.write(raw_text)
+
+            self.state.history += (
+                "Synthesizer executed. Result: Captured Markdown Report\n"
+            )
         except Exception as e:
             self.state.history += f"Synthesizer Failed/Complained: {str(e)}\n"
+
+    @listen(execute_synthesizer)
+    def execute_reporter(self):
+        print(
+            "\n[DeepDive Flow] 🚀 Launching Reporter Crew (Translation & Publishing Phase)..."
+        )
+
+        if "all" in self.state.mock_crews or "reporter" in self.state.mock_crews:
+            print("[DeepDive Flow - MOCK] Bypassing Reporter Crew...")
+            dummy_pdf = self.state.shared_data["synthesizer_pdf_path"]
+            with open(dummy_pdf, "w", encoding="utf-8") as f:
+                f.write("MOCK PDF BINARY OMITTED")
+            self.state.history += "Reporter executed (MOCK). Sent payload to Discord.\n"
+            return
+
+        try:
+            from stockiv.crews.reporter.reporter import ReporterCrew
+
+            reporter_inst = ReporterCrew()
+            crew_inst = reporter_inst.crew()
+
+            crew_inst.kickoff(
+                inputs={
+                    "report_file_path": self.state.shared_data["synthesizer_md_path"],
+                    "pdf_output_path": self.state.shared_data["synthesizer_pdf_path"],
+                    "report_title": self.state.shared_data["report_title"],
+                }
+            )
+            self.state.history += "Reporter executed. Sent payload to Discord.\n"
+        except Exception as e:
+            self.state.history += f"Reporter Failed: {str(e)}\n"
 
     @listen("unrecognized_route")
     def handle_error(self):
@@ -263,7 +370,7 @@ class DeepDiveFlow(Flow[PipelineState]):
         )
         return "Error: Could not route request."
 
-    @listen(execute_synthesizer)
+    @listen(execute_reporter)
     def finish_flow(self):
         print(
             f"\n[DeepDive Flow] 🏁 Flow successfully completed for target: {self.state.target_ticker}."

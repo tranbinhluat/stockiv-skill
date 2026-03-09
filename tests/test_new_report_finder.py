@@ -18,7 +18,12 @@ def main():
             print(
                 f"\nTesting Download and Convert for FPT 2024 with URL {direct_url}..."
             )
-            res_dl = download_and_convert_pdf.func(direct_url, "FPT_test")
+            res_dl = download_and_convert_pdf.func(
+                direct_url,
+                "FPT_test",
+                "data/processed/annual_reports/FPT_test_annual_report_2024.md",
+                "data/raw/annual_reports",
+            )
             print("Download Result:", res_dl)
     except Exception as e:
         print("Failed to parse search JSON:", e)

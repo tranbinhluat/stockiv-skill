@@ -74,9 +74,9 @@ fetch_annual_report_task:
 
     1. First, calculate the most recent completed financial year (e.g., if today is mid 2026, you should search for the 2025 Annual Report).
     2. Use `search_annual_report_pdf` with the ticker and that calculated year. Look for direct URLs ending in `.pdf`.
-    3. Once you find a valid PDF URL, use `download_and_convert_pdf` to download and translate it into a local Markdown file.
+    3. Once you find a valid PDF URL, use `download_and_convert_pdf` to download and translate it into a local Markdown file. You MUST explicitly provide `md_path="{annual_report_md_dir}/{stock_symbols}_annual_report_<YEAR>.md"` (replacing <YEAR> with the calculated year) and `pdf_dir="{annual_report_pdf_dir}"` to the tool.
 
     CRITICAL: Do NOT attempt multiple searches if the first one fails. You are strictly allowed only 1 search action to preserve API quotas. If the URL doesn't look like a PDF, the download fails, or the tool reports it's an unreadable scanned image, simply report failure.
   expected_output: >
-    A confirmation message that the Annual Report PDF has been successfully found, downloaded, and converted to Markdown, including the final file path (e.g. data/processed/annual_reports/FPT_annual_report.md).
+    A confirmation message that the Annual Report PDF has been successfully found, downloaded, and converted to Markdown, including the final file path (e.g. data/processed/annual_reports/FPT_annual_report_2025.md).
   max_iter: 1

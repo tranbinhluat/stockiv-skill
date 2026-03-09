@@ -19,7 +19,15 @@ def test_collector():
 
     try:
         # Kickoff the crew with the injected mock instructions
-        result = crew.kickoff(inputs={"stock_symbols": mock_instruction})
+        result = crew.kickoff(
+            inputs={
+                "stock_symbols": mock_instruction,
+                "market_context_path": "data/raw/context/market_context.md",
+                "ticker_context_path": "data/raw/context/MWG_ticker_context.md",
+                "annual_report_md_dir": "data/processed/annual_reports",
+                "annual_report_pdf_dir": "data/raw/annual_reports",
+            }
+        )
 
         print("\n\n=========================================")
         print("MOCK EXECUTION COMPLETED SUCCESSFULLY!")
