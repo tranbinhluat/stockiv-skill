@@ -5,10 +5,17 @@ Weekly Report Flow - Runs Collector (context tasks only) and Sentiment Analyst.
 from crewai.flow.flow import Flow, listen, start
 from datetime import datetime
 
-from stockiv.config.paths import MARKET_SENTIMENT_DIR, RAW_CONTEXT_DIR
+from stockiv.config.paths import (
+    MARKET_SENTIMENT_DIR,
+    RAW_CONTEXT_DIR,
+    REPORT_MARKET_DIR,
+)
 from stockiv.flows.state import PipelineState
-from stockiv.crews.collector.collector import CollectorCrew
-from stockiv.crews.sentiment_analyst.sentiment_analyst import SentimentAnalystCrew
+from stockiv.crews.collector.collector import CollectorCrew, CollectorCrewInputs
+from stockiv.crews.sentiment_analyst.sentiment_analyst import (
+    SentimentAnalystCrew,
+    SentimentAnalystCrewInputs,
+)
 
 
 class WeeklyReportFlow(Flow[PipelineState]):
@@ -40,13 +47,13 @@ class WeeklyReportFlow(Flow[PipelineState]):
         )
         self.state.shared_data["market_sentiment_dir"] = str(MARKET_SENTIMENT_DIR)
         self.state.shared_data["report_md_path"] = str(
-            MARKET_SENTIMENT_DIR / f"{report_title}.md"
+            REPORT_MARKET_DIR / f"{report_title}.md"
         )
         self.state.shared_data["report_pdf_path"] = str(
-            MARKET_SENTIMENT_DIR / f"{report_title}.pdf"
+            REPORT_MARKET_DIR / f"{report_title}.pdf"
         )
         self.state.shared_data["overall_report_md_path"] = str(
-            MARKET_SENTIMENT_DIR / f"{year}_overall_market_sentiment.md"
+            REPORT_MARKET_DIR / f"{year}_overall_market_sentiment.md"
         )
 
     @listen(setup_flow)
@@ -85,13 +92,12 @@ class WeeklyReportFlow(Flow[PipelineState]):
             # Since fetch_macro doesn't depend on financials, and fetch_ticker depends on macro,
             # this subset stands alone properly.
 
-            result = crew_inst.kickoff(
-                inputs={
-                    "market_context_path": self.state.shared_data[
-                        "market_context_path"
-                    ],
-                }
+            # market_context_path: output file
+            inputs = CollectorCrewInputs(
+                market_context_path=self.state.shared_data["market_context_path"]
             )
+            # Use explicit kickoff on the mutated crew_inst instead of collector_inst.run()
+            result = crew_inst.kickoff(inputs=inputs.model_dump())
             self.state.history += (
                 f"Collector (Macro News Only) executed. Result: {str(result)}\n"
             )
@@ -134,24 +140,18 @@ class WeeklyReportFlow(Flow[PipelineState]):
 
             crew_inst.tasks = filtered_tasks
 
-            result = crew_inst.kickoff(
-                inputs={
-                    "date": current_date,
-                    "year": self.state.shared_data["report_year"],
-                    "week": self.state.shared_data["report_week"],
-                    "report_title": self.state.shared_data["report_title"],
-                    "report_md_path": self.state.shared_data["report_md_path"],
-                    "overall_report_md_path": self.state.shared_data[
-                        "overall_report_md_path"
-                    ],
-                    "market_sentiment_dir": self.state.shared_data[
-                        "market_sentiment_dir"
-                    ],
-                    "market_context_path": self.state.shared_data[
-                        "market_context_path"
-                    ],
-                }
+            inputs = SentimentAnalystCrewInputs(
+                date=current_date,
+                year=self.state.shared_data["report_year"],
+                week=self.state.shared_data["report_week"],
+                report_title=self.state.shared_data["report_title"],
+                report_md_path=self.state.shared_data["report_md_path"],
+                overall_report_md_path=self.state.shared_data["overall_report_md_path"],
+                market_sentiment_dir=self.state.shared_data["market_sentiment_dir"],
+                market_context_path=self.state.shared_data["market_context_path"],
             )
+            # Use explicit kickoff on the mutated crew_inst instead of sentiment_inst.run()
+            result = crew_inst.kickoff(inputs=inputs.model_dump())
             self.state.shared_data["news_sentiment_analysis"] = str(result)
             self.state.history += (
                 "Sentiment Analyst executed. Result recorded in State.\n"
@@ -174,18 +174,16 @@ class WeeklyReportFlow(Flow[PipelineState]):
             return
 
         try:
-            from stockiv.crews.reporter.reporter import ReporterCrew
+            from stockiv.crews.reporter.reporter import ReporterCrew, ReporterCrewInputs
 
             reporter_inst = ReporterCrew()
-            crew_inst = reporter_inst.crew()
 
-            crew_inst.kickoff(
-                inputs={
-                    "report_file_path": self.state.shared_data["report_md_path"],
-                    "pdf_output_path": self.state.shared_data["report_pdf_path"],
-                    "report_title": self.state.shared_data["report_title"],
-                }
+            inputs = ReporterCrewInputs(
+                report_file_path=self.state.shared_data["report_md_path"],
+                pdf_output_path=self.state.shared_data["report_pdf_path"],
+                report_title=self.state.shared_data["report_title"],
             )
+            reporter_inst.run(inputs=inputs)
             self.state.history += "Reporter executed. Sent payload to Discord.\n"
         except Exception as e:
             self.state.history += f"Reporter Failed: {str(e)}\n"

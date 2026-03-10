@@ -2,13 +2,16 @@ fetch_financials_task:
   description: >
     Retrieve 10-year financial statements and historical ratios for {stock_symbols}.
 
-    You must use the provided tools to fetch this quarterly/annual tabular data
-    and store it directly into the local SQLite database.
-    Remember to check if the most recent quarter's data already exists in the
-    database to avoid unnecessary API calls.
+    You must act methodically. Follow these exact steps for each ticker:
+    1. First, use `fetch_historical_prices` to ensure the base price history exists in the SQLite database.
+    2. Second, use `fetch_financial_statements` to retrieve the Income Statement, Balance Sheet, and Cashflow data in year/quater period .
+    3. Third, use `fetch_financial_ratios` to record the historical fundamental ratios.
+    4. Fourth, use `fetch_dividend_history` to pull the dividend payout record.
+
+    Remember to check if the data already exists in the database to avoid unnecessary API calls.
   expected_output: >
-    A confirmation message that the financial data for the requested tickers
-    has been successfully saved to the SQLite database.
+    A confirmation message that the financial data (prices, statements, ratios, dividends)
+    for the requested tickers has been successfully saved to the SQLite database.
   max_iter: 3
 
 fetch_daily_market_data_task:
@@ -34,13 +37,13 @@ fetch_macro_context_task:
     Gather overarching global macroeconomic conditions, Vietnam domestic economy health,
     and broad sector/industry trends.
 
-    CRITICAL INSTRUCTION: You MUST NOT search for the specific ticket.
-    Your entire focus must be on the macro-environment, interest rates, industry trends,
-    and global supply chains.
+    You must act methodically. Follow these exact steps:
+    1. First, MUST use the `clean_expired_cache` tool to remove stale context cache files (older than 14 days) so that your subsequent searches return fresh live data.
+    2. Second, use `search_market_context` to broadly query current macroeconomic trends (e.g. interest rates, inflation, GDP) affecting Vietnam and global markets within a week.
+    3. Third, review your initial findings and identify the 1-2 most impactful macroeconomic storylines or shock events.
+    4. Fourth, use `search_market_context` again to drill down specifically into those 1-2 top storylines to build a profound, data-backed understanding.
 
-    Do not just scrape the surface. After your first search, identify the
-    most impactful 1-2 macro storylines and use additional tool calls to search specifically
-    into those sub-topics to build a profound understanding.
+    CRITICAL INSTRUCTION: You MUST NOT search for the specific ticket ({stock_symbols}) itself. Your entire focus must be on the macro-environment, interest rates, industry trends, and global supply chains.
   expected_output: >
     A comprehensive RAW DATA COMPILATION containing the full text, critical claims,
     direct quotes, supporting statistics, and URLs for all impactful macroeconomic

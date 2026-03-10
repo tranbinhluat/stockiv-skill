@@ -14,6 +14,7 @@ REPORT_DIR = DATA_DIR / "reports"
 # Raw data paths
 RAW_CONTEXT_DIR = RAW_DIR / "context"
 RAW_ANNUAL_REPORT_DIR = RAW_DIR / "annual_reports"
+RAW_CACHE_DIR = RAW_DIR / "cache"
 
 
 # Processed data paths
@@ -36,6 +37,7 @@ for p in [
     PROCESSED_DIR,
     RAW_CONTEXT_DIR,
     RAW_ANNUAL_REPORT_DIR,
+    RAW_CACHE_DIR,
     PROCESSED_SENTIMENT_MARKET_DIR,
     PROCESSED_SENTIMENT_TICKER_DIR,
     PROCESSED_ANNUAL_REPORTS_DIR,

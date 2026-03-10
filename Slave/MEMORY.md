@@ -265,6 +265,11 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - **Centralization:** All project paths are centralized in `src.stockiv.config.paths` using `pyrootutils.find_root()` and `pathlib.Path`.
 - **Directory Initialization:** The `paths.py` module automatically manages and creates required directory trees via `p.mkdir(parents=True, exist_ok=True)` at runtime. Always import the raw variables (e.g., `from stockiv.config.paths import REPORT_TICKER_DIR`) and use them directly.
 
+**Strongly Typed CrewAI Inputs Pattern (2026-03-10):**
+- **Pattern:** Instead of passing untyped dictionaries to `crew.kickoff(inputs={})`, explicitly define a Pydantic `BaseModel` for the required inputs.
+- **Implementation:** Create an Input Model at the top of the `@CrewBase` file. Then, add a custom wrapper method inside the Crew class: `def run(self, inputs: MyCrewInputs): return self.crew().kickoff(inputs=inputs.model_dump())`.
+- **Benefit:** Self-documenting, early validation, IDE type-checking, and native integration with CrewAI flow states.
+
 ---
 
 ## Critical Rules

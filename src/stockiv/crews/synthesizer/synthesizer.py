@@ -8,7 +8,7 @@ from crewai.flow.flow import Flow, listen, start, and_
 
 from pydantic import BaseModel, Field
 
-from stockiv.agents.base import get_llm
+from stockiv.agents.base import light_llm, advanced_llm
 from stockiv.knowledge.base import kb
 from crewai_tools import FileReadTool, DirectoryReadTool
 from crewai.tools import tool
@@ -277,6 +277,44 @@ class SynthesizerReport(BaseModel):
         return md
 
 
+from typing import Optional  # noqa: E402
+
+
+class SynthesizerCrewInputs(BaseModel):
+    stock_symbols: Optional[str] = Field(
+        default=None, description="The stock ticker symbol being evaluated."
+    )
+    date: Optional[str] = Field(
+        default=None, description="The date of analysis (YYYY-MM-DD)."
+    )
+    financial_summary: Optional[str] = Field(
+        default=None, description="Raw financial data dump/baseline metrics."
+    )
+    accountant_findings: Optional[str] = Field(
+        default=None, description="Findings from the forensic accountant agent."
+    )
+    chart_links: Optional[str] = Field(
+        default=None, description="Links or definitions to generated visual charts."
+    )
+    financial_summary_path: Optional[str] = Field(
+        default=None, description="File path to load or save the financial summary."
+    )
+    manager_directives: Optional[str] = Field(
+        default=None,
+        description="Directives or plan laid out by the lead synthesizer/manager.",
+    )
+    annual_reports_dir: Optional[str] = Field(
+        default=None, description="Directory path to load annual reports from."
+    )
+    synthesizer_output_dir: Optional[str] = Field(
+        default=None, description="Directory path to save the final synthesized report."
+    )
+    sentiment_dir: Optional[str] = Field(
+        default=None,
+        description="Directory path to load generated sentiment reports from.",
+    )
+
+
 @CrewBase
 class SynthesizerCrew:
     """Synthesizer Crew - Monolithic GCCP Data Interpreter and Evaluator"""
@@ -296,7 +334,7 @@ class SynthesizerCrew:
 
         return Agent(
             config=config,
-            llm=get_llm("qwen3-max-2026-01-23"),
+            llm=advanced_llm,
             tools=[
                 FileReadTool(),
                 sentiment_dir_tool,
@@ -311,7 +349,7 @@ class SynthesizerCrew:
         )
         return Agent(
             config=self.agents_config["forensic_accountant"],
-            llm=get_llm("qwen3-coder-plus"),
+            llm=light_llm,
             tools=[annual_report_dir_tool, read_file],
             max_iter=5,
         )
@@ -320,7 +358,7 @@ class SynthesizerCrew:
     def data_specialist(self) -> Agent:
         return Agent(
             config=self.agents_config["data_specialist"],
-            llm=get_llm("qwen3.5-plus"),
+            llm=light_llm,
             tools=[
                 execute_python_code,
                 QueryStockDatabaseTool(),
@@ -385,6 +423,12 @@ class SynthesizerCrew:
             verbose=True,
             tracing=True,
         )
+
+    def run(self, inputs: SynthesizerCrewInputs):
+        """
+        Executes the Synthesizer Crew with strongly typed inputs.
+        """
+        return self.crew().kickoff(inputs=inputs.model_dump())
 
 
 class SynthesizerState(BaseModel):

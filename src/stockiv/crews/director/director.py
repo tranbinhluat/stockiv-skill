@@ -9,11 +9,27 @@ Decision authority: [APPROVED], [REJECTED], [MORE_INFO_NEEDED]
 """
 
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from stockiv.agents import primary_llm
+
+class DirectorCrewInputs(BaseModel):
+    stock_symbols: Optional[str] = Field(
+        default=None, description="The stock ticker symbol being analyzed."
+    )
+    analysis: Optional[str] = Field(
+        default=None, description="The raw synthesized analysis text to be reviewed."
+    )
+    evidence_rules: Optional[str] = Field(
+        default=None, description="Custom evidence extraction or verification rules."
+    )
+    financial_rules: Optional[str] = Field(
+        default=None, description="Custom financial logic rules for validation."
+    )
+
+
+from stockiv.agents import primary_llm  # noqa: E402
 
 
 class ValidationDecision(BaseModel):
@@ -56,3 +72,9 @@ class DirectorCrew:
             verbose=True,
             tracing=True,
         )
+
+    def run(self, inputs: DirectorCrewInputs):
+        """
+        Executes the Director Crew with strongly typed inputs.
+        """
+        return self.crew().kickoff(inputs=inputs.model_dump())

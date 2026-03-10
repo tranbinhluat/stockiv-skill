@@ -20,6 +20,50 @@ from crewai.project import CrewBase, agent, crew, task  # noqa: E402
 from crewai_tools import FileReadTool, DirectoryReadTool  # noqa: E402
 from stockiv.agents.base import advanced_llm  # noqa: E402
 from tools.sqlite_tools import FetchMarketIndexTool  # noqa: E402
+from pydantic import BaseModel, Field  # noqa: E402
+from typing import Optional  # noqa: E402
+
+
+class SentimentAnalystCrewInputs(BaseModel):
+    stock_symbols: Optional[str] = Field(
+        default=None, description="The stock ticker symbol being analyzed."
+    )
+    date: Optional[str] = Field(
+        default=None, description="The date of analysis (YYYY-MM-DD)."
+    )
+    year: Optional[str] = Field(
+        default=None, description="The current year (e.g. '2026')."
+    )
+    week: Optional[str] = Field(
+        default=None, description="The current ISO week number (e.g. '10')."
+    )
+    report_title: Optional[str] = Field(
+        default=None, description="Title for the generated sentiment report."
+    )
+    report_md_path: Optional[str] = Field(
+        default=None,
+        description="Path to save the generated markdown weekly sentiment report.",
+    )
+    overall_report_md_path: Optional[str] = Field(
+        default=None,
+        description="Path to save or append to the overall yearly sentiment log.",
+    )
+    market_sentiment_dir: Optional[str] = Field(
+        default=None,
+        description="Directory path to save general market sentiment outputs.",
+    )
+    market_context_path: Optional[str] = Field(
+        default=None,
+        description="Path to the pre-crawled macro-market context document.",
+    )
+    ticker_context_path: Optional[str] = Field(
+        default=None,
+        description="Path to the pre-crawled ticker-specific context document.",
+    )
+    ticker_sentiment_path: Optional[str] = Field(
+        default=None,
+        description="Path to save the generated ticker-specific sentiment outputs.",
+    )
 
 
 @CrewBase
@@ -89,3 +133,9 @@ class SentimentAnalystCrew:
             tracing=True,
             # Memory removed to prevent Qwen JSON parsing crashes
         )
+
+    def run(self, inputs: SentimentAnalystCrewInputs):
+        """
+        Executes the Sentiment Analyst Crew with strongly typed inputs.
+        """
+        return self.crew().kickoff(inputs=inputs.model_dump())

@@ -12,8 +12,6 @@ collector_manager:
 
     You MUST summarize tasks status.
 
-    CRITICAL BOUNDARY:
-
 market_data_fetcher:
   role: >
     Quantitative Market Data Specialist

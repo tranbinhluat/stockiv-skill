@@ -10,8 +10,8 @@ import os
 # Ensure the root package is accessible
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
-from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew
-from stockiv.crews.director.director import DirectorCrew
+from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew, SynthesizerCrewInputs
+from stockiv.crews.director.director import DirectorCrew, DirectorCrewInputs
 
 
 class ReportLoopState(BaseModel):
@@ -70,20 +70,20 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             synthesizer_crew = SynthesizerCrew()
 
             # Combine inputs, injecting feedback if present
-            inputs = {
-                "stock_symbols": ticker,
+            inputs_obj = SynthesizerCrewInputs(
+                stock_symbols=ticker,
                 # Assume standard deepdive flow already got this, but simulate if not
-                "date": "2026-03-07",
-                "financial_summary": "Simulated raw DB dump for " + ticker,
-            }
+                date="2026-03-07",
+                financial_summary="Simulated raw DB dump for " + ticker,
+            )
 
             if self.state.director_feedback:
                 print(
                     "[ReportLoop Flow] 📝 Injecting previous Director Feedback into Synthesizer context."
                 )
-                inputs["director_feedback"] = self.state.director_feedback
+                inputs_obj.manager_directives = self.state.director_feedback
 
-            result = synthesizer_crew.crew().kickoff(inputs=inputs)
+            result = synthesizer_crew.run(inputs=inputs_obj)
             self.state.synthesized_insights = str(result)
             self.state.history += (
                 f"Synthesizer executed (Loop {self.state.loop_count}).\n"
@@ -118,9 +118,8 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             return
         try:
             director_crew = DirectorCrew()
-            result = director_crew.crew().kickoff(
-                inputs={"analysis_input": self.state.synthesized_insights}
-            )
+            inputs_obj = DirectorCrewInputs(analysis=self.state.synthesized_insights)
+            result = director_crew.run(inputs=inputs_obj)
 
             # Extract Pydantic ValidationDecision
             decision_obj = result.pydantic

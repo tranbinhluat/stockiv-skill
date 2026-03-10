@@ -11,10 +11,20 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
 from stockiv.flows.state import PipelineState
-from stockiv.crews.orchestrator.orchestrator import OrchestratorCrew
-from stockiv.crews.collector.collector import CollectorCrew
-from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew, SynthesizerReport
-from stockiv.crews.sentiment_analyst.sentiment_analyst import SentimentAnalystCrew
+from stockiv.crews.orchestrator.orchestrator import (
+    OrchestratorCrew,
+    OrchestratorCrewInputs,
+)
+from stockiv.crews.collector.collector import CollectorCrew, CollectorCrewInputs
+from stockiv.crews.synthesizer.synthesizer import (
+    SynthesizerCrew,
+    SynthesizerReport,
+    SynthesizerCrewInputs,
+)
+from stockiv.crews.sentiment_analyst.sentiment_analyst import (
+    SentimentAnalystCrew,
+    SentimentAnalystCrewInputs,
+)
 
 
 class TickerExtraction(BaseModel):
@@ -52,7 +62,8 @@ class DeepDiveFlow(Flow[PipelineState]):
         # Use OrchestratorCrew with qwen2.5-vl-72b-instruct for ticker extraction
         try:
             orchestrator = OrchestratorCrew()
-            result = orchestrator.crew().kickoff(inputs={"request": self.state.request})
+            inputs = OrchestratorCrewInputs(request=self.state.request)
+            result = orchestrator.run(inputs=inputs)
 
             # The result is automatically parsed into TickerExtraction thanks to output_pydantic
             extraction = result.pydantic
@@ -147,19 +158,14 @@ class DeepDiveFlow(Flow[PipelineState]):
 
         try:
             collector = CollectorCrew()
-            result = collector.crew().kickoff(
-                inputs={
-                    "stock_symbols": ticker,
-                    "market_context_path": self.state.shared_data[
-                        "market_context_path"
-                    ],
-                    "ticker_context_path": self.state.shared_data[
-                        "ticker_context_path"
-                    ],
-                    "annual_report_md_dir": "data/processed/annual_reports",
-                    "annual_report_pdf_dir": "data/raw/annual_reports",
-                }
+            inputs = CollectorCrewInputs(
+                stock_symbols=ticker,
+                market_context_path=self.state.shared_data["market_context_path"],
+                ticker_context_path=self.state.shared_data["ticker_context_path"],
+                annual_report_md_dir="data/processed/annual_reports",
+                annual_report_pdf_dir="data/raw/annual_reports",
             )
+            result = collector.run(inputs=inputs)
             self.state.history += f"Collector executed. Result: {str(result)}\n"
         except Exception as e:
             self.state.history += f"Collector Failed: {str(e)}\n"
@@ -226,31 +232,20 @@ class DeepDiveFlow(Flow[PipelineState]):
 
         try:
             sentiment_crew = SentimentAnalystCrew()
-            result = sentiment_crew.crew().kickoff(
-                inputs={
-                    "stock_symbols": ticker,
-                    "date": current_date,
-                    "year": str(year),
-                    "week": str(week),
-                    "report_title": self.state.shared_data["report_title"],
-                    "report_md_path": self.state.shared_data["report_md_path"],
-                    "overall_report_md_path": self.state.shared_data[
-                        "overall_report_md_path"
-                    ],
-                    "market_sentiment_dir": self.state.shared_data[
-                        "market_sentiment_dir"
-                    ],
-                    "market_context_path": self.state.shared_data[
-                        "market_context_path"
-                    ],
-                    "ticker_context_path": self.state.shared_data[
-                        "ticker_context_path"
-                    ],
-                    "ticker_sentiment_path": self.state.shared_data[
-                        "ticker_sentiment_path"
-                    ],
-                }
+            inputs = SentimentAnalystCrewInputs(
+                stock_symbols=ticker,
+                date=current_date,
+                year=str(year),
+                week=str(week),
+                report_title=self.state.shared_data["report_title"],
+                report_md_path=self.state.shared_data["report_md_path"],
+                overall_report_md_path=self.state.shared_data["overall_report_md_path"],
+                market_sentiment_dir=self.state.shared_data["market_sentiment_dir"],
+                market_context_path=self.state.shared_data["market_context_path"],
+                ticker_context_path=self.state.shared_data["ticker_context_path"],
+                ticker_sentiment_path=self.state.shared_data["ticker_sentiment_path"],
             )
+            result = sentiment_crew.run(inputs=inputs)
             self.state.shared_data["news_sentiment_analysis"] = str(result)
             self.state.history += (
                 "Sentiment Analyst executed. Result recorded in State.\n"
@@ -283,20 +278,15 @@ class DeepDiveFlow(Flow[PipelineState]):
 
         try:
             synthesizer = SynthesizerCrew()
-            result = synthesizer.crew().kickoff(
-                inputs={
-                    "stock_symbols": ticker,
-                    "date": current_date,
-                    "financial_summary_path": self.state.shared_data[
-                        "financial_summary_path"
-                    ],
-                    "annual_reports_dir": self.state.shared_data["annual_reports_dir"],
-                    "synthesizer_output_dir": self.state.shared_data[
-                        "synthesizer_output_dir"
-                    ],
-                    "sentiment_dir": self.state.shared_data["sentiment_dir"],
-                }
+            inputs = SynthesizerCrewInputs(
+                stock_symbols=ticker,
+                date=current_date,
+                financial_summary_path=self.state.shared_data["financial_summary_path"],
+                annual_reports_dir=self.state.shared_data["annual_reports_dir"],
+                synthesizer_output_dir=self.state.shared_data["synthesizer_output_dir"],
+                sentiment_dir=self.state.shared_data["sentiment_dir"],
             )
+            result = synthesizer.run(inputs=inputs)
 
             raw_text = str(result)
             try:
@@ -365,18 +355,16 @@ class DeepDiveFlow(Flow[PipelineState]):
             return
 
         try:
-            from stockiv.crews.reporter.reporter import ReporterCrew
+            from stockiv.crews.reporter.reporter import ReporterCrew, ReporterCrewInputs
 
             reporter_inst = ReporterCrew()
-            crew_inst = reporter_inst.crew()
 
-            crew_inst.kickoff(
-                inputs={
-                    "report_file_path": self.state.shared_data["synthesizer_md_path"],
-                    "pdf_output_path": self.state.shared_data["synthesizer_pdf_path"],
-                    "report_title": self.state.shared_data["report_title"],
-                }
+            inputs = ReporterCrewInputs(
+                report_file_path=self.state.shared_data["synthesizer_md_path"],
+                pdf_output_path=self.state.shared_data["synthesizer_pdf_path"],
+                report_title=self.state.shared_data["report_title"],
             )
+            reporter_inst.run(inputs=inputs)
             self.state.history += "Reporter executed. Sent payload to Discord.\n"
         except Exception as e:
             self.state.history += f"Reporter Failed: {str(e)}\n"

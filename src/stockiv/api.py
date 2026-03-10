@@ -4,7 +4,10 @@ from pydantic import BaseModel
 from datetime import datetime
 from pathlib import Path
 
-from stockiv.crews.sentiment_analyst.sentiment_analyst import SentimentAnalystCrew
+from stockiv.crews.sentiment_analyst.sentiment_analyst import (
+    SentimentAnalystCrew,
+    SentimentAnalystCrewInputs,
+)
 
 app = FastAPI(
     title="StockIV AI Integrations API",
@@ -49,23 +52,25 @@ async def trigger_market_sentiment(request: TickerRequest):
         now = datetime.now()
         year, week_num, _ = now.isocalendar()
 
-        inputs = {
-            "stock_symbols": request.symbol,
-            "date": now.strftime("%Y-%m-%d"),
-            "year": str(year),
-            "week": str(week_num),
-            "macro_context_file": macro_path,
-            "ticker_context_file": ticker_path,
-        }
+        inputs = SentimentAnalystCrewInputs(
+            stock_symbols=request.symbol,
+            date=now.strftime("%Y-%m-%d"),
+            year=str(year),
+            week=str(week_num),
+            market_context_path=macro_path,  # Fixed bug here (was macro_context_file)
+            ticker_context_path=ticker_path,
+        )
 
-        crew_instance = SentimentAnalystCrew().crew()
+        sentiment_inst = SentimentAnalystCrew()
+        crew_instance = sentiment_inst.crew()
 
         # Isolate ONLY the market task
         crew_instance.tasks = [
             t for t in crew_instance.tasks if t.name == "summarize_market"
         ]
 
-        result = crew_instance.kickoff(inputs=inputs)
+        # Use kickoff explicitly because we've manually manipulated the tasks config for this API
+        result = crew_instance.kickoff(inputs=inputs.model_dump())
         return {"status": "success", "task": "summarize_market", "output": result.raw}
 
     except Exception as e:
@@ -84,23 +89,25 @@ async def trigger_ticker_sentiment(request: TickerRequest):
         now = datetime.now()
         year, week_num, _ = now.isocalendar()
 
-        inputs = {
-            "stock_symbols": request.symbol,
-            "date": now.strftime("%Y-%m-%d"),
-            "year": str(year),
-            "week": str(week_num),
-            "macro_context_file": macro_path,
-            "ticker_context_file": ticker_path,
-        }
+        inputs = SentimentAnalystCrewInputs(
+            stock_symbols=request.symbol,
+            date=now.strftime("%Y-%m-%d"),
+            year=str(year),
+            week=str(week_num),
+            market_context_path=macro_path,  # Fixed bug here (was macro_context_file)
+            ticker_context_path=ticker_path,
+        )
 
-        crew_instance = SentimentAnalystCrew().crew()
+        sentiment_inst = SentimentAnalystCrew()
+        crew_instance = sentiment_inst.crew()
 
         # Isolate ONLY the symbol task
         crew_instance.tasks = [
             t for t in crew_instance.tasks if t.name == "summarize_symbol"
         ]
 
-        result = crew_instance.kickoff(inputs=inputs)
+        # Use kickoff explicitly because we've manually manipulated the tasks config for this API
+        result = crew_instance.kickoff(inputs=inputs.model_dump())
         return {"status": "success", "task": "summarize_symbol", "output": result.raw}
 
     except Exception as e:

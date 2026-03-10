@@ -8,6 +8,14 @@ from stockiv.agents.base import orchestrator_llm
 
 # We define the output schema for the routing task here
 from pydantic import BaseModel, Field
+from typing import Optional
+
+
+class OrchestratorCrewInputs(BaseModel):
+    request: Optional[str] = Field(
+        default=None,
+        description="The raw natural language user request to orchestrate.",
+    )
 
 
 class TickerExtraction(BaseModel):
@@ -52,3 +60,9 @@ class OrchestratorCrew:
             verbose=True,
             tracing=True,
         )
+
+    def run(self, inputs: OrchestratorCrewInputs):
+        """
+        Executes the Orchestrator Crew with strongly typed inputs.
+        """
+        return self.crew().kickoff(inputs=inputs.model_dump())

@@ -23,12 +23,12 @@ def search_market_context(query: str, days_back: int = 7) -> str:
         return "Error: BRAVE_API_KEY environment variable is not set."
 
     # Implement caching mechanism to avoid burning API limits (33/day)
-    cache_dir = "data/raw/cache"
-    os.makedirs(cache_dir, exist_ok=True)
-    today = datetime.now().strftime("%Y-%m-%d")
-    cache_file = f"{cache_dir}/{query.replace(' ', '_')}_{today}.json"
+    from stockiv.config.paths import RAW_CACHE_DIR
 
-    if os.path.exists(cache_file):
+    today = datetime.now().strftime("%Y-%m-%d")
+    cache_file = RAW_CACHE_DIR / f"{query.replace(' ', '_')}_{today}.json"
+
+    if cache_file.exists():
         with open(cache_file, "r", encoding="utf-8") as f:
             return f.read()
 

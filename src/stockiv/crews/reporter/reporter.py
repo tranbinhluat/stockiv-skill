@@ -16,8 +16,27 @@ from dotenv import load_dotenv
 from stockiv.agents import primary_llm, light_llm
 from tools.discord_publisher_tool import send_discord_message
 from tools.pdf_exporter_tool import markdown_to_pdf
+from pydantic import BaseModel, Field
+from typing import Optional
 
 load_dotenv()
+
+
+class ReporterCrewInputs(BaseModel):
+    stock_symbols: Optional[str] = Field(
+        default=None,
+        description="Comma-separated stock symbols for which the report is generated.",
+    )
+    report_file_path: Optional[str] = Field(
+        default=None,
+        description="Path to the source markdown report file to be translated/formatted.",
+    )
+    report_title: Optional[str] = Field(
+        default=None, description="The title to use for the final report document."
+    )
+    pdf_output_path: Optional[str] = Field(
+        default=None, description="Destination path for the generated PDF report."
+    )
 
 
 @CrewBase
@@ -117,3 +136,9 @@ class ReporterCrew:
             verbose=True,
             tracing=True,
         )
+
+    def run(self, inputs: ReporterCrewInputs):
+        """
+        Executes the Reporter Crew with strongly typed inputs.
+        """
+        return self.crew().kickoff(inputs=inputs.model_dump())

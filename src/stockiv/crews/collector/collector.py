@@ -37,6 +37,32 @@ from tools.vnstock_tools import (  # noqa: E402
 )
 from tools.brave_tools import search_market_context  # noqa: E402
 from tools.report_finder_tools import search_annual_report_pdf, download_and_convert_pdf  # noqa: E402
+from tools.cache_tools import clean_expired_cache  # noqa: E402
+from pydantic import BaseModel, Field  # noqa: E402
+from typing import Optional  # noqa: E402
+
+
+class CollectorCrewInputs(BaseModel):
+    stock_symbols: Optional[str] = Field(
+        default=None,
+        description="The stock ticker symbol to collect data for (e.g. 'FPT').",
+    )
+    market_context_path: Optional[str] = Field(
+        default=None,
+        description="File path to save the generated macro market context.",
+    )
+    ticker_context_path: Optional[str] = Field(
+        default=None,
+        description="File path to save the generated ticker-specific context.",
+    )
+    annual_report_md_dir: Optional[str] = Field(
+        default=None,
+        description="Directory path to save the parsed markdown annual reports.",
+    )
+    annual_report_pdf_dir: Optional[str] = Field(
+        default=None,
+        description="Directory path containing the raw PDF annual reports.",
+    )
 
 
 @CrewBase
@@ -74,7 +100,7 @@ class CollectorCrew:
         return Agent(
             config=self.agents_config["macro_micro_scout"],
             llm=primary_llm,
-            tools=[search_market_context],
+            tools=[search_market_context, clean_expired_cache],
         )
 
     @agent
@@ -134,3 +160,9 @@ class CollectorCrew:
             verbose=True,
             tracing=True,
         )
+
+    def run(self, inputs: CollectorCrewInputs):
+        """
+        Executes the Collector Crew with strongly typed inputs.
+        """
+        return self.crew().kickoff(inputs=inputs.model_dump())
