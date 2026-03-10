@@ -270,6 +270,20 @@ PART VI: RELATED RESOURCES (links to all 5 files)
 - **Implementation:** Create an Input Model at the top of the `@CrewBase` file. Then, add a custom wrapper method inside the Crew class: `def run(self, inputs: MyCrewInputs): return self.crew().kickoff(inputs=inputs.model_dump())`.
 - **Benefit:** Self-documenting, early validation, IDE type-checking, and native integration with CrewAI flow states.
 
+**Terminal Output Interception Pattern (2026-03-10):**
+- **Goal:** Capture verbose CrewAI agent initialization and execution outputs.
+- **Implementation:** A global `TeeLogger` in `src/stockiv/utils/logger.py` overrides `sys.stdout` and `sys.stderr` to safely duplicate raw terminal strings (including ANSI color codes) to files in the `logs/` directory.
+- **Rules:** The logger must be injected directly at the highest entry point (`main.py` CLI and `api.py` FastAPI server) before any AI frameworks or heavy modules are initialized.
+
+
+**CrewAI Tool Limits Pattern (2026-03-10):**
+- **Issue:** Agents can get stuck in loops calling custom tools continuously, exhausting API quotas.
+- **Agent Limits:** Limits on ReAct (Thought/Action) loops belong *strictly* on the `Agent` definition in `agents.yaml`.
+  - `max_iter`: Maximum number of tool execution attempts (default is 25).
+  - `max_retry_limit`: Maximum number of retries for a *failed* tool execution (default is 2).
+  - `max_execution_time`: Hard cap in seconds before the agent is forcefully stopped.
+- **Task Limits:** The `Task` schema inside `tasks.yaml` does NOT support `max_iter`. It only supports `max_retries`, which dictates how many times the *entire task* restarts if it crashes or fails to output the required format (like returning raw text instead of Pydantic JSON).
+
 ---
 
 ## Critical Rules

@@ -5,6 +5,7 @@ Main Entry Point & Master Flow Orchestrator for StockIV.
 from stockiv.flows.deepdive import DeepDiveFlow
 from stockiv.flows.weekly import WeeklyReportFlow
 from stockiv.flows.report_loop import SynthesizerReporterFlow
+from stockiv.utils.logger import setup_global_logger
 
 
 def kickoff():
@@ -38,6 +39,8 @@ def kickoff():
         help="Max retries if Director rejects analysis (ReportLoop flow only).",
     )
     args = parser.parse_args()
+
+    setup_global_logger(f"cli_{args.flow}")
 
     if args.flow == "deepdive":
         print("[System] Initializing DeepDive Flow...")

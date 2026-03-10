@@ -27,9 +27,9 @@ class ReporterCrewInputs(BaseModel):
         default=None,
         description="Comma-separated stock symbols for which the report is generated.",
     )
-    report_file_path: Optional[str] = Field(
+    source_md_path: Optional[str] = Field(
         default=None,
-        description="Path to the source markdown report file to be translated/formatted.",
+        description="Path to the source markdown file to be translated/formatted.",
     )
     report_title: Optional[str] = Field(
         default=None, description="The title to use for the final report document."

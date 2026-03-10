@@ -44,5 +44,6 @@ for p in [
     PROCESSED_SYNTHESIZER_DIR,
     REPORT_MARKET_DIR,
     REPORT_TICKER_DIR,
+    LOGS_DIR,
 ]:
     p.mkdir(parents=True, exist_ok=True)

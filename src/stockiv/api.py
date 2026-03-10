@@ -8,6 +8,10 @@ from stockiv.crews.sentiment_analyst.sentiment_analyst import (
     SentimentAnalystCrew,
     SentimentAnalystCrewInputs,
 )
+from stockiv.utils.logger import setup_global_logger
+
+# Set up global logging for background API task executions
+setup_global_logger("api_webhook")
 
 app = FastAPI(
     title="StockIV AI Integrations API",
@@ -40,6 +44,15 @@ def _get_context_paths(symbol: str):
     return str(macro_context_file), str(ticker_context_file)
 
 
+def _get_sentiment_dest_paths(year: str, week: int, base_dir: Path):
+    out_dir = base_dir / "data" / "processed" / "sentiment" / "market"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return (
+        str(out_dir / f"{year}_W{week:02d}_macro_sentiment.md"),
+        str(out_dir / f"{year}_overall_macro_sentiment.md"),
+    )
+
+
 @app.post("/api/sentiment/market/weekly")
 async def trigger_market_sentiment(request: TickerRequest):
     """
@@ -52,11 +65,16 @@ async def trigger_market_sentiment(request: TickerRequest):
         now = datetime.now()
         year, week_num, _ = now.isocalendar()
 
+        macro_dest, overall_dest = _get_sentiment_dest_paths(
+            year, week_num, Path(__file__).parent.parent.parent
+        )
+
         inputs = SentimentAnalystCrewInputs(
             stock_symbols=request.symbol,
-            date=now.strftime("%Y-%m-%d"),
             year=str(year),
             week=str(week_num),
+            macro_sentiment_md_path=macro_dest,
+            overall_macro_sentiment_md_path=overall_dest,
             market_context_path=macro_path,  # Fixed bug here (was macro_context_file)
             ticker_context_path=ticker_path,
         )
@@ -89,11 +107,16 @@ async def trigger_ticker_sentiment(request: TickerRequest):
         now = datetime.now()
         year, week_num, _ = now.isocalendar()
 
+        macro_dest, overall_dest = _get_sentiment_dest_paths(
+            year, week_num, Path(__file__).parent.parent.parent
+        )
+
         inputs = SentimentAnalystCrewInputs(
             stock_symbols=request.symbol,
-            date=now.strftime("%Y-%m-%d"),
             year=str(year),
             week=str(week_num),
+            macro_sentiment_md_path=macro_dest,
+            overall_macro_sentiment_md_path=overall_dest,
             market_context_path=macro_path,  # Fixed bug here (was macro_context_file)
             ticker_context_path=ticker_path,
         )

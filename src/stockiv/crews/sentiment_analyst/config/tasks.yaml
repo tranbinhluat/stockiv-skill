@@ -7,19 +7,20 @@ summarize_current_week_macro:
   expected_output: >
     A Macro Market Report formatted strictly as follows:
     - **I. Executive Summary:** A brief 2-3 sentence summary of the dominant market environment this week (e.g. Reflation, Stagflation, specific sector headwinds).
-    - **Market Dashboard:** A concise markdown table of key data points (e.g., VN-Index closing price, WoW change, VIX level, USD/VND rate). The table MUST have exactly 3 columns: `Indicator`, `Value` (must contain the data value PLUS the inline citation, e.g. "3.64% [[1]](URL)"), and `Note` (a short textual explanation of context/impact. DO NOT just put the footnote/citation in the Note column).
+    - **Market Dashboard:** A concise markdown table of key data points explicitly found in the context (e.g. VN-Index if available, VIX, USD/VND). ONLY include indicators that are explicitly mentioned in the provided text. DO NOT fabricate or estimate data like VN-Index if it is not in the text. The table MUST have exactly 3 columns: `Indicator`, `Value` (must contain the data value PLUS the inline citation, e.g. "3.64% [[1]](URL)"), and `Note` (a short textual explanation of context/impact. DO NOT just put the footnote/citation in the Note column).
     - **II. Key Macro Indicators:** Use BLUF (Bottom Line Up Front) format. For each bullet, bold the keyword, state the status in 1-2 words, then provide a single sentence of context explaining its long-term impact on capital allocation.
     - **III. Structural Shifts:** Identify any early signs of structural shifts in the economy based solely on this week's news flow.
     - **IV. Upcoming Macro Catalysts:** A markdown table with columns for `Timeframe`, `Event`, and `Expected Impact (High/Med/Low)`.
+    - **V. Additional Crucial Findings:** (Optional) A section where you can highlight any critical themes, events, or unquantifiable data from the context that do not cleanly fit into the above sections but are vital for market understanding.
     **(CITATION REQUIREMENT: Every factual claim MUST be cited using standard markdown inline links as numbers, e.g., `[[1]](URL)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax because it is not universally clickable in all previewers. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. Format each reference as: `1. [Article Title](URL)`.)**
-  output_file: "{report_md_path}"
+  output_file: "{macro_sentiment_md_path}"
   agent: macro_sentiment_analyst
 
 synthesize_recent_trends:
   description: >
     Synthesize a cohesive overall market sentiment report for the year by analyzing recent trends.
     You MUST use your Folder/Directory tools to scan the `{market_sentiment_dir}` directory for previously generated weekly
-    market sentiment files (e.g. `{year}_W*_market_report.md`). Then use your File tools to read their contents.
+    market sentiment files (e.g. `{year}_W*_macro_sentiment.md`). Then use your File tools to read their contents.
     Identify the most recent 3-4 weeks of reports you find, read their contents, and synthesize them.
 
     You have also been equipped with the `Fetch Market Index` tool. Use this to quickly query the most recent 7 days trading data of the VNINDEX from the local SQLite database to ground your market trend analysis in hard numbers.
@@ -36,9 +37,9 @@ synthesize_recent_trends:
       - *Bear Case (20%):* [What is the hidden systemic risk?]
     - **IV. The Consensus Fallacy (Contrarian View):** Identify where consensus is crowded. What happens if the market "base case" pricing is wrong?
     - **V. Strategic Allocation Playbook:** Bullet points detailing which sectors/themes to Overweight and Underweight for long-term investing based on these trends.
-    **(CITATION REQUIREMENT: When identifying trends or regime shifts, you MUST explicitly cite the historical weekly reports you compared to arrive at that conclusion. E.g., "War at Middle East became worse, causing oil prices to peak (W10_market_report.md vs W14_market_report.md)").**
+    **(CITATION REQUIREMENT: Every factual claim, trend, or regime shift MUST be explicitly cited using standard markdown inline links as numbers, e.g., `[[1]](W10_market_report.md)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. e.g. "War at Middle East became worse, causing oil prices to peak [[1]](W10_market_report.md) against previous stability [[2]](W09_market_report.md)").**
     DO NOT generate individual weekly summaries. Provide a single, unified view of the market's trajectory.
-  output_file: "{overall_report_md_path}"
+  output_file: "{overall_macro_sentiment_md_path}"
   agent: trend_analyst
 
 summarize_symbol_sentiment:
@@ -48,14 +49,15 @@ summarize_symbol_sentiment:
 
     Use your File tools to read the files located at:
     - {ticker_context_path}
-    - {overall_report_md_path}
+    - {overall_macro_sentiment_md_path}
   expected_output: >
     A Specific Ticker Report formatted strictly as follows:
     - **I. Executive Sentiment & Catalysts:** A brief 2-3 sentence summary of the stock's specific fundamental momentum and key localized news developments driving its immediate narrative.
-    - **Ticker Dashboard:** A concise markdown table of key operational updates, financial metrics, institutional flows, or management guidance directly related to the company. The table MUST have exactly 3 columns: `Metric`, `Value` (must contain the data value PLUS the inline citation, e.g. "3.64% [[1]](URL)"), and `Note` (a short textual explanation of context/impact).
+    - **Ticker Dashboard:** A concise markdown table of key operational updates, financial metrics, institutional flows, or management guidance directly related to the company explicitly found in the context. ONLY include metrics that are explicitly mentioned in the provided text. DO NOT fabricate data. The table MUST have exactly 3 columns: `Metric`, `Value` (must contain the data value PLUS the inline citation, e.g. "3.64% [[1]](URL)"), and `Note` (a short textual explanation of context/impact).
     - **II. Fundamental Aspect Findings:** Use BLUF (Bottom Line Up Front) format for analyzing specific company news, localized events, and management actions (e.g. Product launches, earnings surprises, expansions). Bold the aspect, state the status, then provide context.
     - **III. Macro Resilience:** How does this specific stock's business model (its moat, pricing power, balance sheet) practically defend against the macro headwinds identified in the overall market report?
     - **IV. Thesis Invalidation (The "Sell" Triggers):** What specific fundamental operations/business failures, metric drops, or management missteps (NOT generic market price action) would invalidate the long-term investment thesis for this stock?
+    - **V. Additional Crucial Findings:** (Optional) A section where you can highlight any critical themes, events, or unquantifiable data from the context that do not cleanly fit into the above sections but are vital for market understanding.
     **(CITATION REQUIREMENT: Every factual claim MUST be cited using standard markdown inline links as numbers, e.g., `[[1]](URL)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax because it is not universally clickable in all previewers. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. Format each reference as: `1. [Article Title](URL)`.)**
   output_file: "{ticker_sentiment_path}"
   agent: ticker_sentiment_analyst

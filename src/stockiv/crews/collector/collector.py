@@ -63,6 +63,10 @@ class CollectorCrewInputs(BaseModel):
         default=None,
         description="Directory path containing the raw PDF annual reports.",
     )
+    current_year: Optional[str] = Field(
+        default=None,
+        description="The current year to ensure searched data is fresh.",
+    )
 
 
 @CrewBase

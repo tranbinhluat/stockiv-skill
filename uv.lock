@@ -714,6 +714,9 @@ anthropic = [
 google-genai = [
     { name = "google-genai" },
 ]
+tools = [
+    { name = "crewai-tools" },
+]
 
 [[package]]
 name = "crewai-tools"
@@ -4484,7 +4487,7 @@ name = "stockiv"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "crewai", extra = ["anthropic", "google-genai"] },
+    { name = "crewai", extra = ["anthropic", "google-genai", "tools"] },
     { name = "crewai-tools" },
     { name = "fastapi" },
     { name = "ipython" },
@@ -4522,7 +4525,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "crewai", extras = ["anthropic", "google-genai"], specifier = ">=1.10" },
+    { name = "crewai", extras = ["anthropic", "google-genai", "tools"], specifier = ">=1.10" },
     { name = "crewai-tools", specifier = ">=1.10" },
     { name = "fastapi", specifier = ">=0.135.1" },
     { name = "ipython", specifier = ">=9.10.0" },

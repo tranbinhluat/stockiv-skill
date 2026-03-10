@@ -116,7 +116,7 @@ class DeepDiveFlow(Flow[PipelineState]):
             )
         )
         self.state.shared_data["synthesizer_md_path"] = os.path.join(
-            synthesizer_dir, f"{ticker}_GCCP_report.md"
+            synthesizer_dir, f"{ticker}_GCCP_synthesis.md"
         )
         self.state.shared_data["synthesizer_output_dir"] = synthesizer_dir
 
@@ -157,6 +157,8 @@ class DeepDiveFlow(Flow[PipelineState]):
             return "route_to_sentiment"
 
         try:
+            from datetime import datetime
+
             collector = CollectorCrew()
             inputs = CollectorCrewInputs(
                 stock_symbols=ticker,
@@ -164,6 +166,7 @@ class DeepDiveFlow(Flow[PipelineState]):
                 ticker_context_path=self.state.shared_data["ticker_context_path"],
                 annual_report_md_dir="data/processed/annual_reports",
                 annual_report_pdf_dir="data/raw/annual_reports",
+                current_year=datetime.now().strftime("%Y"),
             )
             result = collector.run(inputs=inputs)
             self.state.history += f"Collector executed. Result: {str(result)}\n"
@@ -199,12 +202,13 @@ class DeepDiveFlow(Flow[PipelineState]):
         )
         os.makedirs(output_dir, exist_ok=True)
         report_title = f"{year}_W{week:02d}_market_report"
+        macro_sentiment_title = f"{year}_W{week:02d}_macro_sentiment"
         self.state.shared_data["report_title"] = report_title
-        self.state.shared_data["report_md_path"] = os.path.join(
-            output_dir, f"{report_title}.md"
+        self.state.shared_data["macro_sentiment_md_path"] = os.path.join(
+            output_dir, f"{macro_sentiment_title}.md"
         )
-        self.state.shared_data["overall_report_md_path"] = os.path.join(
-            output_dir, f"{year}_overall_market_sentiment.md"
+        self.state.shared_data["overall_macro_sentiment_md_path"] = os.path.join(
+            output_dir, f"{year}_overall_macro_sentiment.md"
         )
         self.state.shared_data["market_sentiment_dir"] = output_dir
 
@@ -222,7 +226,7 @@ class DeepDiveFlow(Flow[PipelineState]):
         if "all" in self.state.mock_crews or "sentiment" in self.state.mock_crews:
             print("[DeepDive Flow - MOCK] Bypassing Sentiment Analyst Crew...")
             self.state.shared_data["news_sentiment_analysis"] = "MOCK Sentiment Data"
-            dummy_path = self.state.shared_data["overall_report_md_path"]
+            dummy_path = self.state.shared_data["overall_macro_sentiment_md_path"]
             with open(dummy_path, "w", encoding="utf-8") as f:
                 f.write("# MOCK OVERALL MARKET SENTIMENT\n")
             self.state.history += (
@@ -238,8 +242,12 @@ class DeepDiveFlow(Flow[PipelineState]):
                 year=str(year),
                 week=str(week),
                 report_title=self.state.shared_data["report_title"],
-                report_md_path=self.state.shared_data["report_md_path"],
-                overall_report_md_path=self.state.shared_data["overall_report_md_path"],
+                macro_sentiment_md_path=self.state.shared_data[
+                    "macro_sentiment_md_path"
+                ],
+                overall_macro_sentiment_md_path=self.state.shared_data[
+                    "overall_macro_sentiment_md_path"
+                ],
                 market_sentiment_dir=self.state.shared_data["market_sentiment_dir"],
                 market_context_path=self.state.shared_data["market_context_path"],
                 ticker_context_path=self.state.shared_data["ticker_context_path"],
@@ -360,7 +368,7 @@ class DeepDiveFlow(Flow[PipelineState]):
             reporter_inst = ReporterCrew()
 
             inputs = ReporterCrewInputs(
-                report_file_path=self.state.shared_data["synthesizer_md_path"],
+                source_md_path=self.state.shared_data["synthesizer_md_path"],
                 pdf_output_path=self.state.shared_data["synthesizer_pdf_path"],
                 report_title=self.state.shared_data["report_title"],
             )

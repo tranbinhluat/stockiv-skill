@@ -18,7 +18,7 @@ generate_report:
 translate_report:
   description: >
     You must first use your FileReader tool to carefully read the Markdown file located at the following path:
-    {report_file_path}
+    {source_md_path}
 
     CRITICAL TOOL INSTRUCTION: When calling the FileReader tool, ONLY provide the `file_path` argument. Do NOT provide `start_line` or `line_count` arguments under any circumstances. Passing empty strings for those fields will cause a fatal integer validation error.
 

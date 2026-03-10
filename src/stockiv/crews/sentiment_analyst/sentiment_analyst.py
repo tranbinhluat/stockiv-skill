@@ -28,23 +28,17 @@ class SentimentAnalystCrewInputs(BaseModel):
     stock_symbols: Optional[str] = Field(
         default=None, description="The stock ticker symbol being analyzed."
     )
-    date: Optional[str] = Field(
-        default=None, description="The date of analysis (YYYY-MM-DD)."
-    )
     year: Optional[str] = Field(
         default=None, description="The current year (e.g. '2026')."
     )
     week: Optional[str] = Field(
         default=None, description="The current ISO week number (e.g. '10')."
     )
-    report_title: Optional[str] = Field(
-        default=None, description="Title for the generated sentiment report."
-    )
-    report_md_path: Optional[str] = Field(
+    macro_sentiment_md_path: Optional[str] = Field(
         default=None,
-        description="Path to save the generated markdown weekly sentiment report.",
+        description="Path to save the generated markdown weekly macro sentiment.",
     )
-    overall_report_md_path: Optional[str] = Field(
+    overall_macro_sentiment_md_path: Optional[str] = Field(
         default=None,
         description="Path to save or append to the overall yearly sentiment log.",
     )
