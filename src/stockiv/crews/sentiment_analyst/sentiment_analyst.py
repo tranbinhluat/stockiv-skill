@@ -18,7 +18,7 @@ if os.getenv("LANGTRACE_API_KEY"):
 from crewai import Agent, Crew, Process, Task  # noqa: E402
 from crewai.project import CrewBase, agent, crew, task  # noqa: E402
 from crewai_tools import FileReadTool, DirectoryReadTool  # noqa: E402
-from stockiv.agents.base import get_llm  # noqa: E402
+from stockiv.agents.base import advanced_llm  # noqa: E402
 from tools.sqlite_tools import FetchMarketIndexTool  # noqa: E402
 
 
@@ -33,7 +33,7 @@ class SentimentAnalystCrew:
     def macro_sentiment_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config["macro_sentiment_analyst"],
-            llm=get_llm("qwen3-max-2026-01-23"),
+            llm=advanced_llm,
             tools=[FileReadTool()],
             reasoning=True,
             max_reasoning_attempts=2,
@@ -43,7 +43,7 @@ class SentimentAnalystCrew:
     def trend_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config["trend_analyst"],
-            llm=get_llm("qwen3-max-2026-01-23"),
+            llm=advanced_llm,
             # Granting both so it can find historical files and read them
             tools=[DirectoryReadTool(), FileReadTool(), FetchMarketIndexTool()],
             reasoning=True,
@@ -54,7 +54,7 @@ class SentimentAnalystCrew:
     def ticker_sentiment_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config["ticker_sentiment_analyst"],
-            llm=get_llm("qwen3-max-2026-01-23"),
+            llm=advanced_llm,
             tools=[FileReadTool()],
             reasoning=True,
             max_reasoning_attempts=3,
