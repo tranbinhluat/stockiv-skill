@@ -17,7 +17,7 @@ fetch_daily_market_data_task:
     current P/E, P/B, and live market metrics for {stock_symbols}.
 
     CRITICAL INSTRUCTION: You represent the UPSTREAM DATA AUTHORITY. You MUST guarantee all holistic data is present for downstream analytics.
-    1. First, use `fetch_market_index` to fetch the real-time `VNINDEX` and store it in the database.
+    1. First, use `fetch_historical_prices` to fetch the real-time `VNINDEX` and store it in the database.
     2. Second, hit the API directly using `fetch_company_overview` and `fetch_ratio_summary` to update the local SQLite database with today's values for {stock_symbols}.
     3. Third, identify 1-2 top domestic competitors (peers in the same industry in Vietnam) for {stock_symbols} and execute `fetch_ratio_summary` on those peers so the database is pre-loaded for downstream peer comparisons.
 

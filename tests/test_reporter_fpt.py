@@ -8,12 +8,17 @@ from stockiv.crews.reporter.reporter import ReporterCrew
 
 load_dotenv()
 
+
 def run_reporter_test():
     print("🚀 Launching Isolated Reporter Crew for FPT Sentiment Test...")
-    fpt_md = os.path.abspath("data/processed/sentiment/ticker/FPT/2026_W11_FPT_sentiment_test.md")
-    fpt_pdf = os.path.abspath("data/processed/reports/FPT/2026_W11_FPT_sentiment_test.pdf")
+    fpt_md = os.path.abspath(
+        "data/processed/sentiment/ticker/FPT/2026_W11_FPT_sentiment_test.md"
+    )
+    fpt_pdf = os.path.abspath(
+        "data/processed/reports/FPT/2026_W11_FPT_sentiment_test.pdf"
+    )
     os.makedirs(os.path.dirname(fpt_pdf), exist_ok=True)
-    
+
     try:
         crew_fpt = ReporterCrew().crew()
         crew_fpt.kickoff(
@@ -29,8 +34,12 @@ def run_reporter_test():
         print(f"\n❌ Error during FPT Reporter execution: {e}")
 
     print("\n🚀 Launching Isolated Reporter Crew for Market Sentiment Test...")
-    market_md = os.path.abspath("data/processed/sentiment/market/2026_overall_market_sentiment_test.md")
-    market_pdf = os.path.abspath("data/processed/reports/market/2026_overall_market_sentiment_test.pdf")
+    market_md = os.path.abspath(
+        "data/processed/sentiment/market/2026_overall_market_sentiment_test.md"
+    )
+    market_pdf = os.path.abspath(
+        "data/processed/reports/market/2026_overall_market_sentiment_test.pdf"
+    )
     os.makedirs(os.path.dirname(market_pdf), exist_ok=True)
 
     try:

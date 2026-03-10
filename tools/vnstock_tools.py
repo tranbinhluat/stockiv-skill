@@ -130,9 +130,17 @@ def fetch_historical_prices(ticker: str, days_back: int = 30) -> str:
     end_str = end_date.strftime("%Y-%m-%d")
 
     try:
-        # Fetch from vnstock 3.x
-        quote = Quote(symbol=ticker, source="KBS")
-        df = quote.history(start=start_str, end=end_str, interval="1D")
+        df = None
+        # Loop through sources as indexing can sometimes be finicky on some providers
+        for src in ["TCBS", "VND", "VCI", "KBS"]:
+            try:
+                quote = Quote(symbol=ticker, source=src)
+                df = quote.history(start=start_str, end=end_str, interval="1D")
+                if df is not None and not df.empty:
+                    successful_source = f"vnstock-{src}"
+                    break
+            except Exception:
+                continue
 
         if df is None or df.empty:
             return f"Error: No price data found for {ticker} between {start_str} and {end_str}."
@@ -150,7 +158,7 @@ def fetch_historical_prices(ticker: str, days_back: int = 30) -> str:
             df["date"] = df["date"].dt.strftime("%Y-%m-%d")
 
         # Add tracking metadata
-        df["source"] = "vnstock-KBS"
+        df["source"] = successful_source
         df["confidence"] = 1.0
         df["citation"] = ""
 
@@ -194,94 +202,6 @@ def fetch_historical_prices(ticker: str, days_back: int = 30) -> str:
 
     except Exception as e:
         return f"Error fetching price data for {ticker}: {str(e)}"
-
-
-@tool("Fetch Market Index")
-def fetch_market_index(days_back: int = 30) -> str:
-    """
-    Fetches the daily market index data (VNINDEX) to provide macroeconomic baseline context.
-    Args:
-        days_back: How many days of historical data to fetch (default 30)
-    Returns:
-        A confirmation message that data is saved to SQLite.
-    """
-    _ensure_db_exists()
-
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=days_back)
-    start_str = start_date.strftime("%Y-%m-%d")
-    end_str = end_date.strftime("%Y-%m-%d")
-
-    ticker = "VNINDEX"
-
-    try:
-        # Loop through sources as VNINDEX can sometimes be finicky on KBS
-        df = None
-        for src in ["TCBS", "VND", "VCI", "KBS"]:
-            try:
-                quote = Quote(symbol=ticker, source=src)
-                df = quote.history(start=start_str, end=end_str, interval="1D")
-                if df is not None and not df.empty:
-                    df["source"] = f"vnstock-{src}"
-                    break
-            except Exception:
-                continue
-
-        if df is None or df.empty:
-            return f"Error: No price data found for {ticker} between {start_str} and {end_str}."
-
-        if "time" in df.columns:
-            df = df.rename(columns={"time": "date"})
-
-        if "ticker" not in df.columns:
-            df["ticker"] = ticker
-
-        if pd.api.types.is_datetime64_any_dtype(df["date"]):
-            df["date"] = df["date"].dt.strftime("%Y-%m-%d")
-
-        df["confidence"] = 1.0
-        df["citation"] = ""
-
-        df = df[
-            [
-                "ticker",
-                "date",
-                "open",
-                "high",
-                "low",
-                "close",
-                "volume",
-                "source",
-                "confidence",
-                "citation",
-            ]
-        ]
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.executemany(
-            """
-            INSERT INTO historical_prices (ticker, date, open, high, low, close, volume, source, confidence, citation)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(ticker, date) DO UPDATE SET
-                open=excluded.open,
-                high=excluded.high,
-                low=excluded.low,
-                close=excluded.close,
-                volume=excluded.volume,
-                source=excluded.source,
-                confidence=excluded.confidence,
-                citation=excluded.citation
-            """,
-            df.values.tolist(),
-        )
-        conn.commit()
-        conn.close()
-
-        return f"Successfully fetched and stored {len(df)} days of index data for {ticker} up to {end_str}."
-
-    except Exception as e:
-        return f"Error fetching index data for {ticker}: {str(e)}"
 
 
 @tool("Fetch Financial Statements")

@@ -156,6 +156,7 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 - **Authentication Required:** VCI and KBS upstream APIs currently return 401/403 for 10-year financial statements without a paid account. The `VNSTOCK_API_KEY` must be loaded via `os.environ.get()` to bypass this.
 - **Syntax:** Use OOP `Quote(symbol, source="KBS")` for prices and `Finance(symbol, source="KBS")` for statements. Melt wide DataFrames into narrow SQLite tables.
 - **Market Indices limitation:** The `VCI` and `KBS` providers explicitly restrict fetching the `ratio_summary` or `events` for broad market indices (e.g., `VNINDEX`). Avoid requesting explicit P/E or P/B ratios for indices; instead rely entirely on the price `Quote.history()` data.
+- **Macro & Market Valuation limitation:** The free tiers for Vietnamese brokers (`VNDirect`, `Fireant`, `SSI`, `simplize`) uniformly restrict open API access to overarching market P/E, P/B, and Macro metrics (GDP/CPI). The `vnstock_data.Market` and `vnstock_data.Macro` python modules are fully unavailable for free users. Avoid attempting to fetch these metrics programmatically; agents should rely on textual reports provided via File tools instead.
 
 **Knowledge Base Pattern:**
 ```
@@ -258,6 +259,11 @@ PART VI: RELATED RESOURCES (links to all 5 files)
   output_file: "{my_path}"
   ```
 - **PDF Exporting:** Standardize rendering local markdown directly into executive PDFs using `markdown` & `weasyprint` injected inside a CrewAI Tool instead of relying on external API document parsing.
+
+**Path Management Architecture (2026-03-09):**
+- **Pattern:** Avoid using fragile `os.path.dirname(__file__)` or explicit `os.makedirs()` calls inside individual flow scripts.
+- **Centralization:** All project paths are centralized in `src.stockiv.config.paths` using `pyrootutils.find_root()` and `pathlib.Path`.
+- **Directory Initialization:** The `paths.py` module automatically manages and creates required directory trees via `p.mkdir(parents=True, exist_ok=True)` at runtime. Always import the raw variables (e.g., `from stockiv.config.paths import REPORT_TICKER_DIR`) and use them directly.
 
 ---
 

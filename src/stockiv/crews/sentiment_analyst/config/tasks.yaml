@@ -18,9 +18,11 @@ summarize_current_week_macro:
 synthesize_recent_trends:
   description: >
     Synthesize a cohesive overall market sentiment report for the year by analyzing recent trends.
-    You MUST use your DirectoryReadTool to scan the `data/processed/sentiment/market/` directory for previously generated weekly
-    market sentiment files (e.g. `{year}_W*_market_report.md`).
+    You MUST use your Folder/Directory tools to scan the `{market_sentiment_dir}` directory for previously generated weekly
+    market sentiment files (e.g. `{year}_W*_market_report.md`). Then use your File tools to read their contents.
     Identify the most recent 3-4 weeks of reports you find, read their contents, and synthesize them.
+
+    You have also been equipped with the `Fetch Market Index` tool. Use this to quickly query the most recent 7 days trading data of the VNINDEX from the local SQLite database to ground your market trend analysis in hard numbers.
   expected_output: >
     A synthesized Overall Recent Market Situation Report formatted strictly as follows:
     - **I. Regime Shift Analysis:** Are we entering a new structural phase (e.g., growth-led to value-led) or continuing the previous trend across the historical weeks analyzed?
@@ -34,26 +36,26 @@ synthesize_recent_trends:
       - *Bear Case (20%):* [What is the hidden systemic risk?]
     - **IV. The Consensus Fallacy (Contrarian View):** Identify where consensus is crowded. What happens if the market "base case" pricing is wrong?
     - **V. Strategic Allocation Playbook:** Bullet points detailing which sectors/themes to Overweight and Underweight for long-term investing based on these trends.
+    **(CITATION REQUIREMENT: When identifying trends or regime shifts, you MUST explicitly cite the historical weekly reports you compared to arrive at that conclusion. E.g., "War at Middle East became worse, causing oil prices to peak (W10_market_report.md vs W14_market_report.md)").**
     DO NOT generate individual weekly summaries. Provide a single, unified view of the market's trajectory.
   output_file: "{overall_report_md_path}"
   agent: trend_analyst
 
 summarize_symbol_sentiment:
   description: >
-    Analyze the sentiment specific to {stock_symbols} by reviewing its dedicated ticker context file AND the overall market situation report.
-    Evaluate recent localized news, events, and management actions against the backdrop of the overall market trend to determine how they affect the stock's near-term outlook.
-    Use your tools to read the files located at:
+    Analyze the sentiment STRICTLY specific to the business of {stock_symbols} by reviewing its dedicated ticker context file against the broad backdrop of the overall market situation report.
+    Evaluate recent localized news, management actions, and company events. DO NOT blindly repeat the overall macro scenarios. Focus entirely on how specific company operations are advancing or faltering.
+
+    Use your File tools to read the files located at:
     - {ticker_context_path}
-    - data/processed/sentiment/market/{year}_overall_market_sentiment.md
+    - {overall_report_md_path}
   expected_output: >
     A Specific Ticker Report formatted strictly as follows:
-    - **I. Macro Resilience Summary:** A brief 2-3 sentence summary explicitly stating how vulnerable or resilient this specific business is to the macroeconomic trends and Bear Case scenarios identified in the overall market report.
-    - **Ticker Dashboard:** A concise markdown table of key data points. The table MUST have exactly 3 columns: `Metric`, `Value` (must contain the data value PLUS the inline citation, e.g. "3.64% [[1]](URL)"), and `Note` (a short textual explanation of context/impact. DO NOT just put the footnote/citation in the Note column).
-    - **II. Scenario Stress Testing:** How does this specific stock theoretically perform under the overall market scenarios?
-      - *Base Case Impact:* [Expected business performance]
-      - *Bear Case Impact:* [How badly is revenue/margin affected?]
-    - **III. Fundamental Aspect Findings:** Use BLUF (Bottom Line Up Front) format for analyzing specific company news, localized events, and management actions. Bold the aspect, state the status, then provide context.
-    - **IV. Thesis Invalidation (The "Sell" Triggers):** What specific fundamental business failures, metric drops, or management missteps (NOT price action) would invalidate the long-term investment thesis for this stock?
+    - **I. Executive Sentiment & Catalysts:** A brief 2-3 sentence summary of the stock's specific fundamental momentum and key localized news developments driving its immediate narrative.
+    - **Ticker Dashboard:** A concise markdown table of key operational updates, financial metrics, institutional flows, or management guidance directly related to the company. The table MUST have exactly 3 columns: `Metric`, `Value` (must contain the data value PLUS the inline citation, e.g. "3.64% [[1]](URL)"), and `Note` (a short textual explanation of context/impact).
+    - **II. Fundamental Aspect Findings:** Use BLUF (Bottom Line Up Front) format for analyzing specific company news, localized events, and management actions (e.g. Product launches, earnings surprises, expansions). Bold the aspect, state the status, then provide context.
+    - **III. Macro Resilience:** How does this specific stock's business model (its moat, pricing power, balance sheet) practically defend against the macro headwinds identified in the overall market report?
+    - **IV. Thesis Invalidation (The "Sell" Triggers):** What specific fundamental operations/business failures, metric drops, or management missteps (NOT generic market price action) would invalidate the long-term investment thesis for this stock?
     **(CITATION REQUIREMENT: Every factual claim MUST be cited using standard markdown inline links as numbers, e.g., `[[1]](URL)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax because it is not universally clickable in all previewers. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. Format each reference as: `1. [Article Title](URL)`.)**
-  output_file: data/processed/sentiment/ticker/{stock_symbols}/{year}_W{week}sentiment.md
+  output_file: "{ticker_sentiment_path}"
   agent: ticker_sentiment_analyst

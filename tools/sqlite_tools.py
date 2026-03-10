@@ -100,6 +100,9 @@ class FetchPeerComparisonsTool(BaseTool):
 
 
 class FetchMarketIndexSchema(BaseModel):
+    index_name: str = Field(
+        "VNINDEX", description="The market index to fetch (e.g., 'VNINDEX', 'VN30')."
+    )
     days_back: int = Field(
         30, description="Number of days of historical index data to fetch."
     )
@@ -107,20 +110,20 @@ class FetchMarketIndexSchema(BaseModel):
 
 class FetchMarketIndexTool(BaseTool):
     name: str = "Fetch Market Index"
-    description: str = "Fetches the recent daily VNINDEX prices (open, close, volume) to analyze overarching market trends."
+    description: str = "Fetches the recent daily prices (open, close, volume) for a market index to analyze overarching market trends."
     args_schema: Type[BaseModel] = FetchMarketIndexSchema
     db_path: str = "data/stockiv.db"
 
-    def _run(self, days_back: int = 30) -> str:
+    def _run(self, index_name: str = "VNINDEX", days_back: int = 30) -> str:
         try:
             conn = sqlite3.connect(self.db_path)
             idx_df = pd.read_sql_query(
-                f"SELECT date, open, high, low, close, volume FROM historical_prices WHERE ticker='VNINDEX' ORDER BY date DESC LIMIT {days_back}",
+                f"SELECT date, open, high, low, close, volume FROM historical_prices WHERE ticker='{index_name}' ORDER BY date DESC LIMIT {days_back}",
                 conn,
             )
             conn.close()
             if idx_df.empty:
-                return "No VNINDEX data found in the database. Collector may need to run first."
-            return f"### Recent VNINDEX (Last {days_back} days)\n{idx_df.to_markdown(index=False)}"
+                return f"No {index_name} data found in the database. Collector may need to run first."
+            return f"### Recent {index_name} (Last {days_back} days)\n{idx_df.to_markdown(index=False)}"
         except Exception as e:
             return f"Error: {str(e)}"

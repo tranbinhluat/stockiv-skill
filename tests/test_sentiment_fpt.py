@@ -1,13 +1,15 @@
-import os
-import sys
 from datetime import datetime
 from dotenv import load_dotenv
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
-
+from stockiv.config.paths import (
+    MARKET_SENTIMENT_DIR,
+    PROCESSED_SENTIMENT_TICKER_DIR,
+    RAW_CONTEXT_DIR,
+)
 from stockiv.crews.sentiment_analyst.sentiment_analyst import SentimentAnalystCrew
 
 load_dotenv()
+
 
 def run_sentiment_test():
     ticker = "FPT"
@@ -16,17 +18,24 @@ def run_sentiment_test():
     year, week, _ = now.isocalendar()
 
     report_title = f"{year}_W{week:02d}_{ticker}_sentiment_test"
-    report_md_path = os.path.abspath(f"data/processed/sentiment/ticker/{ticker}/{report_title}.md")
-    overall_report_md_path = os.path.abspath(f"data/processed/sentiment/market/{year}_overall_market_sentiment_test.md")
-    
-    market_context_path = os.path.abspath("data/raw/context/market_context.md")
-    ticker_context_path = os.path.abspath(f"data/raw/context/{ticker}_ticker_context.md")
-    
-    os.makedirs(os.path.dirname(report_md_path), exist_ok=True)
-    os.makedirs(os.path.dirname(overall_report_md_path), exist_ok=True)
+
+    # Use centralized paths
+    ticker_dir = PROCESSED_SENTIMENT_TICKER_DIR / ticker
+    ticker_dir.mkdir(parents=True, exist_ok=True)
+
+    report_md_path = str(ticker_dir / f"{report_title}.md")
+    overall_report_md_path = str(
+        MARKET_SENTIMENT_DIR / f"{year}_overall_market_sentiment_test.md"
+    )
+
+    market_context_path = str(RAW_CONTEXT_DIR / "market_context.md")
+    ticker_context_path = str(RAW_CONTEXT_DIR / f"{ticker}_ticker_context.md")
 
     print(f"🚀 Launching Isolated Sentiment Analyst Crew for {ticker}...")
-    
+
+    market_sentiment_dir = str(MARKET_SENTIMENT_DIR)
+    ticker_sentiment_path = str(ticker_dir / f"{year}_W{week:02d}sentiment.md")
+
     try:
         crew = SentimentAnalystCrew()
         result = crew.crew().kickoff(
@@ -38,17 +47,22 @@ def run_sentiment_test():
                 "report_title": report_title,
                 "report_md_path": report_md_path,
                 "overall_report_md_path": overall_report_md_path,
+                "market_sentiment_dir": market_sentiment_dir,
                 "market_context_path": market_context_path,
                 "ticker_context_path": ticker_context_path,
+                "ticker_sentiment_path": ticker_sentiment_path,
             }
         )
         print("\n✅ Execution Finished. Output:")
         print("-------------------------------")
         print(result)
         print("-------------------------------")
-        print(f"Wrote outputs to {report_md_path} and {overall_report_md_path} (if used internally).")
+        print(
+            f"Wrote outputs to {report_md_path} and {overall_report_md_path} (if used internally)."
+        )
     except Exception as e:
         print(f"\n❌ Error during execution: {e}")
+
 
 if __name__ == "__main__":
     run_sentiment_test()

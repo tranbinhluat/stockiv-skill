@@ -3,13 +3,9 @@ Weekly Report Flow - Runs Collector (context tasks only) and Sentiment Analyst.
 """
 
 from crewai.flow.flow import Flow, listen, start
-import sys
-import os
 from datetime import datetime
 
-# Ensure the root package is accessible
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
-
+from stockiv.config.paths import MARKET_SENTIMENT_DIR, RAW_CONTEXT_DIR
 from stockiv.flows.state import PipelineState
 from stockiv.crews.collector.collector import CollectorCrew
 from stockiv.crews.sentiment_analyst.sentiment_analyst import SentimentAnalystCrew
@@ -39,33 +35,18 @@ class WeeklyReportFlow(Flow[PipelineState]):
         report_title = f"{year}_W{week_num:02d}_market_report"
         self.state.shared_data["report_title"] = report_title
 
-        output_dir = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "../../../data/processed/sentiment/market",
-            )
+        self.state.shared_data["market_context_path"] = str(
+            RAW_CONTEXT_DIR / "market_context.md"
         )
-        os.makedirs(output_dir, exist_ok=True)
-
-        self.state.shared_data["report_md_path"] = os.path.join(
-            output_dir, f"{report_title}.md"
+        self.state.shared_data["market_sentiment_dir"] = str(MARKET_SENTIMENT_DIR)
+        self.state.shared_data["report_md_path"] = str(
+            MARKET_SENTIMENT_DIR / f"{report_title}.md"
         )
-        self.state.shared_data["report_pdf_path"] = os.path.join(
-            output_dir, f"{report_title}.pdf"
+        self.state.shared_data["report_pdf_path"] = str(
+            MARKET_SENTIMENT_DIR / f"{report_title}.pdf"
         )
-        self.state.shared_data["overall_report_md_path"] = os.path.join(
-            output_dir, f"{year}_overall_market_sentiment.md"
-        )
-
-        context_dir = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "../../../data/raw/context",
-            )
-        )
-        os.makedirs(context_dir, exist_ok=True)
-        self.state.shared_data["market_context_path"] = os.path.join(
-            context_dir, "market_context.md"
+        self.state.shared_data["overall_report_md_path"] = str(
+            MARKET_SENTIMENT_DIR / f"{year}_overall_market_sentiment.md"
         )
 
     @listen(setup_flow)
@@ -162,6 +143,9 @@ class WeeklyReportFlow(Flow[PipelineState]):
                     "report_md_path": self.state.shared_data["report_md_path"],
                     "overall_report_md_path": self.state.shared_data[
                         "overall_report_md_path"
+                    ],
+                    "market_sentiment_dir": self.state.shared_data[
+                        "market_sentiment_dir"
                     ],
                     "market_context_path": self.state.shared_data[
                         "market_context_path"

@@ -200,6 +200,18 @@ class DeepDiveFlow(Flow[PipelineState]):
         self.state.shared_data["overall_report_md_path"] = os.path.join(
             output_dir, f"{year}_overall_market_sentiment.md"
         )
+        self.state.shared_data["market_sentiment_dir"] = output_dir
+
+        ticker_sentiment_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                f"../../../data/processed/sentiment/ticker/{ticker}",
+            )
+        )
+        os.makedirs(ticker_sentiment_dir, exist_ok=True)
+        self.state.shared_data["ticker_sentiment_path"] = os.path.join(
+            ticker_sentiment_dir, f"{year}_W{week:02d}sentiment.md"
+        )
 
         if "all" in self.state.mock_crews or "sentiment" in self.state.mock_crews:
             print("[DeepDive Flow - MOCK] Bypassing Sentiment Analyst Crew...")
@@ -225,11 +237,17 @@ class DeepDiveFlow(Flow[PipelineState]):
                     "overall_report_md_path": self.state.shared_data[
                         "overall_report_md_path"
                     ],
+                    "market_sentiment_dir": self.state.shared_data[
+                        "market_sentiment_dir"
+                    ],
                     "market_context_path": self.state.shared_data[
                         "market_context_path"
                     ],
                     "ticker_context_path": self.state.shared_data[
                         "ticker_context_path"
+                    ],
+                    "ticker_sentiment_path": self.state.shared_data[
+                        "ticker_sentiment_path"
                     ],
                 }
             )

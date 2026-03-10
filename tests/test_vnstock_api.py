@@ -5,7 +5,7 @@ import json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from tools.vnstock_tools import (
-    fetch_market_index,
+    fetch_historical_prices,
     fetch_ratio_summary,
     _ensure_db_exists,
 )
@@ -15,7 +15,7 @@ import pandas as pd
 
 def test_market():
     print("--- Fetching VNINDEX Prices ---")
-    res1 = fetch_market_index.func(days_back=5)
+    res1 = fetch_historical_prices.func(ticker="VNINDEX", days_back=5)
     print("Result:", res1)
 
     # Try fetching ratio summary for VNINDEX

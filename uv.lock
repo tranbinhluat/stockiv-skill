@@ -3723,6 +3723,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pyrootutils"
+version = "1.0.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dotenv" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/37/7d/c5f3fb44dc98a72249a17a49e28bce4aaa6758ce9e37e77648cdc1857baf/pyrootutils-1.0.4.tar.gz", hash = "sha256:f58aac67147bbab20938b7b783cb2f4670d6329a33c6640233854976538fc5f2", size = 5133, upload-time = "2022-06-09T18:58:04.964Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1c/6f/ed601aec632d908b86adbad0e1cc712f7073faf697134fb0465a3fbcc512/pyrootutils-1.0.4-py3-none-any.whl", hash = "sha256:8bbf25425278693168ae03b167aa6509422dc21853a6ee01d5d5e40601a89f90", size = 5831, upload-time = "2022-06-09T18:58:03.184Z" },
+]
+
+[[package]]
 name = "pysqlite3"
 version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -4488,6 +4500,7 @@ dependencies = [
     { name = "plotly" },
     { name = "pymupdf4llm" },
     { name = "pypandoc" },
+    { name = "pyrootutils" },
     { name = "pysqlite3" },
     { name = "pytesseract" },
     { name = "python-dotenv" },
@@ -4525,6 +4538,7 @@ requires-dist = [
     { name = "plotly", specifier = ">=6.6.0" },
     { name = "pymupdf4llm", specifier = ">=0.2.9" },
     { name = "pypandoc", specifier = ">=1.16.2" },
+    { name = "pyrootutils", specifier = ">=1.0.4" },
     { name = "pysqlite3", specifier = ">=0.6.0" },
     { name = "pytesseract", specifier = ">=0.3.13" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
