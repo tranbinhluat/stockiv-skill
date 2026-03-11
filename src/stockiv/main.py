@@ -20,6 +20,12 @@ def kickoff():
         default="Deep dive analyze MWG",
     )
     parser.add_argument(
+        "--ticker",
+        type=str,
+        help="Target ticker symbol for DeepDive flow (e.g., 'FPT', 'MWG').",
+        default="MWG",
+    )
+    parser.add_argument(
         "--flow",
         type=str,
         choices=["deepdive", "weekly", "reportloop"],
@@ -43,8 +49,9 @@ def kickoff():
     setup_global_logger(f"cli_{args.flow}")
 
     if args.flow == "deepdive":
-        print("[System] Initializing DeepDive Flow...")
+        print(f"[System] Initializing DeepDive Flow for {args.ticker}...")
         flow = DeepDiveFlow()
+        flow.state.target_ticker = args.ticker.upper()
     elif args.flow == "weekly":
         print("[System] Initializing Weekly Report Flow...")
         flow = WeeklyReportFlow()
