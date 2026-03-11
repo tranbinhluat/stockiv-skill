@@ -70,16 +70,6 @@ class WeeklyReportFlow(Flow[PipelineState]):
         """
         print("\n[WeeklyReport Flow] 🚀 Launching Collector Crew (Macro News Only)...")
 
-        if "all" in self.state.mock_crews or "collector" in self.state.mock_crews:
-            print("[WeeklyReport Flow - MOCK] Bypassing Collector Crew...")
-            dummy_path = self.state.shared_data["market_context_path"]
-            with open(dummy_path, "w", encoding="utf-8") as f:
-                f.write(
-                    "# MOCK MACRO CONTEXT\n\nThis is a mocked dataset for the market context to allow downstream crews to test effectively."
-                )
-            self.state.history += "Collector executed (MOCK). Result: Mocked Dataset\n"
-            return
-
         try:
             collector_inst = CollectorCrew()
             crew_inst = collector_inst.crew()
@@ -95,38 +85,23 @@ class WeeklyReportFlow(Flow[PipelineState]):
 
             crew_inst.tasks = filtered_tasks
 
-            # We must also ensure any dependencies (context) on removed tasks are cleared
-            # Since fetch_macro doesn't depend on financials, and fetch_ticker depends on macro,
-            # this subset stands alone properly.
-
-            # market_context_path: output file
             inputs = CollectorCrewInputs(
                 market_context_path=self.state.shared_data["market_context_path"],
                 current_year=self.state.shared_data["report_year"],
             )
-            # Use explicit kickoff on the mutated crew_inst instead of collector_inst.run()
             result = crew_inst.kickoff(inputs=inputs.model_dump())
             self.state.history += (
                 f"Collector (Macro News Only) executed. Result: {str(result)}\n"
             )
         except Exception as e:
             self.state.history += f"Collector (Macro News Only) Failed: {str(e)}\n"
+            raise
 
     @listen(execute_collector_news)
     def execute_sentiment(self):
         print(
             f"\n[WeeklyReport Flow] 🚀 Launching Sentiment Analyst Crew (Macro Phase)... (Year: {self.state.shared_data.get('report_year')}, Week: {self.state.shared_data.get('report_week')})..."
         )
-
-        if "all" in self.state.mock_crews or "sentiment" in self.state.mock_crews:
-            print("[WeeklyReport Flow - MOCK] Bypassing Sentiment Analyst Crew...")
-            dummy_path = self.state.shared_data["macro_sentiment_md_path"]
-            with open(dummy_path, "w", encoding="utf-8") as f:
-                f.write(
-                    f"# MOCK MACRO SENTIMENT\n\nGenerated for Week {self.state.shared_data.get('report_week', '00')} of {self.state.shared_data.get('report_year', '0000')}."
-                )
-            self.state.history += "Sentiment Analyst executed (MOCK).\n"
-            return
 
         try:
             sentiment_inst = SentimentAnalystCrew()
@@ -158,7 +133,6 @@ class WeeklyReportFlow(Flow[PipelineState]):
                 market_sentiment_dir=self.state.shared_data["market_sentiment_dir"],
                 market_context_path=self.state.shared_data["market_context_path"],
             )
-            # Use explicit kickoff on the mutated crew_inst instead of sentiment_inst.run()
             result = crew_inst.kickoff(inputs=inputs.model_dump())
             self.state.shared_data["news_sentiment_analysis"] = str(result)
             self.state.history += (
@@ -166,20 +140,13 @@ class WeeklyReportFlow(Flow[PipelineState]):
             )
         except Exception as e:
             self.state.history += f"Sentiment Analyst Failed: {str(e)}\n"
+            raise
 
     @listen(execute_sentiment)
     def execute_reporter(self):
         print(
             "\n[WeeklyReport Flow] 🚀 Launching Reporter Crew (Translation & Publishing Phase)..."
         )
-
-        if "all" in self.state.mock_crews or "reporter" in self.state.mock_crews:
-            print("[WeeklyReport Flow - MOCK] Bypassing Reporter Crew...")
-            dummy_pdf = self.state.shared_data["report_pdf_path"]
-            with open(dummy_pdf, "w", encoding="utf-8") as f:
-                f.write("MOCK PDF BINARY OMITTED")
-            self.state.history += "Reporter executed (MOCK). Sent payload to Discord.\n"
-            return
 
         try:
             from stockiv.crews.reporter.reporter import ReporterCrew, ReporterCrewInputs
@@ -195,6 +162,7 @@ class WeeklyReportFlow(Flow[PipelineState]):
             self.state.history += "Reporter executed. Sent payload to Discord.\n"
         except Exception as e:
             self.state.history += f"Reporter Failed: {str(e)}\n"
+            raise
 
     @listen(execute_reporter)
     def finish_flow(self):
