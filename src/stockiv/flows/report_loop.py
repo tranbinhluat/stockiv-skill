@@ -111,7 +111,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
         self.state.history += f"ReportLoop setup complete for {ticker}.\n"
         return self.state.target_ticker
 
-    @listen(or_(initialize_setup, "route_to_synthesizer"))
+    @listen(initialize_setup)
     def execute_synthesizer(self):
         """
         Run the Synthesizer Crew. Pass file paths from shared_data,
@@ -196,6 +196,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             raise
 
         return
+    
 
     @listen(execute_synthesizer)
     def execute_director(self):
@@ -259,6 +260,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
                 )
                 self.state.director_feedback_path = review_output_path
                 self.state.loop_count += 1
+                self.direct_approval = "REJECTED"
                 return
 
             print(
@@ -269,12 +271,14 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             self.state.loop_count += 1
             self.state.director_approval = decision_obj.decision
 
+
         except Exception as e:
             self.state.history += f"Director v{version} Failed: {str(e)}\n"
             self.state.loop_count += 1
             self.state.director_approval = "ERROR"
             raise
         return
+
 
     @router(execute_director)
     def evaluate_director_decision(self, decision):
@@ -297,7 +301,9 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             f"\n[ReportLoop Flow] 🔄 Director rejected v{self.state.report_version - 1}. "
             f"Routing back to Synthesizer for v{self.state.report_version}..."
         )
-        return "route_to_synthesizer"
+        return "evaluate_director_feedback"
+
+    
 
     @listen("route_to_human_in_loop")
     def await_human_decision(self):

@@ -11,15 +11,27 @@ class MyFlow(Flow[MyState]):
     def initialize(self):
         self.state.count = 0
 
-    @listen(or_("loop_back", initialize))
+    @listen(initialize)
     def do_work(self):
         self.state.count += 1
-        print(f"Doing work (Node)... count: {self.state.count}")
+        print(f"Doing Analysis (Node)... count: {self.state.count}")
+        return
+    @listen("loop_back")
+    def evaluate_director_decision(self):
+        print(f"Re evaluate (Node)... count: {self.state.count}")
+        self.state.count += 1
 
-    @router(do_work)
+    @listen(or_(do_work, evaluate_director_decision))
+    def do_report(self):
+        print(f"Doing Report (Node)... count: {self.state.count}")
+        return
+    
+    @router(or_(do_report,evaluate_director_decision))
     def check_work(self):
         print(f"Checking work... count: {self.state.count}")
         if self.state.count < 3:
+            print(f"Failed approved")
+
             return "loop_back"
         return "finish"
 

@@ -39,7 +39,7 @@ class DirectorCrewInputs(BaseModel):
     )
 
 
-from stockiv.agents import primary_llm  # noqa: E402
+from stockiv.agents import advanced_llm  # noqa: E402
 
 
 class ValidationDecision(BaseModel):
@@ -62,7 +62,7 @@ class DirectorCrew:
     def director(self) -> Agent:
         return Agent(
             config=self.agents_config["director"],
-            llm=primary_llm,
+            llm=advanced_llm,
             tools=[FileReadTool()],
         )
 
