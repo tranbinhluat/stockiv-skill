@@ -3,6 +3,8 @@ validate_analysis:
     Perform comprehensive forensic review and validation of the stock analysis for {stock_symbols}.
 
     **STOCK ANALYSIS TO REVIEW:**
+    Use your `FileReadTool` to read the synthesis report at: `{synthesis_report_path}`
+    If `{synthesis_report_path}` is empty or not provided, use the raw analysis text below:
     {analysis}
 
     **EVIDENCE STANDARDS TO ENFORCE (ZERO TRUST POLICY):**
@@ -11,8 +13,8 @@ validate_analysis:
     **FINANCIAL ANOMALY DETECTION GUIDE:**
     {financial_rules}
 
-    **Your Output Format:**
-    You must output a raw, well-formatted JSON object with this exact structure (do NOT wrap it in Markdown code blocks):
+    Your Output Format:
+    You must output your findings matching the ValidationDecision pydantic model.
 
     {
       "decision": "APPROVED" | "REJECTED" | "MORE_INFO_NEEDED",

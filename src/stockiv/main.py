@@ -67,7 +67,7 @@ def kickoff():
     flow.state.request = args.request
 
     mock_crews_list = [c.strip().lower() for c in args.mock.split(",") if c.strip()]
-    flow.state.mock_crews = mock_crews_list
+    flow.state.mock = mock_crews_list
 
     result = flow.kickoff()
     print(f"\n[{args.flow.capitalize()} Flow Result]:\n{result}")

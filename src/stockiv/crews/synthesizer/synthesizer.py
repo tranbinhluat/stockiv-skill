@@ -1,22 +1,24 @@
 """
 Synthesizer Crew - Interprets and evaluates data directly against the GCCP framework.
+
+Uses Process.hierarchical with a manager agent that delegates to workers.
 """
 
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from crewai.flow.flow import Flow, listen, start, and_
+from crewai.tools import tool
 
 from pydantic import BaseModel, Field
+from typing import Optional
 
 from stockiv.agents.base import light_llm, advanced_llm
+from stockiv.config.paths import PROCESSED_DIR, PROCESSED_ANNUAL_REPORTS_DIR
 from stockiv.knowledge.base import kb
 from crewai_tools import FileReadTool, DirectoryReadTool
-from crewai.tools import tool
-import sys
+
 import os
 import subprocess
 import tempfile
-from pathlib import Path
 
 
 @tool("execute_python_code")
@@ -52,7 +54,10 @@ def read_file(file_path: str) -> str:
         return f.read()
 
 
-# Add project root to sys.path so we can import from `tools` directory
+# Import SQLite and search tools
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+
 project_root = str(Path(__file__).parent.parent.parent.parent.parent)
 if project_root not in sys.path:
     sys.path.append(project_root)
@@ -62,7 +67,11 @@ from tools.sqlite_tools import (  # noqa: E402
     FetchRecentFinancialsTool,
     FetchPeerComparisonsTool,
 )
-from tools.brave_tools import search_market_context  # noqa: E402
+
+
+# ---------------------------------------------------------------------------
+# Pydantic Models
+# ---------------------------------------------------------------------------
 
 
 class BaselineMetrics(BaseModel):
@@ -81,7 +90,7 @@ class BaselineMetrics(BaseModel):
     )
     multi_year_comparisons: str = Field(
         ...,
-        description="Table or list of financials across the last 4 quarters and  max years (if enough data), including YoY growth percentages.",
+        description="Table or list of financials across the last 4 quarters and max years (if enough data), including YoY growth percentages.",
     )
     peer_competitors: str = Field(
         ...,
@@ -211,7 +220,7 @@ class SynthesizerReport(BaseModel):
     )
     delegated_visuals: str = Field(
         ...,
-        description="Links or descriptions of embedded visuals/tables delegated to the Visualization Specialist.",
+        description="Links or descriptions of embedded visuals/tables delegated to the Data Specialist.",
     )
     citations_and_footnotes: str = Field(
         ...,
@@ -277,7 +286,9 @@ class SynthesizerReport(BaseModel):
         return md
 
 
-from typing import Optional  # noqa: E402
+# ---------------------------------------------------------------------------
+# Crew Inputs
+# ---------------------------------------------------------------------------
 
 
 class SynthesizerCrewInputs(BaseModel):
@@ -287,21 +298,8 @@ class SynthesizerCrewInputs(BaseModel):
     date: Optional[str] = Field(
         default=None, description="The date of analysis (YYYY-MM-DD)."
     )
-    financial_summary: Optional[str] = Field(
-        default=None, description="Raw financial data dump/baseline metrics."
-    )
-    accountant_findings: Optional[str] = Field(
-        default=None, description="Findings from the forensic accountant agent."
-    )
-    chart_links: Optional[str] = Field(
-        default=None, description="Links or definitions to generated visual charts."
-    )
     financial_summary_path: Optional[str] = Field(
         default=None, description="File path to load or save the financial summary."
-    )
-    manager_directives: Optional[str] = Field(
-        default=None,
-        description="Directives or plan laid out by the lead synthesizer/manager.",
     )
     annual_reports_dir: Optional[str] = Field(
         default=None, description="Directory path to load annual reports from."
@@ -313,49 +311,58 @@ class SynthesizerCrewInputs(BaseModel):
         default=None,
         description="Directory path to load generated sentiment reports from.",
     )
+    ticker_sentiment_path: Optional[str] = Field(
+        default=None, description="File path to the ticker-specific sentiment report."
+    )
+    feedback: Optional[str] = Field(
+        default=None,
+        description="Path to Director's review file from previous loop. Manager reads this with FileReadTool to address weaknesses.",
+    )
+    report_version: int = Field(
+        default=1,
+        description="Version number for the report (incremented on each feedback loop).",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Crew Definition (Hierarchical Manager Pattern)
+# ---------------------------------------------------------------------------
 
 
 @CrewBase
 class SynthesizerCrew:
-    """Synthesizer Crew - Monolithic GCCP Data Interpreter and Evaluator"""
+    """Synthesizer Crew - Hierarchical GCCP Data Interpreter and Evaluator"""
 
     agents_config = "config/agents.yaml"
     tasks_config = "config/tasks.yaml"
 
     @agent
-    def lead_synthesizer(self) -> Agent:
-        config = self.agents_config["lead_synthesizer"].copy()
+    def synthesizer_manager(self) -> Agent:
+        config = self.agents_config["synthesizer_manager"].copy()
 
-        # Inject the entire GCCP Framework explicit text into the agent's backstory
-        kb_text = f"--- FRAMEWORK ---\n{kb.framework}\n\n--- CRITERIA ---\n{kb.criteria}\n\n--- INDUSTRY GUIDES ---\n{kb.industry_guides}\n\n--- EVIDENCE STANDARD ---\n{kb.evidence_standard}\n\n--- FINANCIAL READING GUIDE ---\n{kb.financial_reading_guide}"
+        # Inject the entire GCCP Framework text into the agent's backstory
+        kb_text = (
+            f"--- FRAMEWORK ---\n{kb.framework}\n\n"
+            f"--- CRITERIA ---\n{kb.criteria}\n\n"
+            f"--- INDUSTRY GUIDES ---\n{kb.industry_guides}\n\n"
+            f"--- EVIDENCE STANDARD ---\n{kb.evidence_standard}\n\n"
+            f"--- FINANCIAL READING GUIDE ---\n{kb.financial_reading_guide}"
+        )
         config["backstory"] = config["backstory"].replace("{gccp_knowledge}", kb_text)
-
-        sentiment_dir_tool = DirectoryReadTool(directory="data/processed/sentiment")
 
         return Agent(
             config=config,
             llm=advanced_llm,
-            tools=[
-                FileReadTool(),
-                sentiment_dir_tool,
-                search_market_context,
-            ],
-        )
-
-    @agent
-    def forensic_accountant(self) -> Agent:
-        annual_report_dir_tool = DirectoryReadTool(
-            directory="data/processed/annual_reports"
-        )
-        return Agent(
-            config=self.agents_config["forensic_accountant"],
-            llm=light_llm,
-            tools=[annual_report_dir_tool, read_file],
-            max_iter=5,
+            allow_delegation=True,
+            reasoning=True,
+            max_reasoning_attempts=3,
         )
 
     @agent
     def data_specialist(self) -> Agent:
+        sentiment_dir_tool = DirectoryReadTool(
+            directory=str(PROCESSED_DIR / "sentiment")
+        )
         return Agent(
             config=self.agents_config["data_specialist"],
             llm=light_llm,
@@ -364,32 +371,32 @@ class SynthesizerCrew:
                 QueryStockDatabaseTool(),
                 FetchRecentFinancialsTool(),
                 FetchPeerComparisonsTool(),
+                FileReadTool(),
+                sentiment_dir_tool,
             ],
-            max_iter=5,
+        )
+
+    @agent
+    def forensic_accountant(self) -> Agent:
+        annual_report_dir_tool = DirectoryReadTool(
+            directory=str(PROCESSED_ANNUAL_REPORTS_DIR)
+        )
+        return Agent(
+            config=self.agents_config["forensic_accountant"],
+            llm=light_llm,
+            tools=[annual_report_dir_tool, read_file],
         )
 
     @task
-    def data_specialist_collect_metrics(self) -> Task:
+    def collect_baseline_metrics(self) -> Task:
         return Task(
-            config=self.tasks_config["data_specialist_collect_metrics"],
+            config=self.tasks_config["collect_baseline_metrics"],
         )
 
     @task
-    def manager_plan_directives(self) -> Task:
+    def forensic_annual_report_review(self) -> Task:
         return Task(
-            config=self.tasks_config["manager_plan_directives"],
-        )
-
-    @task
-    def accountant_answer_questions(self) -> Task:
-        return Task(
-            config=self.tasks_config["accountant_answer_questions"],
-        )
-
-    @task
-    def visualizer_create_charts(self) -> Task:
-        return Task(
-            config=self.tasks_config["visualizer_create_charts"],
+            config=self.tasks_config["forensic_annual_report_review"],
         )
 
     @task
@@ -405,21 +412,19 @@ class SynthesizerCrew:
 
     @crew
     def crew(self) -> Crew:
-        """Creates the Synthesizer crew orchestrating the evaluation flow."""
+        """Creates the Synthesizer crew with hierarchical manager delegation."""
+        # Filter out the manager from the worker list (same pattern as CollectorCrew)
+        worker_agents = [
+            a
+            for a in self.agents
+            if a.role != self.agents_config["synthesizer_manager"]["role"]
+        ]
+
         return Crew(
-            agents=[
-                self.lead_synthesizer(),
-                self.forensic_accountant(),
-                self.data_specialist(),
-            ],
-            tasks=[
-                self.data_specialist_collect_metrics(),
-                self.manager_plan_directives(),
-                self.accountant_answer_questions(),
-                self.visualizer_create_charts(),
-                self.compile_evaluation_report(),
-            ],
-            process=Process.sequential,
+            agents=worker_agents,
+            tasks=self.tasks,
+            process=Process.hierarchical,
+            manager_agent=self.synthesizer_manager(),
             verbose=True,
             tracing=True,
         )
@@ -429,188 +434,3 @@ class SynthesizerCrew:
         Executes the Synthesizer Crew with strongly typed inputs.
         """
         return self.crew().kickoff(inputs=inputs.model_dump())
-
-
-class SynthesizerState(BaseModel):
-    stock_symbols: str = ""
-    date: str = ""
-    financial_summary: str = ""
-    manager_directives: str = ""
-    accountant_findings: str = ""
-    chart_links: str = ""
-    report: SynthesizerReport | None = None
-    markdown: str = ""
-
-
-class SynthesizerFlow(Flow[SynthesizerState]):
-    """Flow orchestrator for the Synthesizer module."""
-
-    @start()
-    def collect_data_step(self):
-        print(
-            f"🚀 [Step 1] Initializing Data Collection for {self.state.stock_symbols}..."
-        )
-        crew_def = SynthesizerCrew()
-        crew = Crew(
-            agents=[crew_def.data_specialist()],
-            tasks=[crew_def.data_specialist_collect_metrics()],
-            verbose=True,
-            tracing=True,
-        )
-        result = crew.kickoff(
-            inputs={"stock_symbols": self.state.stock_symbols, "date": self.state.date}
-        )
-
-        # Manual Pydantic validation to bypass CrewAI's tool_choice='required' Anthropic crash
-        raw_text = str(result)
-        try:
-            import json
-            import re
-
-            match = re.search(r"\{.*\}", raw_text, re.DOTALL)
-            if match:
-                parsed_json = json.loads(match.group(0))
-                metrics = BaselineMetrics(**parsed_json)
-                self.state.financial_summary = metrics.to_markdown()
-                print("\n✅ Manual BaselineMetrics Pydantic extraction successful.")
-            else:
-                self.state.financial_summary = raw_text
-        except Exception as e:
-            print(
-                f"\n⚠️ Warning: Manual Pydantic extraction failed ({e}). Falling back to raw text."
-            )
-            self.state.financial_summary = raw_text
-
-        # Save the baseline to disk for forensics
-        output_dir = f"data/processed/synthesizer/{self.state.stock_symbols}"
-        os.makedirs(output_dir, exist_ok=True)
-        with open(
-            f"{output_dir}/{self.state.stock_symbols}_financial_summary.md",
-            "w",
-            encoding="utf-8",
-        ) as f:
-            f.write(self.state.financial_summary)
-
-        return self.state.financial_summary
-
-    @listen(collect_data_step)
-    def manager_directives_step(self, financial_summary):
-        print("🚀 [Step 2] Manager analyzing baseline to generate directives...")
-        crew_def = SynthesizerCrew()
-        crew = Crew(
-            agents=[crew_def.lead_synthesizer()],
-            tasks=[crew_def.manager_plan_directives()],
-            verbose=True,
-            tracing=True,
-        )
-        result = crew.kickoff(
-            inputs={
-                "stock_symbols": self.state.stock_symbols,
-                "financial_summary": self.state.financial_summary,
-            }
-        )
-        self.state.manager_directives = str(result)
-        return self.state.manager_directives
-
-    @listen(manager_directives_step)
-    def accountant_qa_step(self, directives):
-        print("🚀 [Step 3a] Forensic Accountant answering Manager's questions...")
-        crew_def = SynthesizerCrew()
-        crew = Crew(
-            agents=[crew_def.forensic_accountant()],
-            tasks=[crew_def.accountant_answer_questions()],
-            verbose=True,
-            tracing=True,
-        )
-        result = crew.kickoff(
-            inputs={
-                "stock_symbols": self.state.stock_symbols,
-                "manager_directives": directives,
-            }
-        )
-        self.state.accountant_findings = str(result)
-        return self.state.accountant_findings
-
-    @listen(manager_directives_step)
-    def visualizer_charts_step(self, directives):
-        print("🚀 [Step 3b] Visualizer drawing requested charts...")
-        crew_def = SynthesizerCrew()
-        crew = Crew(
-            agents=[crew_def.data_specialist()],
-            tasks=[crew_def.visualizer_create_charts()],
-            verbose=True,
-            tracing=True,
-        )
-        result = crew.kickoff(
-            inputs={
-                "stock_symbols": self.state.stock_symbols,
-                "manager_directives": directives,
-            }
-        )
-        self.state.chart_links = str(result)
-        return self.state.chart_links
-
-    @listen(and_(accountant_qa_step, visualizer_charts_step))
-    def compile_report_step(self, inputs):
-        print("🚀 [Step 4] Manager synthesizing final GCCP Report...")
-        crew_def = SynthesizerCrew()
-        crew = Crew(
-            agents=[crew_def.lead_synthesizer()],
-            tasks=[crew_def.compile_evaluation_report()],
-            verbose=True,
-            tracing=True,
-        )
-
-        result = crew.kickoff(
-            inputs={
-                "stock_symbols": self.state.stock_symbols,
-                "date": self.state.date,
-                "financial_summary": self.state.financial_summary,
-                "accountant_findings": self.state.accountant_findings,
-                "chart_links": self.state.chart_links,
-            }
-        )
-
-        raw_text = str(result)
-        try:
-            import json
-            import re
-
-            match = re.search(r"\{.*\}", raw_text, re.DOTALL)
-            if match:
-                parsed_json = json.loads(match.group(0))
-                self.state.report = SynthesizerReport(**parsed_json)
-                print("\n✅ Manual SynthesizerReport Pydantic extraction successful.")
-            else:
-                self.state.markdown = raw_text
-                print("\n⚠️ Warning: No JSON found in output. Falling back to raw text.")
-        except Exception as e:
-            self.state.markdown = raw_text
-            print(
-                f"\n⚠️ Warning: Manual Pydantic extraction failed ({e}). Falling back to raw text."
-            )
-
-        return self.state.report
-
-    @listen(compile_report_step)
-    def save_report(self, report):
-        if not report:
-            return "No report to save."
-
-        try:
-            md_content = report.to_markdown()
-            self.state.markdown = md_content
-
-            symbol = self.state.stock_symbols
-            output_dir = f"data/processed/synthesizer/{symbol}"
-            # Ensure the symbol-specific directory exists
-            os.makedirs(output_dir, exist_ok=True)
-
-            file_path = f"{output_dir}/{symbol}_GCCP_report.md"
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(md_content)
-            print(f"\n✅ Final Synthesizer GCCP Report saved to: {file_path}")
-            return f"Report physically saved at {file_path}"
-        except Exception as e:
-            print(f"❌ Failed to save report: {e}")
-            return f"Error saving report: {e}"

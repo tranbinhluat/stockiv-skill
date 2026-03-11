@@ -12,7 +12,7 @@ class PipelineState(BaseModel):
     request: str = ""
     target_ticker: str = ""
     history: str = ""
-    mock_crews: list[str] = []
+    mock: list[str] = []
 
     # Generic dictionary for storing any workflow-specific outputs
     shared_data: dict = {}
