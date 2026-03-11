@@ -31,3 +31,5 @@ Thumbs.db
 logs/
 
 data/raw
+
+*.pdf
