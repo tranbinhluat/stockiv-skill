@@ -1,7 +1,7 @@
 """
 Synthesizer Crew - Interprets and evaluates data directly against the GCCP framework.
 
-Uses Process.hierarchical with a manager agent that delegates to workers.
+Uses Process.sequential where agents execute specific tasks, but retain delegation rights.
 """
 
 from crewai import Agent, Crew, Process, Task
@@ -14,7 +14,7 @@ from typing import Optional
 from stockiv.agents.base import light_llm, advanced_llm
 from stockiv.config.paths import PROCESSED_DIR, PROCESSED_ANNUAL_REPORTS_DIR
 from stockiv.knowledge.base import kb
-from crewai_tools import FileReadTool, DirectoryReadTool
+from crewai_tools import FileReadTool, DirectoryReadTool, MDXSearchTool
 
 import os
 import subprocess
@@ -38,7 +38,13 @@ def execute_python_code(code: str) -> str:
         os.remove(temp_path)
 
         if result.returncode == 0:
-            return f"Execution successful. Output:\n{result.stdout}"
+            out = result.stdout
+            if len(out) > 6000:
+                out = (
+                    out[:6000]
+                    + "\n\n...[TRUNCATED: Output is too long! Do NOT print entire dataframes with pd.set_option('display.max_rows', None). Use .head(), .tail(), or strictly filter your queries instead.]..."
+                )
+            return f"Execution successful. Output:\n{out}"
         else:
             return f"Execution failed. Error:\n{result.stderr}"
     except Exception as e:
@@ -66,6 +72,7 @@ from tools.sqlite_tools import (  # noqa: E402
     QueryStockDatabaseTool,
     FetchRecentFinancialsTool,
     FetchPeerComparisonsTool,
+    FetchCurrentMarketSnapshotTool,
 )
 
 
@@ -325,7 +332,7 @@ class SynthesizerCrewInputs(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Crew Definition (Hierarchical Manager Pattern)
+# Crew Definition (Sequential Pattern)
 # ---------------------------------------------------------------------------
 
 
@@ -353,6 +360,7 @@ class SynthesizerCrew:
         return Agent(
             config=config,
             llm=advanced_llm,
+            tools=[FileReadTool()],
             allow_delegation=True,
             reasoning=True,
             max_reasoning_attempts=3,
@@ -370,6 +378,7 @@ class SynthesizerCrew:
                 execute_python_code,
                 QueryStockDatabaseTool(),
                 FetchRecentFinancialsTool(),
+                FetchCurrentMarketSnapshotTool(),
                 FetchPeerComparisonsTool(),
                 FileReadTool(),
                 sentiment_dir_tool,
@@ -384,7 +393,19 @@ class SynthesizerCrew:
         return Agent(
             config=self.agents_config["forensic_accountant"],
             llm=light_llm,
-            tools=[annual_report_dir_tool, read_file],
+            tools=[
+                annual_report_dir_tool,
+                MDXSearchTool(
+                    collection_name="forensic_mdx_collection_v2",
+                    config={
+                        "embedding_model": {
+                            "provider": "sentence-transformer",
+                            "config": {"model": "all-MiniLM-L6-v2"},
+                        },
+                    },
+                ),
+            ],
+            verbose=False,
         )
 
     @task
@@ -410,27 +431,60 @@ class SynthesizerCrew:
             config=task_config,
         )
 
+    def _build_evaluate_feedback_task(self) -> Task:
+        """Build the evaluate_feedback task (not decorated — used only in revision_crew)."""
+        task_config = self.tasks_config["evaluate_feedback"].copy()
+        schema_str = SynthesizerReport.model_json_schema()
+        task_config["description"] += (
+            f"\n\nCRITICAL: Your JSON output MUST explicitly follow this flat schema:\n{schema_str}"
+        )
+        return Task(
+            config=task_config,
+            agent=self.synthesizer_manager(),
+        )
+
     @crew
     def crew(self) -> Crew:
-        """Creates the Synthesizer crew with hierarchical manager delegation."""
-        # Filter out the manager from the worker list (same pattern as CollectorCrew)
-        worker_agents = [
-            a
-            for a in self.agents
-            if a.role != self.agents_config["synthesizer_manager"]["role"]
-        ]
+        """Creates the Synthesizer crew for FIRST PASS (full pipeline).
 
+        Tasks: collect_baseline_metrics → forensic_annual_report_review → compile_evaluation_report
+        """
         return Crew(
-            agents=worker_agents,
+            agents=self.agents,
             tasks=self.tasks,
-            process=Process.hierarchical,
-            manager_agent=self.synthesizer_manager(),
+            process=Process.sequential,
             verbose=True,
             tracing=True,
         )
 
-    def run(self, inputs: SynthesizerCrewInputs):
+    def revision_crew(self) -> Crew:
+        """Creates a lean Synthesizer crew for REVISION (feedback loop).
+
+        Tasks: evaluate_feedback ONLY — manager reads feedback + previous report himself.
+        Agents: all three are included so the manager can delegate data/forensic queries.
+        """
+        return Crew(
+            agents=[
+                self.synthesizer_manager(),
+                self.data_specialist(),
+                self.forensic_accountant(),
+            ],
+            tasks=[self._build_evaluate_feedback_task()],
+            process=Process.sequential,
+            verbose=True,
+            tracing=True,
+        )
+
+    def run(self, inputs: SynthesizerCrewInputs, revision: bool = False):
         """
         Executes the Synthesizer Crew with strongly typed inputs.
+
+        Args:
+            inputs: Crew inputs (paths, ticker, etc.)
+            revision: If True, uses revision_crew (evaluate_feedback only).
+                      If False, uses crew (full first-pass pipeline).
         """
+        if revision:
+            return self.revision_crew().kickoff(inputs=inputs.model_dump())
         return self.crew().kickoff(inputs=inputs.model_dump())
+

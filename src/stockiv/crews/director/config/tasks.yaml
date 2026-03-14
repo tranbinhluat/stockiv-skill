@@ -2,16 +2,25 @@ validate_analysis:
   description: >
     Perform comprehensive forensic review and validation of the stock analysis for {stock_symbols}.
 
-    **STOCK ANALYSIS TO REVIEW:**
-    Use your `FileReadTool` to read the synthesis report at: `{synthesis_report_path}`
-    If `{synthesis_report_path}` is empty or not provided, use the raw analysis text below:
-    {analysis}
+    **STEP 0 — REPORT CONTENT (PRE-LOADED)**
+    The synthesis report for {stock_symbols} has been pre-loaded below. Analyze this content for your review.
+    Report file: `{synthesis_report_path}`
 
-    **EVIDENCE STANDARDS TO ENFORCE (ZERO TRUST POLICY):**
-    {evidence_rules}
+    --- BEGIN REPORT ---
+    {report_content}
+    --- END REPORT ---
 
-    **FINANCIAL ANOMALY DETECTION GUIDE:**
-    {financial_rules}
+    If the report content above says "ERROR:", set decision = "MORE_INFO_NEEDED" with the error details.
+    You also have the `read_file` tool available if you need to read any additional files during your review.
+
+    **STEP 0.5 — FINANCIAL GROUND TRUTH (PRE-LOADED)**
+    The following financial data was collected directly from the vnstock API database.
+    Use this as your SOURCE OF TRUTH for cross-checking the Synthesizer's numbers.
+    If the Synthesizer's numbers contradict this data, flag it as an accuracy failure.
+
+    --- BEGIN FINANCIAL GROUND TRUTH ---
+    {financial_summary_content}
+    --- END FINANCIAL GROUND TRUTH ---
 
     Your Output Format:
     You must output your findings matching the ValidationDecision pydantic model.
@@ -149,10 +158,14 @@ validate_analysis:
 
     **Step 6: Validate Evidence**
     Set evidence fields:
-    - pdfs_provided: PDF documents attached or linked?
-    - page_references: Page references provided for all key numbers?
-    - excel_model: Excel model with formulas provided?
-    - primary_sources: Primary sources used (annual reports, filings)?
+    - pdfs_provided: Annual reports referenced or linked (database sources count)?
+    - page_references: Key numbers traceable to source (inline citations like [Source: SQLite DB] count)?
+    - excel_model: Explicit calculations shown for key metrics (P/E, PEG, target price)?
+    - primary_sources: Primary data sources identified (vnstock API/SQLite database, annual reports)?
+
+    NOTE: Our current data pipeline uses SQLite database (from vnstock API) and annual report MDX extraction.
+    Accept database-sourced data with inline "[Source: SQLite Database]" citations as valid evidence.
+    Do NOT reject solely because physical PDF files or Excel spreadsheets are not attached.
 
     **Step 7: Make Decision**
 

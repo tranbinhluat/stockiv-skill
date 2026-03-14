@@ -2,107 +2,144 @@ collect_baseline_metrics:
   description: >
     Create a comprehensive, self-contained financial baseline markdown report for `{stock_symbols}`.
 
-    Step 1: Use `FetchRecentFinancialsTool` for `{stock_symbols}` — extract 3-4 years of data plus the latest quarter.
-    Step 2: Use `FetchPeerComparisonsTool` for `{stock_symbols}` — gather VNINDEX baseline and top competitor ratios.
-    Step 3: Organize ALL data into readable markdown tables. You MUST include if available, do NOT fabricate:
-      - Current Metrics (price, date, market cap)
-      - VNINDEX Baseline (current value, momentum)
-      - Income Statement (revenue, profit with YoY%)
-      - Balance Sheet (assets, liabilities, equity)
-      - Profitability Ratios (ROE, ROA, margins)
-      - Cash Flow (OCF, FCF)
-      - Fundamental Ratios (P/E, P/B, EV/EBITDA)
-      - Peer Comparison (top competitors)
+    Step 0: Use `FetchCurrentMarketSnapshotTool` for `{stock_symbols}` FIRST.
+    This returns the DEFINITIVE current price, P/E, P/B, EV/EBITDA, VNINDEX — use these values EXACTLY.
+    DO NOT change, round, or approximate these values. They are the single source of truth.
 
-    CRITICAL: Do NOT perform analysis or write qualitative summaries.
-    Your job is ONLY to extract and organize the raw data facts.
+    Step 1: Use `FetchRecentFinancialsTool` for `{stock_symbols}` — it returns pivot tables with
+    columns = years/quarters and rows = financial items for Income, Balance, and Cash Flow statements.
+    CRITICAL: Keep the exact pivot table structure provided by the tool (columns = periods, rows = financial items). DO NOT transpose the tables.
+    Step 2: Use `FetchPeerComparisonsTool` for `{stock_symbols}` — gather peer comparison ratios.
+    Step 3: **Use `CalculateFrameworkMetricsTool` for `{stock_symbols}` to compute Cash Flow Divergence, Margins, and GCCP Criteria deterministically. DO NOT calculate these yourself.**
+    Step 4: Use `QueryStockDatabaseTool` if needed for additional data points.
+    Step 5: Organize ALL data into the financial summary with clearly separated sections:
 
-    Save the complete output to `{financial_summary_path}`.
+      ## Current Market Snapshot (from Step 0 — IMMUTABLE, do NOT change these values)
+      - Current Price, Date, P/E, P/B, EV/EBITDA, Market Cap, VNINDEX
+
+      ## Historical Financials (from Step 1 — Pivot Table format)
+      - Income Statement (Mixed 4 Years & 4 Quarters)
+      - Balance Sheet (Mixed 4 Years & 4 Quarters)
+      - Cash Flow Statement (Mixed 4 Years & 4 Quarters)
+      - Key Ratios (Mixed 4 Years & 4 Quarters)
+
+      ## Peer Comparison (from Step 2)
+      - Top competitors with P/E, P/B, EPS, ROE
+
+      ## Framework Metrics (from Step 3 - EXTREMELY IMPORTANT)
+      - Exact output from `CalculateFrameworkMetricsTool` regarding Margins, Cash Flow Divergence, Graham Criteria, and Lynch PEG.
+
+    IMPORTANT: If yearly data is missing (tool shows "⚠️ No yearly data available"), explicitly state this as a data limitation — do NOT fabricate yearly figures from quarterly data.
+    You MUST explicitly cite the data source (e.g., `[Source: vnstock/SQLite Database]`) beneath every markdown table you generate.
+
+    CRITICAL: Return the complete markdown output directly as your FINAL ANSWER. The system will automatically save it to `{financial_summary_path}` via the output_file configuration. DO NOT use the execute_python_code tool to try and write or save this markdown file yourself.
   expected_output: >
     A rigidly structured output matching the `BaselineMetrics` pydantic model fields.
-    All fields must contain rich markdown tables with exact numbers. No prose or summaries.
+    All fields must contain rich markdown tables with exact numbers.
+    Must include the consolidated mixed tables for financials and ratios.
+  agent: data_specialist
+  output_file: "{financial_summary_path}"
 
 forensic_annual_report_review:
   description: >
-    Check annual report availability for `{stock_symbols}`, then run 4 standard GCCP forensic checks.
+    Check annual report availability for `{stock_symbols}`, then use semantic search to run 4 standard GCCP forensic checks:
 
-    Step 1: List files in `{annual_reports_dir}`. Find the `{stock_symbols}` annual report markdown file.
-    Step 2: If NOT found, respond with `ANNUAL_REPORT_NOT_AVAILABLE` and stop immediately. Do not guess.
-    Step 3: If found, read the full annual report markdown using your `read_file` tool.
-    Step 4: Run the 4 standard forensic checks:
-      1. Fake Revenue: Compare receivables growth vs revenue growth.
-      2. Margin Squeeze: Look for declining gross/operating margins over time.
-      3. Hidden Debt: Check for off-balance-sheet items, related party transactions, contingent liabilities.
-      4. Inventory Bloat: Compare inventory growth vs COGS growth.
-    Step 5: For each check, provide: Status (MENTIONED/NOT_MENTIONED), Short Quote (key text), Summary.
-    Step 6: Report to manager with your finding.
-    CRITICAL: You MUST ONLY read files from `{annual_reports_dir}`. Do NOT read sentiment data.
+    Step 1: Use `DirectoryReadTool` on `{annual_reports_dir}` to list files and find the exact path to the `{stock_symbols}` annual report `.md` file.
+    Step 2: If NOT found, respond with `ANNUAL_REPORT_NOT_AVAILABLE` and stop immediately.
+    Step 3: If found, use `MDXSearchTool` to search that specific file for indicators of the 4 standard forensic checks (Fake Revenue, Margin Squeeze, Hidden Debt, Inventory Bloat). Do NOT attempt to read the entire file.
+    Step 4: For each check, provide: Status (MENTIONED/NOT_MENTIONED), Short Quote (key text from your search), Summary.
+    Step 5: Report findings back to the manager. You are STRICTLY FORBIDDEN from outputting raw `MDXSearchTool` search payloads to the manager. Keep your final answer concise.
   expected_output: >
-    Either `ANNUAL_REPORT_NOT_AVAILABLE` or a structured Q&A with all 4 forensic checks answered
     with Status, Short Quote (key text), and Summary for each.
+  agent: forensic_accountant
 
 compile_evaluation_report:
   description: >
     Synthesize all inputs into a structured GCCP evaluation report for `{stock_symbols}`.
+    You will receive data via context from previous tasks. DELEGATE ad-hoc data queries and visualization queries to `data specialist`. DELEGATE any new annual report questions to `forensic accounting and document analysis specialist`.
 
-    You are the Chief Orchestrator. Use the context from previous tasks and delegate additional work as needed.
+    ⚠️ ANTI-HALLUCINATION RULE FOR current_metrics FIELD:
+    Your `current_metrics` field MUST contain the EXACT price, date, and valuation ratios
+    from the Data Specialist's Current Market Snapshot (the FetchCurrentMarketSnapshotTool output).
+    Do NOT use values from your training data. Copy them verbatim.
 
-    --- HANDLE FEEDBACK (if `{feedback}` is provided) ---
-    Read the Director's rejection feedback, identify weaknesses cited, and address them.
-    Delegate additional data extraction or forensic questions to subordinates if needed.
+    STEP 0: READ SENTIMENT REPORT
+    Use your `FileReadTool` to read the market and ticker sentiment at `{ticker_sentiment_path}`.
 
-    --- STEP 1: READ ALL INPUTS ---
-    - Read baseline metrics from `{financial_summary_path}` using delegation to Data Specialist.
-    - Read ticker sentiment from `{ticker_sentiment_path}`.
-    - Read market sentiment from `{sentiment_dir}`.
-    - Receive forensic findings from the previous task context.
+    STEP 1: CLASSIFY INDUSTRY DYNAMICS (GCCP Part II.1)
+    Classify: Slow Growth / Sustainable / Fast Growth / Cyclical. Incorporate sentiment findings here.
 
-    --- STEP 2: CLASSIFY INDUSTRY DYNAMICS (GCCP Part II.1) ---
-    Classify: Slow Growth / Sustainable / Fast Growth / Cyclical.
-
-    --- STEP 3: EVALUATE GOOD COMPANY (Qualitative, GCCP Part II.2-3) ---
+    STEP 2: EVALUATE GOOD COMPANY (Qualitative, GCCP Part II.2-3)
     - Business Model (Input → Engine → Output)
     - Management & Governance
     - Use ticker sentiment for recent news / management statements.
-    - If you spot unclear numbers or claims, delegate follow-up questions to `Forensic Accounting and Document Analysis Specialist`.
+    - If you spot unclear numbers or claims, delegate follow-up questions to `forensic accounting and document analysis specialist`.
     - GUARD: If forensic review returned `ANNUAL_REPORT_NOT_AVAILABLE`, do NOT delegate further annual report questions.
 
-    --- STEP 4: EVALUATE GOOD COMPANY (Quantitative, GCCP Part III) ---
+    STEP 3: EVALUATE GOOD COMPANY (Quantitative, GCCP Part III)
+    - IMPORTANT: Extract the exact anomaly warnings, Margins, and Cash Flow logic provided by the `CalculateFrameworkMetricsTool` results inside the baseline summary. DO NOT recalculate or hallucinate them.
     - Capital Structure, Profitability (ROE>15%, ROA>6%), Cash Generation (OCF>NI, FCF>5%)
     - Incorporate forensic findings, flag anomalies.
     - Delegate specific forensic questions as they arise (same unavailability guard).
 
-    --- STEP 5: DELEGATE VISUALIZATIONS (dynamic, based on findings) ---
-    Based on Steps 2-4 findings, delegate SPECIFIC charts to `Data Specialist` that highlight key discoveries.
+    STEP 4: DELEGATE VISUALIZATIONS (dynamic, based on findings)
+    Based on Steps 1-3 findings, delegate SPECIFIC charts to `data specialist` that highlight key discoveries.
     Examples: "Draw a chart showing margin trends from 2022-2025" or "Show revenue vs receivables growth".
     Data Specialist saves charts to `{synthesizer_output_dir}/charts/` and returns markdown embed links.
 
-    --- STEP 6: EVALUATE CHEAP PRICE (GCCP Part IV) ---
+    STEP 5: EVALUATE CHEAP PRICE (GCCP Part IV)
     Market Phase (Crisis/Fair/Bubble), Graham/Lynch criteria, Peer Comparison, Relative Valuation, Margin of Safety.
 
-    --- STEP 7: TARGET PRICE & ACTIONABLE SUGGESTION (GCCP Part V) ---
+    STEP 6: TARGET PRICE & ACTIONABLE SUGGESTION (GCCP Part V)
     Calculate Fair Value → apply MoS → Suggested Buy Price.
     Actionable: "BUY NOW" / "WAIT FOR P/E TO DROP TO Xx" / "AVOID".
 
-    --- STEP 8: COMPILE FINAL REPORT ---
-    Embed chart images, use clickable inline markdown links for all citations.
-    Output as `SynthesizerReport` JSON matching the Pydantic schema.
-
-    CRITICAL CITATION RULE:
-    Use CLICKABLE INLINE MARKDOWN LINKS for every financial number, ratio, and claim.
-    You are STRICTLY FORBIDDEN from using plain text footnotes like `[^1]`.
+    STEP 7: COMPILE FINAL REPORT
+    Embed chart images and compile all sections into the final output.
   expected_output: >
-    A highly structured report perfectly matching the `SynthesizerReport` format.
-    CRITICAL: Output your entire response as a single, valid JSON object matching the `SynthesizerReport` schema.
-    You MUST populate `current_metrics` using the precise current trading price, VNINDEX, and date.
-    You MUST use explicit `[Link Text](URL)` markdown links for all citations.
-    You MUST explicitly declare any quantitative anomalies.
-    You MUST embed charts generated by the Data Specialist using their markdown image embed links.
-    You MUST process the data section-by-section per GCCP framework.
-    Do NOT provide an overall Pass/Fail for the stock.
-
-    FINALLY, in your summary, you MUST:
-    - Calculate a specific suggested buy price (Fair Value minus Required MoS).
-    - Provide a clear `actionable_suggestion` (e.g. "BUY NOW", "WAIT FOR DIP TO X", "AVOID").
-    - Provide explicit `critical_warnings` detailing what to wait for and what to be careful about.
+    A single, valid JSON object matching the `SynthesizerReport` Pydantic schema.
+    All fields must be populated. Include in your summary:
+    - Explicit citations to `[Financial Summary]({financial_summary_path})` for quantitative claims.
+    - A specific suggested buy price (Fair Value minus Required MoS).
+    - A clear `actionable_suggestion` (e.g. "BUY NOW", "WAIT FOR DIP TO X", "AVOID").
+    - Explicit `critical_warnings` detailing what to wait for and what to be careful about.
+    - The `current_metrics` field MUST exactly match the snapshot from FetchCurrentMarketSnapshotTool.
   output_file: "{synthesizer_output_dir}/{stock_symbols}_GCCP_report_v{report_version}.md"
+  agent: synthesizer_manager
+
+evaluate_feedback:
+  description: >
+    The Director has REJECTED the previous version of the GCCP report for `{stock_symbols}`.
+    Your job is a TARGETED REVISION, not a full rewrite.
+
+    STEP 1: Use your `FileReadTool` to read the Director's review at: `{feedback}`
+    Read the full content yourself. Do NOT delegate this step.
+
+    STEP 2: Use your `FileReadTool` to read the previous report version from `{synthesizer_output_dir}`.
+    Read the full content yourself. Do NOT delegate this step.
+
+    STEP 3: EXTRACT the specific weaknesses and deficiencies the Director cited.
+
+    STEP 4: For EACH cited weakness, decide:
+      - If it requires more DATA → delegate to `data specialist` for additional queries or charts.
+      - If it requires DOCUMENT EVIDENCE → delegate to `forensic accounting and document analysis specialist`.
+      - If it requires REWRITING or REANALYSIS → revise that section yourself using the existing context.
+
+    STEP 5: REBUILD the full report: keep approved sections intact, fix only the weak sections.
+
+    STEP 6: Add a `Revision Notes` section (within `summary_of_findings`) stating:
+      - Which weaknesses were addressed
+      - What new data or evidence was gathered
+      - What remains as a known limitation
+
+    WARNING: Do NOT re-run baseline data extraction or forensic standard checks unless
+    the Director feedback explicitly demands it.
+    CRITICAL WARNING: If the Director requires new financial metrics or data extraction from the Data Specialist, you MUST explicitly instruct the Data Specialist to use the `append_to_file` tool to APPEND this new data to `{financial_summary_path}`. You are STRICTLY FORBIDDEN from overwriting or destroying the original baseline financial summary file.
+  expected_output: >
+    A single, valid JSON object matching the exactly simplified `SynthesizerReport` Pydantic schema.
+    Your `report_markdown` string field MUST contain the FULL, beautifully formatted markdown
+    matching the multi-part structure (Part I to Part VI).
+    All boolean fields must be accurately populated.
+    Include a `Revision Notes` sub-section within the `summary_of_findings` or markdown text.
+  output_file: "{synthesizer_output_dir}/{stock_symbols}_GCCP_report_v{report_version}.md"
+  agent: synthesizer_manager

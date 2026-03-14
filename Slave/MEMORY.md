@@ -67,6 +67,31 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 
 # Critical Rule: All Crews MUST explicitly enable `tracing=True`
 # in the @crew initialization so the user knows what's happening.
+
+# Feedback Loop Pattern (2026-03-13):
+# - crew.replay() is BROKEN — UUIDs regenerate per .crew() call
+# - Use dual crew pattern: crew() for first pass, revision_crew() for feedback
+# - File-based context injection via Flow state is the correct approach
+# - Do NOT try to keep crew instances alive between iterations
+#
+# Qwen + CrewAI Tool Calling Bugs (2026-03-13):
+# - FileReadTool schema has start_line/line_count: int|None — Qwen serializes
+#   None as the STRING "None" instead of JSON null → Pydantic validation fails
+# - Qwen skips tool calls entirely when output_pydantic is set, going straight
+#   to Final Answer with fabricated data → infinite retry loop
+# - FIX: Pre-read files in flow code and inject content via {variable}
+#   interpolation in task prompts. Keep tool on agent for additional reads.
+# - For custom tools, use @tool with ONLY string params (no int|None)
+#
+# Report Loop Data Pipeline (2026-03-13):
+# - EAV tool output (one row per metric) confuses LLMs → use PIVOT TABLE format
+#   (columns=periods, rows=items) in FetchRecentFinancialsTool
+# - LLMs hallucinate current prices from training data → FetchCurrentMarketSnapshotTool
+#   returns definitive values; task prompt says "copy verbatim, do NOT approximate"
+# - Director MUST receive financial_summary.md as ground truth (STEP 0.5) to cross-check
+# - Evidence criteria must match actual pipeline capabilities (SQLite + MDX, not PDFs)
+# - CrewAI coworker delegation is case-sensitive: use exact lowercase role names
+#   e.g. "data specialist" not "data_specialist" or "Data Specialist"
 ```
 
 **7 StockIV Crews:**
