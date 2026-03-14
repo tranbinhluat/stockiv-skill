@@ -112,9 +112,11 @@ validate_analysis:
 
     **Step 5B: Validate Logic & Reasoning (→ logic_and_reasoning_sound)**
     Check whether the analysis conclusions make logical sense given the data:
-    - Dissonance check: Does the Actionable Suggestion match the Valuation? (e.g. claiming a stock is a "Wait" even when PEG is fantastic and MoS is huge).
+    - Dissonance check: Does the Actionable Suggestion strictly align with the calculated Valuation? If the Target Price is LOWER than the Current Price, the recommendation CANNOT be "BUY".
+    - Growth Assumption Sanity: Are the projected growth rates mathematically grounded in historical reality? Projecting >20% sustained growth for a mature, large-cap, or slow-growth classified company is a red flag and must be challenged unless explicitly justified by a massive catalyst.
+    - Multiple Sanity: Is the assigned "Fair P/E" or "Fair P/B" realistic for the sector and the Vietnamese market context? Re-rating a stock to an exceptionally high multiple without peer/historical precedent is illogical.
     - Sentiment check: Was strongly negative sentiment acknowledged and factored into the risk assessment?
-    - Classification check: Does the categorization numerically match reality? (e.g. calling a 5% grower a "Fast Grower" is illogical).
+    - Classification check: Does the categorization numerically match reality? (e.g. calling a stable 5% grower a "Fast Grower" or a bank a "Slow Grower" is illogical).
     If the logic is twisted or nonsensical, set logic_and_reasoning_sound = false and explain it in failures.
 
     **Step 6: Validate Evidence (→ evidence_traceable)**

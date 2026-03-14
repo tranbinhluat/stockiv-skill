@@ -149,13 +149,13 @@ class FetchRecentFinancialsTool(BaseTool):
             # Mix Yearly (last 3 years) and Quarterly (last 2 quarters) periods
             # e.g., ['2025', '2024', '2023', '2025-Q4', '2025-Q3']
             all_stmt_periods = sorted(stmts_df["period"].unique(), reverse=True)
-            yearly_periods = [p for p in all_stmt_periods if "-Q" not in p][:3]
+            yearly_periods = [p for p in all_stmt_periods if "-Q" not in p][:5]
             quarterly_periods = [p for p in all_stmt_periods if "-Q" in p][:2]
             mixed_periods = yearly_periods + quarterly_periods
 
             # The same for ratios, though typically aligned
             all_ratio_periods = sorted(ratios_df["period"].unique(), reverse=True)
-            r_yearly = [p for p in all_ratio_periods if "-Q" not in p][:3]
+            r_yearly = [p for p in all_ratio_periods if "-Q" not in p][:5]
             r_quarterly = [p for p in all_ratio_periods if "-Q" in p][:2]
             mixed_ratio_periods = r_yearly + r_quarterly
 
@@ -804,22 +804,43 @@ class CalculateFrameworkMetricsTool(BaseTool):
             res += f"- **EV/EBITDA:** {ev_ebitda:.2f}x\n"
 
             eps_df = get_ratio_yearly("Thu nhập trên mỗi cổ phần", limit=4)
+            ni_cagr_df = get_stmt_yearly(
+                "Lợi nhuận sau thuế của cổ đông của Công ty mẹ", limit=4
+            )
+
             if not eps_df.empty and len(eps_df) >= 2:
                 eps_new = eps_df.iloc[0]["value"]
                 eps_old = eps_df.iloc[-1]["value"]
+                eps_new_period = eps_df.iloc[0]["period"]
+                eps_old_period = eps_df.iloc[-1]["period"]
                 eps_cagr = (
                     ((eps_new / eps_old) ** (1 / max(1, len(eps_df) - 1)) - 1) * 100
                     if eps_old > 0
                     else 0
                 )
+
+                ni_cagr = 0
+                if not ni_cagr_df.empty and len(ni_cagr_df) >= 2:
+                    ni_new = ni_cagr_df.iloc[0]["value"]
+                    ni_old = ni_cagr_df.iloc[-1]["value"]
+                    ni_cagr = (
+                        ((ni_new / ni_old) ** (1 / max(1, len(ni_cagr_df) - 1)) - 1)
+                        * 100
+                        if ni_old > 0
+                        else 0
+                    )
+
+                effective_cagr = max(eps_cagr, ni_cagr)
+
                 peg = (
-                    pe / (eps_cagr + div_yield * 100)
-                    if (eps_cagr + div_yield * 100) > 0
+                    pe / (effective_cagr + div_yield * 100)
+                    if (effective_cagr + div_yield * 100) > 0
                     else 999
                 )
-                res += f"- **EPS {len(eps_df)}-Year CAGR:** {eps_cagr:.2f}%\n"
+                res += f"- **EPS {len(eps_df)}-Year CAGR ({eps_old_period} to {eps_new_period}):** {eps_cagr:.2f}%\n"
+                res += f"- **Net Profit {len(ni_cagr_df)}-Year CAGR ({eps_old_period} to {eps_new_period}):** {ni_cagr:.2f}% (Note for AI: Use this Net Profit CAGR for growth evaluation if EPS CAGR is artificially low due to unadjusted stock dividends)\n"
                 res += f"- **Dividend Yield:** {div_yield * 100:.2f}%\n"
-                res += f"- **Lynch PEG Ratio:** {peg:.2f} \n"
+                res += f"- **Lynch PEG Ratio:** {peg:.2f} (Formula: P/E / (Effective CAGR + Dividend Yield))\n"
 
             conn.close()
             return res

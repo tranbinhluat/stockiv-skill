@@ -36,6 +36,7 @@ from stockiv.flows.state import PipelineState
 from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew, SynthesizerCrewInputs
 from stockiv.crews.director.director import DirectorCrew, DirectorCrewInputs
 from stockiv.crews.director.models import DirectorDecision
+from stockiv.crews.reporter.reporter import ReporterCrew, ReporterCrewInputs
 
 
 class ReportLoopState(PipelineState):
@@ -143,8 +144,10 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
         )
 
         # Annual reports
+        ticker_annual_reports_dir = PROCESSED_ANNUAL_REPORTS_DIR / ticker
+        ticker_annual_reports_dir.mkdir(parents=True, exist_ok=True)
         self.state.shared_data.setdefault(
-            "annual_reports_dir", str(PROCESSED_ANNUAL_REPORTS_DIR)
+            "annual_reports_dir", str(ticker_annual_reports_dir)
         )
 
         # Sentiment
@@ -556,22 +559,38 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
     @listen("route_to_reporter")
     def execute_reporter(self):
         """
-        Mock Reporter step handling approval.
+        Execute Reporter step handling approval.
         """
         print("\n[ReportLoop Flow] ✨ Analysis APPROVED! Generating final report...")
 
-        # We simulate the reporter actually writing it since Reporter Crew lacks full task setup.
-        symbol = self.state.target_ticker or "TICKER"
-        output_dir = f"data/processed/reports/{symbol}"
-        os.makedirs(output_dir, exist_ok=True)
+        ticker = self.state.target_ticker or "TICKER"
+        version = self.state.report_version
+        output_dir = self.state.shared_data.get(
+            "synthesizer_output_dir", str(PROCESSED_SYNTHESIZER_DIR / ticker)
+        )
+        synthesis_report_path = str(
+            Path(output_dir) / f"{ticker}_GCCP_report_v{version}.md"
+        )
 
-        file_path = f"{output_dir}/Final_{symbol}_Report.md"
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(f"# Final Synthesized Report for {symbol}\n\n")
-            f.write("## Status: APPROVED BY DIRECTOR\n\n")
-            f.write(self.state.synthesized_insights)
+        print(
+            f"[ReportLoop Flow] Preserving approved report at: {synthesis_report_path}"
+        )
 
-        print(f"✅ Success! Report saved to {file_path}")
+        if not self._is_mocking("reporter"):
+            print(
+                "[ReportLoop Flow] 📝 Launching Reporter Crew to process and publish..."
+            )
+            inputs = ReporterCrewInputs(
+                stock_symbols=ticker,
+                source_md_path=synthesis_report_path,
+            )
+            ReporterCrew().run(inputs=inputs)
+        else:
+            print(
+                f"[ReportLoop Flow - MOCK] 📝 Mocking Reporter Crew for path: {synthesis_report_path}"
+            )
+
+        print("✅ Success! Report sent to reporter crew.")
         return "SUCCESS"
 
     @listen("route_to_failure")

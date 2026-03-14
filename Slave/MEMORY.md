@@ -122,6 +122,14 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 - **Compound Keys for Time-Series**: Cache metrics like P/E and P/B on a `(ticker, date)` compound primary key, not just `(ticker, year_report)`.
 - **API Specifics (vnstock)**: Must use `vnstock` 3.x. Requires `VNSTOCK_API_KEY` for 10-year financials from VCI/KBS providers. Market Indices lack `ratio_summary`. Macro APIs are fully unavailable on free tiers – rely on textual reports.
 
+### Lessons Learned & Best Practices
+
+1.  **AI Math Capabilities:** Explicitly state the math formula used inside the output of the ground-truth calculation tools (e.g. `Lynch PEG Ratio: 2.19 (Formula: P/E / (EPS CAGR + Dividend Yield))`). Otherwise, validator agents (like the Director) might attempt to retroactively verify the math using a *different* standard formula and falsely reject accurate numbers.
+2.  **Tool Output Constraints vs AI Complaints:** If an API limits data (e.g., vnstock limits to ~4 years), ensure the downstream formatting tools don't artificially restrict it further (e.g., limiting to 3 years). Always display the maximum span of data available, and specifically state the time ranges used when calculating averages/CAGRs so the LLM doesn't complain about "missing" intermediate years.
+3.  **Local LLMs & AI Usage Tokens:** When using a local LLM proxy (e.g., Anthropic provider format via litellm/vllm), CrewAI 1.9.3 might not receive or parse the `token_usage` headers correctly (especially if `parallel_tool_calls=False`), resulting in missing AI token statistics in the logs.
+4. **Keep SQLite Queries Simple**: The `query_stock_database` tool should only do simple SELECTs, not complex aggregation to avoid SQLite version issues. Delegate math to Python.
+5. **JSON Ratios Over EAV**: If you need multi-metric JSON (ROE, margin), query `ratio_summary` instead of hunting through EAV `financial_ratios`.
+
 ### Hierarchical Delegation & Agent Limits
 - **Batching Questions**: Instruct 'manager' agents to ask multiple questions in a single `ask_question_to_coworker` message to save tokens.
 - **Strict Subordinate Output**: Enforce strict text formats in subordinate agent's backstory (e.g., `Question | Status: MENTIONED/NOT_MENTIONED | Exact Quote | Summary`).
@@ -148,4 +156,9 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 ---
 
 *Update this file with significant lessons, decisions, and context as the project evolves.*
-\n### Recent Learnings (Synthesizer Agent)\n- Instead of using the native CrewAI BaseTool `max_usage_count` limits which are internal/undocumented in older versions, it is safer to create a dedicated agent (e.g., `market_researcher`) to wrap external tools. This way we can explicitly prompt the agent to strictly limit the number of tool usages per delegation (e.g., 1 search per delegation) and per full review (e.g., max 5 searches).
+\n### Recent Learnings (Synthesizer Agent)
+- Instead of using the native CrewAI BaseTool `max_usage_count` limits which are internal/undocumented in older versions, it is safer to create a dedicated agent (e.g., `market_researcher`) to wrap external tools. This way we can explicitly prompt the agent to strictly limit the number of tool usages per delegation (e.g., 1 search per delegation) and per full review (e.g., max 5 searches).
+
+### Separation of Forensic Concerns (Synthesizer Crew Updates - Mar 15)
+- **The Problem**: Asking a semantic search agent (`forensic_accountant`) to do mathematical trend analysis (e.g. comparing inventory growth to COGS over multi-year periods) forces it to read unstructured text for structured data, resulting in failures.
+- **Architectural Fix**: Created a dedicated `quantitative_risk_analyst` agent bound *only* to reading the pre-compiled `financial_summary_path` to hunt for numerical anomalies (Earnings Quality, Working Capital bloat). We stripped all math away from the `forensic_accountant` and restricted it entirely to narrative text search (Auditor Trust, Off-Balance-Sheet items) within the `annual_reports_dir`.

@@ -101,5 +101,5 @@ fetch_annual_report_task:
 
     CRITICAL: Do NOT attempt multiple searches if the first one fails. Strict tool limits to preserve API quotas. If the URL doesn't look like a PDF, the download fails, or the tool reports it's an unreadable scanned image, simply report failure.
   expected_output: >
-    A confirmation message that the Annual Report PDF has been successfully found, downloaded, and converted to Markdown, including the final file path (e.g. data/processed/annual_reports/FPT_annual_report_2025.md).
+    A confirmation message that the Annual Report PDF has been successfully found, downloaded, and converted to Markdown, including the final file path (e.g. data/processed/annual_reports/FPT/FPT_annual_report_2025.md).
   max_retries: 3

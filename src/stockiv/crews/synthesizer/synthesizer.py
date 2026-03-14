@@ -12,7 +12,6 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 from stockiv.agents.base import light_llm, advanced_llm
-from stockiv.config.paths import PROCESSED_ANNUAL_REPORTS_DIR
 from stockiv.knowledge.base import kb
 from crewai_tools import FileReadTool, DirectoryReadTool, MDXSearchTool
 
@@ -258,6 +257,15 @@ class SynthesizerCrew:
         )
 
     @agent
+    def quantitative_risk_analyst(self) -> Agent:
+        return Agent(
+            config=self.agents_config["quantitative_risk_analyst"],  # type: ignore
+            llm=advanced_llm,
+            tools=[FileReadTool()],
+            reasoning=True,
+        )
+
+    @agent
     def data_specialist(self) -> Agent:
         return Agent(
             config=self.agents_config["data_specialist"],
@@ -271,9 +279,7 @@ class SynthesizerCrew:
 
     @agent
     def forensic_accountant(self) -> Agent:
-        annual_report_dir_tool = DirectoryReadTool(
-            directory=str(PROCESSED_ANNUAL_REPORTS_DIR)
-        )
+        annual_report_dir_tool = DirectoryReadTool()
         return Agent(
             config=self.agents_config["forensic_accountant"],
             llm=light_llm,
@@ -298,6 +304,12 @@ class SynthesizerCrew:
             config=self.agents_config["market_researcher"],
             llm=light_llm,
             tools=[search_market_context],
+        )
+
+    @task
+    def detect_quantitative_anomalies(self) -> Task:
+        return Task(
+            config=self.tasks_config["detect_quantitative_anomalies"],  # type: ignore
         )
 
     @task
@@ -333,12 +345,16 @@ class SynthesizerCrew:
     def crew(self) -> Crew:
         """Creates the Synthesizer crew for FIRST PASS (full pipeline).
 
-        Tasks: forensic_annual_report_review → compile_evaluation_report
+        Tasks: detect_quantitative_anomalies → forensic_annual_report_review → compile_evaluation_report
         (Baseline metrics are pre-compiled via @before_kickoff hook)
         """
         return Crew(
             agents=self.agents,
-            tasks=self.tasks,
+            tasks=[
+                self.detect_quantitative_anomalies(),
+                self.forensic_annual_report_review(),
+                self.compile_evaluation_report(),
+            ],
             process=Process.sequential,
             verbose=True,
             tracing=True,
@@ -353,6 +369,7 @@ class SynthesizerCrew:
         return Crew(
             agents=[
                 self.synthesizer_manager(),
+                self.quantitative_risk_analyst(),
                 self.data_specialist(),
                 self.forensic_accountant(),
                 self.market_researcher(),

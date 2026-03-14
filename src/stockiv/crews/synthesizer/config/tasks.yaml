@@ -1,21 +1,36 @@
+detect_quantitative_anomalies:
+  description: >
+    Conduct a systematic risk review of the baseline financials for `{stock_symbols}`.
+
+    Step 1: Use `FileReadTool` to read the full historical financials at `{financial_summary_path}`.
+    Step 2: Methodically check for the quantitative red flags outlined in your backstory (Earnings Quality, Working Capital Bloat, Margin Compression, Debt Risks).
+    Step 3: If you suspect a discrepancy (e.g., Receivables grew faster than Revenue) but need exact percentages, DELEGATE a calculation task to `data specialist`.
+    Step 4: Compile a concise list of quantitative findings. Include exact numerical evidence from the financial summary.
+    If no anomalies are found, explicitly state "No quantitative anomalies detected."
+  expected_output: >
+    A structured quantitative risk report detailing specific numerical red flags (Earnings Quality, Working Capital, Margins, Debt) with evidence and analysis.
+  agent: quantitative_risk_analyst
+
 forensic_annual_report_review:
   description: >
-    Check annual report availability for `{stock_symbols}`, then use semantic search to run 4 standard GCCP forensic checks:
+    Check annual report availability for `{stock_symbols}`, then use semantic search to run 5 qualitative narrative checks on the "Notes to Financial Statements" and Management Discussion blocks.
 
-    Step 1: Use `DirectoryReadTool` on `{annual_reports_dir}` to list files and find the exact path to the `{stock_symbols}` annual report `.md` file.
+    Step 1: Use `DirectoryReadTool` on `{annual_reports_dir}` to find the exact path to the `{stock_symbols}` annual report `.md` file.
     Step 2: If NOT found, respond with `ANNUAL_REPORT_NOT_AVAILABLE` and stop immediately.
-    Step 3: If found, use `MDXSearchTool` to search that specific file for indicators of the 4 standard forensic checks (Fake Revenue, Margin Squeeze, Hidden Debt, Inventory Bloat). Do NOT attempt to read the entire file.
-    Step 4: For each check, provide: Status (MENTIONED/NOT_MENTIONED), Short Quote (key text from your search), Summary.
-    Step 5: Report findings back to the manager. You are STRICTLY FORBIDDEN from outputting raw `MDXSearchTool` search payloads to the manager. Keep your final answer concise.
+    Step 3: If found, use `MDXSearchTool` to search that specific file for the 5 narrative checks (Auditor Trust, Related Party Transactions, Off-Balance-Sheet Risks, Management Remuneration, Revenue Recognition Gimmicks).
+    Step 4: Report findings back using the strict Response Format (Status, Quote, Summary). Keep your final answer concise.
+
+    ⚠️ CRITICAL BOUNDARY RULE: Stop doing math. Do not compare inventory to COGS. Do not calculate margin squeeze. That belongs to the Quantitative Analyst. Focus ONLY on qualitative/legal forensic checks.
   expected_output: >
-    with Status, Short Quote (key text), and Summary for each.
+    A list of 5 qualitative forensic checks (Auditor Trust, Related Party, Off-Balance-Sheet, Management Remuneration, Revenue Recognition) with Status, Short Quote (key text), and Summary for each.
   agent: forensic_accountant
 
 compile_evaluation_report:
   description: >
     Synthesize all inputs into a structured GCCP evaluation report for `{stock_symbols}`.
     You will receive data via context from previous tasks. DELEGATE **ONLY** new ad-hoc data queries and visualization queries to `data specialist`. DELEGATE any new annual report questions to `forensic accounting and document analysis specialist`. DELEGATE ad-hoc internet searches for macro events/recent news to `market research specialist` (maximum 5 delegations allowed).
-    ⚠️ BASELINE AWARENESS: The full historical Income Statement, Balance Sheet, Cash Flow, and Key Ratios are ALREADY PRE-COMPILED and available directly via the `{financial_summary_path}` file. Do NOT ask the data specialist to refetch them.
+    ⚠️ BASELINE AWARENESS: The full historical Income Statement, Balance Sheet, Cash Flow, and Key Ratios are ALREADY PRE-COMPILED and available directly via the `{financial_summary_path}` file.
+    ⚠️ STRICT SCOPE RULE: You MUST rely EXCLUSIVELY on `{financial_summary_path}` for all financial statement numbers (Revenue, Income, Cashflow, Balance Sheet). Do NOT ask the forensic accountant to extract financial statements from the annual report. Do NOT ask the data specialist to refetch them.
 
     ⚠️ ANTI-HALLUCINATION RULE FOR current_metrics FIELD:
     Your `current_metrics` field MUST contain the EXACT price, date, and valuation ratios
@@ -28,7 +43,8 @@ compile_evaluation_report:
     You MUST read this yourselves. Do NOT ask the data specialist to read or fetch this for you.
 
     STEP 1: CLASSIFY INDUSTRY DYNAMICS & LYNCH CATEGORY (GCCP Part II.1)
-    Classify Industry: Slow Growth / Sustainable / Fast Growth / Cyclical. Incorporate sentiment findings here.
+    Classify Industry: Slow Growth / Sustainable / Fast Growth / Cyclical.
+    ⚠️ INDUSTRY RISKS & POTENTIALS: You MUST explicitly include a subsection for "Industry Risks & Potentials" that lists the specific industry headwinds (Downside risks / Rủi ro suy yếu) and tailwinds (Upside potentials / Động lực thúc đẩy) extracted from the `{ticker_sentiment_path}`. Look specifically for the "Macro Resilience", "Thesis Invalidation", and "Additional Crucial Findings" sections in the sentiment report. Do not use generic industry descriptions; extract the EXACT specific events, risks, and catalysts.
     Classify Lynch Category: Justify the choice explicitly based on the numbers.
     ⚠️ CLASSIFICATION RULE: You MUST strictly adhere to the numerical definitions in the knowledge base for your classifications. Explicitly provide a brief justification summarizing WHY you chose the Industry and Lynch classifications, considering the exact data metrics and sentiment context.
 
@@ -41,8 +57,9 @@ compile_evaluation_report:
 
     STEP 3: EVALUATE GOOD COMPANY (Quantitative, GCCP Part III)
     - IMPORTANT: Extract the exact anomaly warnings, Margins, and Cash Flow logic provided by the `CalculateFrameworkMetricsTool` results inside the baseline summary. DO NOT recalculate or hallucinate them.
+    - INCLDUDE the specific red flags found by the `quantitative_risk_analyst` in their report regarding Earnings Quality, Working Capital, and Margin Squeezes.
     - Capital Structure, Profitability (ROE>15%, ROA>6%), Cash Generation (OCF>NI, FCF>5%)
-    - Incorporate forensic findings, flag anomalies.
+    - Incorporate textual forensic findings, flag anomalies.
     - Delegate specific forensic questions as they arise (same unavailability guard).
 
     STEP 4: DELEGATE CALCULATIONS & VISUALIZATIONS (dynamic, based on findings)
@@ -61,15 +78,14 @@ compile_evaluation_report:
     ⚠️ VALUATION METHODOLOGY MAPPING:
     You MUST strictly map your valuation narrative to your STEP 1 classification:
     - If classified as 'Defensive' (Slow/Sustainable Growth), focus heavily on Asset value, Dividend Yield, and the Graham Checklist.
-    - If classified as 'Fast Grower', explicitly rely on Lynch PEG metrics and the EPS CAGR.
+    - If classified as 'Fast Grower', explicitly rely on Lynch PEG metrics and the Effective CAGR (or Net Profit CAGR if instructed).
     - If classified as 'Cyclical', focus on P/B ratio and historical cycle timing.
     Do not use PEG for Defensive stocks, and do not rely entirely on P/E for Cyclicals.
 
     ⚠️ ANTI-HALLUCINATION RULE FOR PEG RATIO:
     You MUST delegate PEG ratio calculation to the Data Specialist. The Data Specialist must use the HISTORICAL
-    EPS CAGR from the Financial Summary file (NOT management's forward growth guidance or revenue growth targets).
-    Management targets are aspirational and unverified. If you cite forward guidance, label it clearly as
-    "management target (unverified)" and use historical EPS CAGR for the actual PEG calculation.
+    growth rate (Effective CAGR, Net Profit CAGR, or EPS CAGR as instructed by the Financial Summary notes).
+    Do NOT use management's forward growth guidance or revenue growth targets.
     LLMs cannot do math — delegate ALL ratio calculations.
 
     ⚠️ PEER COMPARISON RULE (DISABLED):
@@ -120,6 +136,7 @@ evaluate_feedback:
       - If it requires REWRITING or REANALYSIS → revise that section yourself using the existing context.
 
     STEP 5: REBUILD the full report: keep approved sections intact, fix only the weak sections.
+    ⚠️ CRITICAL RETENTION RULE: You MUST retain all previously generated sections exactly as they were, especially the "Industry Risks & Potentials" subsection and the "Actionable Suggestion" format. Do not drop or summarize previously approved sections.
 
     STEP 6: Populate the `revision_notes` field with a detailed summary stating:
       - Which weaknesses were addressed
