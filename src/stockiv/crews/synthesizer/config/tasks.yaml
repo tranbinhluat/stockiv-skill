@@ -14,12 +14,12 @@ collect_baseline_metrics:
     Step 4: Use `QueryStockDatabaseTool` if needed for additional data points.
     Step 5: You MUST use the `append_to_file` tool iteratively to construct the final document at `{financial_summary_path}`.
     Because the tables are large, DO NOT try to output the entire document as your Final Answer!
-    Instead, call `append_to_file` sequentially:
       1. Append the Current Market Snapshot.
       2. Append the Historical Financials (Income Statement).
       3. Append the Historical Financials (Balance Sheet).
       4. Append the Historical Financials (Cash Flow Statement).
       5. Append Key Ratios and Framework Metrics.
+      6. Append the Peer Comparison Table.
 
     IMPORTANT: If yearly data is missing (tool shows "⚠️ No yearly data available"), explicitly state this as a data limitation.
     You MUST explicitly cite the data source (e.g., `[Source: vnstock/SQLite Database]`) beneath every markdown table you generate.
