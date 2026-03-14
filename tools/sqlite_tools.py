@@ -235,12 +235,13 @@ class FetchCurrentMarketSnapshotTool(BaseTool):
                     pass
 
             # 3. Dynamic Ratios Computation (Live Price)
-            # Fetch explicitly live ratios instead of depending on outdated static quarterly ratios
+            # We only strictly fetch Dividend Yield statically.
+            # EV/EBITDA, P/E, P/B, P/S, and Market Cap are all computed dynamically below.
             ratios_df = pd.read_sql_query(
                 "SELECT item_name, value FROM financial_ratios "
                 "WHERE ticker=? AND period = ("
                 "  SELECT MAX(period) FROM financial_ratios WHERE ticker=?"
-                ") AND item_name IN ('Tỷ suất cổ tức', 'Giá trị doanh nghiệp trên lợi nhuận trước thuế, khấu hao và lãi vay (EV/EBITDA)')",
+                ") AND item_name IN ('Tỷ suất cổ tức')",
                 conn,
                 params=(ticker, ticker),
             )
@@ -269,24 +270,44 @@ class FetchCurrentMarketSnapshotTool(BaseTool):
                 res += f"| Price Date | {row['date']} |\n"
                 res += f"| Volume | {row['volume']:,.0f} |\n"
 
-            if "market_cap" in metrics:
-                res += f"| Market Cap | {metrics['market_cap']:,.0f} VND |\n"
+            # Dynamic Core Valuations
+            issue_share = metrics.get("issue_share", 0)
+            if issue_share > 0 and latest_price_k > 0:
+                live_market_cap = latest_price_k * 1000 * issue_share
+                res += f"| Vốn hóa thị trường (Market Cap Live) | {live_market_cap:,.0f} VND |\n"
 
-            # Dynamic P/E and P/B
             res += "\n### Valuation Ratios (Live Computation)\n"
             res += "| Ratio | Value |\n|-------|-------|\n"
 
             eps_ttm = metrics.get("eps_ttm", metrics.get("eps", 0))
             bvps = metrics.get("bvps", 0)
+            revenue = metrics.get("revenue", 0)
+            ebitda = metrics.get("ebitda", 0)
+            ev_static = metrics.get("ev", 0)
+            pe_static = metrics.get("pe", 0)
 
             if eps_ttm > 0 and latest_price_k > 0:
                 live_pe = (latest_price_k * 1000) / eps_ttm
                 res += f"| Chỉ số giá thị trường trên thu nhập (P/E Live) | {live_pe:.2f} |\n"
+
             if bvps > 0 and latest_price_k > 0:
                 live_pb = (latest_price_k * 1000) / bvps
                 res += f"| Chỉ số giá thị trường trên giá trị sổ sách (P/B Live) | {live_pb:.2f} |\n"
 
-            # Other Ratios (EV/EBITDA, Dividend)
+            if issue_share > 0 and latest_price_k > 0:
+                live_market_cap = latest_price_k * 1000 * issue_share
+                if revenue > 0:
+                    live_ps = live_market_cap / revenue
+                    res += f"| Chỉ số giá thị trường trên doanh thu (P/S Live) | {live_ps:.2f} |\n"
+
+                if ebitda > 0:
+                    static_market_cap_implied = pe_static * eps_ttm * issue_share
+                    net_debt_implied = ev_static - static_market_cap_implied
+                    live_ev = live_market_cap + net_debt_implied
+                    live_ev_ebitda = live_ev / ebitda
+                    res += f"| Giá trị doanh nghiệp trên EBITDA (EV/EBITDA Live) | {live_ev_ebitda:.2f} |\n"
+
+            # Other Ratios (Dividend)
             for _, r in ratios_df.iterrows():
                 res += f"| {r['item_name']} | {r['value']:.2f} |\n"
 
