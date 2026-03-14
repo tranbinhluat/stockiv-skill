@@ -372,33 +372,78 @@ class FetchPeerComparisonsTool(BaseTool):
     def _run(self, target_ticker: str) -> str:
         try:
             conn = sqlite3.connect(self.db_path)
-            df = pd.read_sql_query(
-                "SELECT ticker, date, metrics_json FROM ratio_summary "
-                "WHERE date = (SELECT MAX(date) FROM ratio_summary)",
-                conn,
-            )
+
+            # Get the VNINDEX latest
             idx_df = pd.read_sql_query(
                 "SELECT date, close FROM historical_prices "
                 "WHERE ticker='VNINDEX' ORDER BY date DESC LIMIT 1",
                 conn,
             )
-            conn.close()
+
+            # Get the peers from the most recent ratio_summary batch
+            df = pd.read_sql_query(
+                "SELECT ticker, date, metrics_json FROM ratio_summary "
+                "WHERE date = (SELECT MAX(date) FROM ratio_summary)",
+                conn,
+            )
 
             if df.empty:
                 return "No peer comparison data found."
 
-            # Parse metrics_json into columns
             records = []
             for _, row in df.iterrows():
+                peer_ticker = row["ticker"]
+                metrics = {}
                 try:
                     metrics = json.loads(row["metrics_json"])
-                    # Compute market cap from charter_capital or issue_share * price
+                except (json.JSONDecodeError, TypeError):
+                    pass
+
+                # Primary: Attempt to fetch Live Vietstock Ratios for this peer
+                live_ratios = None
+                vietstock_df = pd.read_sql_query(
+                    "SELECT metrics_json FROM live_vietstock_ratios "
+                    "WHERE ticker=? ORDER BY date DESC LIMIT 1",
+                    conn,
+                    params=(peer_ticker,),
+                )
+                if not vietstock_df.empty:
+                    try:
+                        live_ratios = json.loads(vietstock_df.iloc[0]["metrics_json"])
+                    except (json.JSONDecodeError, KeyError):
+                        pass
+
+                # Parse metrics into columns comparing Live vs Static
+                if live_ratios:
+                    market_cap = "-"
+                    raw_mc = live_ratios.get("MarketCapital")
+                    if raw_mc:
+                        # Convert robustly: remove commas
+                        clean_mc = str(raw_mc).replace(",", "")
+                        market_cap = f"{float(clean_mc):,.0f}"
+
+                    records.append(
+                        {
+                            "Ticker": peer_ticker,
+                            "P/E": live_ratios.get("PE", "-"),
+                            "P/B": live_ratios.get("PB", "-"),
+                            "EPS": live_ratios.get("EPS", "-"),
+                            "ROE": f"{metrics.get('roe', 0) * 100:.1f}%"
+                            if metrics.get("roe")
+                            else "-",
+                            "Market Cap (B VND)": market_cap,
+                            "Data Source": "Live Crawl",
+                        }
+                    )
+                else:
+                    # Fallback to static vnstock ratios
                     market_cap = "-"
                     if metrics.get("charter_capital"):
                         market_cap = f"{metrics['charter_capital'] / 1e9:,.0f}"
+
                     records.append(
                         {
-                            "Ticker": row["ticker"],
+                            "Ticker": peer_ticker,
                             "P/E": f"{metrics['pe']:.2f}" if metrics.get("pe") else "-",
                             "P/B": f"{metrics['pb']:.2f}" if metrics.get("pb") else "-",
                             "EPS": f"{metrics['eps']:,.0f}"
@@ -407,26 +452,16 @@ class FetchPeerComparisonsTool(BaseTool):
                             "ROE": f"{metrics['roe'] * 100:.1f}%"
                             if metrics.get("roe")
                             else "-",
-                            "Charter Capital (B VND)": market_cap,
-                            "Date": row["date"],
+                            "Market Cap (B VND)": market_cap,
+                            "Data Source": "Static JSON",
                         }
                     )
-                except (json.JSONDecodeError, TypeError):
-                    records.append(
-                        {
-                            "Ticker": row["ticker"],
-                            "P/E": "-",
-                            "P/B": "-",
-                            "EPS": "-",
-                            "ROE": "-",
-                            "Charter Capital (B VND)": "-",
-                            "Date": row["date"],
-                        }
-                    )
+
+            conn.close()
 
             result_df = pd.DataFrame(records)
 
-            res = "### Peer Comparison (Latest)\n"
+            res = "### Peer Comparison (Latest Live Ratios)\n"
             res += result_df.to_markdown(index=False) + "\n"
 
             if not idx_df.empty:
