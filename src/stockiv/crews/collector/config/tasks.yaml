@@ -34,6 +34,18 @@ fetch_daily_market_data_task:
   context: [fetch_financials_task]
   max_retries: 3
 
+crawl_live_ratios_task:
+  description: >
+    DELEGATE this ENTIRE task to `market_data_fetcher` (Quantitative Market Data Specialist).
+    Do NOT delegate any part of this task to `macro_micro_scout` or `annual_report_analyst`.
+
+    Use exactly the `crawl_vietstock_ratios` tool to extract the LIVE market valuation (EPS, PE, Beta, Dividend Yield, Market Capitalization) for {stock_symbols}.
+    This guarantees we have up-to-the-minute data if the underlying APIs are stale.
+  expected_output: >
+    A confirmation string that the live Vietstock ratios for the ticker have been successfully inserted into the SQLite database.
+  context: [fetch_daily_market_data_task]
+  max_retries: 3
+
 fetch_macro_context_task:
   description: >
     DELEGATE this ENTIRE task to `macro_micro_scout` (Macroeconomic & Market Context Researcher).

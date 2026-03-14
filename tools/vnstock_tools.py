@@ -107,6 +107,17 @@ def _ensure_db_exists():
     )
     """)
 
+    # Create live Vietstock ratios table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS live_vietstock_ratios (
+        ticker TEXT,
+        date TEXT,
+        metrics_json TEXT,
+        source TEXT,
+        PRIMARY KEY (ticker, date)
+    )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -587,3 +598,102 @@ def fetch_dividend_history(ticker: str) -> str:
     except Exception as e:
         conn.close()
         return f"Error fetching dividend history for {ticker}: {str(e)}"
+
+
+@tool("Crawl Vietstock Ratios")
+def crawl_vietstock_ratios(ticker: str) -> str:
+    """
+    Crawls the live overview and real-time financial ratios for a stock directly from Vietstock Finance.
+    Should be used to fetch the absolute latest P/E, P/B, Market Cap, Beta, and EPS.
+
+    Args:
+        ticker: The stock symbol (e.g., 'FPT')
+    Returns:
+        A confirmation message that data has been extracted and saved to SQLite.
+    """
+    import json
+    import re
+    import requests
+
+    _ensure_db_exists()
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Cache check
+    cursor.execute(
+        "SELECT date FROM live_vietstock_ratios WHERE ticker = ? AND date = ?",
+        (ticker, today_str),
+    )
+    if cursor.fetchone():
+        conn.close()
+        return f"Cache hit: Live Vietstock ratios for {ticker} already crawled today ({today_str})."
+
+    url = f"https://finance.vietstock.vn/{ticker}-ctcp-{ticker.lower()}.htm"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Connection": "keep-alive",
+    }
+
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+
+        if response.status_code != 200:
+            conn.close()
+            return (
+                f"Error crawling {ticker} from Vietstock: HTTP {response.status_code}"
+            )
+
+        # Regular expression to securely extract the `_stockTrade` javascript object
+        # The object looks like: const _stockTrade={"StockStatus":"","StatusName":...}
+        match = re.search(r"const _stockTrade=({.*?})\|\|{}", response.text)
+        if not match:
+            # Fallback for alternative structure
+            match = re.search(r"const _stockTrade=({.*?});", response.text)
+
+        if not match:
+            conn.close()
+            return f"Error crawling {ticker}: Could not locate `_stockTrade` variable in HTML."
+
+        json_str = match.group(1)
+
+        # Verify it parses as valid JSON
+        try:
+            parsed_metrics = json.loads(json_str)
+        except json.JSONDecodeError as de:
+            conn.close()
+            return f"Error crawling {ticker}: Invalid JSON extracted - {str(de)}"
+
+        # Clean up some empty or purely visual HTML span fields injected by Vietstock
+        cleaned_metrics = {}
+        for k, v in parsed_metrics.items():
+            if isinstance(v, str):
+                # Remove spans and pure HTML tags like <span class="txt-red price">77,000</span>
+                v_clean = re.sub(r"<[^>]+>", "", v)
+                cleaned_metrics[k] = v_clean
+            else:
+                cleaned_metrics[k] = v
+
+        final_json = json.dumps(cleaned_metrics)
+
+        # Insert into DB
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO live_vietstock_ratios (ticker, date, metrics_json, source)
+            VALUES (?, ?, ?, ?)
+            """,
+            (ticker, today_str, final_json, "vietstock-crawler"),
+        )
+
+        conn.commit()
+        conn.close()
+
+        return f"Successfully crawled and stored live Vietstock ratios for {ticker} (Date: {today_str})."
+
+    except Exception as e:
+        conn.close()
+        return f"Error crawling Vietstock for {ticker}: {str(e)}"
