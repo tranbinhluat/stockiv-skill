@@ -1,34 +1,3 @@
-collect_baseline_metrics:
-  description: >
-    Create a comprehensive, self-contained financial baseline markdown report for `{stock_symbols}`.
-
-    Step 0: Use `FetchCurrentMarketSnapshotTool` for `{stock_symbols}` FIRST.
-    This returns the DEFINITIVE current price, P/E, P/B, EV/EBITDA, VNINDEX — use these values EXACTLY.
-    DO NOT change, round, or approximate these values. They are the single source of truth.
-
-    Step 1: Use `FetchRecentFinancialsTool` for `{stock_symbols}` — it returns pivot tables with
-    columns = years/quarters and rows = financial items for Income, Balance, and Cash Flow statements.
-    CRITICAL: Keep the exact pivot table structure provided by the tool (columns = periods, rows = financial items). DO NOT transpose the tables.
-    Step 2: Use `FetchPeerComparisonsTool` for `{stock_symbols}` — gather peer comparison ratios.
-    Step 3: **Use `CalculateFrameworkMetricsTool` for `{stock_symbols}` to compute Cash Flow Divergence, Margins, and GCCP Criteria deterministically. DO NOT calculate these yourself.**
-    Step 4: Use `QueryStockDatabaseTool` if needed for additional data points.
-    Step 5: You MUST use the `append_to_file` tool iteratively to construct the final document at `{financial_summary_path}`.
-    Because the tables are large, DO NOT try to output the entire document as your Final Answer!
-      1. Append the Current Market Snapshot.
-      2. Append the Historical Financials (Income Statement).
-      3. Append the Historical Financials (Balance Sheet).
-      4. Append the Historical Financials (Cash Flow Statement).
-      5. Append Key Ratios and Framework Metrics.
-      6. Append the Peer Comparison Table.
-
-    IMPORTANT: If yearly data is missing (tool shows "⚠️ No yearly data available"), explicitly state this as a data limitation.
-    You MUST explicitly cite the data source (e.g., `[Source: vnstock/SQLite Database]`) beneath every markdown table you generate.
-
-    CRITICAL: Only return "DONE: File written to {financial_summary_path}" as your FINAL ANSWER *after* you have successfully appended all sections using the tool. DO NOT output the raw markdown tables in your final answer.
-  expected_output: >
-    The string "DONE: File written to {financial_summary_path}"
-  agent: data_specialist
-
 forensic_annual_report_review:
   description: >
     Check annual report availability for `{stock_symbols}`, then use semantic search to run 4 standard GCCP forensic checks:
@@ -45,15 +14,18 @@ forensic_annual_report_review:
 compile_evaluation_report:
   description: >
     Synthesize all inputs into a structured GCCP evaluation report for `{stock_symbols}`.
-    You will receive data via context from previous tasks. DELEGATE ad-hoc data queries and visualization queries to `data specialist`. DELEGATE any new annual report questions to `forensic accounting and document analysis specialist`.
+    You will receive data via context from previous tasks. DELEGATE **ONLY** new ad-hoc data queries and visualization queries to `data specialist`. DELEGATE any new annual report questions to `forensic accounting and document analysis specialist`. DELEGATE ad-hoc internet searches for macro events/recent news to `market research specialist` (maximum 5 delegations allowed).
+    ⚠️ BASELINE AWARENESS: The full historical Income Statement, Balance Sheet, Cash Flow, and Key Ratios are ALREADY PRE-COMPILED and available directly via the `{financial_summary_path}` file. Do NOT ask the data specialist to refetch them.
 
     ⚠️ ANTI-HALLUCINATION RULE FOR current_metrics FIELD:
     Your `current_metrics` field MUST contain the EXACT price, date, and valuation ratios
     from the Data Specialist's Current Market Snapshot (the FetchCurrentMarketSnapshotTool output).
     Do NOT use values from your training data. Copy them verbatim.
 
-    STEP 0: READ SENTIMENT REPORT
+    STEP 0: READ BASELINE & SENTIMENT
     Use your `FileReadTool` to read the market and ticker sentiment at `{ticker_sentiment_path}`.
+    Use your `FileReadTool` to read the full historical Income Statement, Balance Sheet, Cash Flow, and Key Ratios at `{financial_summary_path}`.
+    You MUST read this yourselves. Do NOT ask the data specialist to read or fetch this for you.
 
     STEP 1: CLASSIFY INDUSTRY DYNAMICS (GCCP Part II.1)
     Classify: Slow Growth / Sustainable / Fast Growth / Cyclical. Incorporate sentiment findings here.
@@ -71,17 +43,38 @@ compile_evaluation_report:
     - Incorporate forensic findings, flag anomalies.
     - Delegate specific forensic questions as they arise (same unavailability guard).
 
-    STEP 4: DELEGATE VISUALIZATIONS (dynamic, based on findings)
-    Based on Steps 1-3 findings, delegate SPECIFIC charts to `data specialist` that highlight key discoveries.
-    Examples: "Draw a chart showing margin trends from 2022-2025" or "Show revenue vs receivables growth".
+    STEP 4: DELEGATE CALCULATIONS & VISUALIZATIONS (dynamic, based on findings)
+    Based on Steps 1-3 findings, delegate SPECIFIC calculations and charts to `data specialist` that highlight key discoveries.
+    For any numerical calculation (CAGR, growth rates, custom ratios, comparisons), delegate to `data specialist` who will execute precise Python code. Do NOT perform arithmetic yourself — LLMs are unreliable at math.
+    Examples: "Calculate 5-year revenue CAGR from the financial summary" or "Draw a chart showing margin trends from 2022-2025" or "Show revenue vs receivables growth".
     Data Specialist saves charts to `{synthesizer_output_dir}/charts/` and returns markdown embed links.
 
     STEP 5: EVALUATE CHEAP PRICE (GCCP Part IV)
     Market Phase (Crisis/Fair/Bubble), Graham/Lynch criteria, Peer Comparison, Relative Valuation, Margin of Safety.
 
+    ⚠️ ANTI-HALLUCINATION RULE FOR PEG RATIO:
+    You MUST delegate PEG ratio calculation to the Data Specialist. The Data Specialist must use the HISTORICAL
+    EPS CAGR from the Financial Summary file (NOT management's forward growth guidance or revenue growth targets).
+    Management targets are aspirational and unverified. If you cite forward guidance, label it clearly as
+    "management target (unverified)" and use historical EPS CAGR for the actual PEG calculation.
+    LLMs cannot do math — delegate ALL ratio calculations.
+
+    ⚠️ PEER COMPARISON RULE:
+    When comparing peers, you MUST verify they are in the SAME market cap tier:
+    - Large Cap: > 20,000B VND
+    - Mid Cap: 5,000–20,000B VND
+    - Small Cap: < 5,000B VND
+    If the pre-loaded peer data contains mismatched tiers, explicitly state the limitation in your report.
+    Do NOT present cross-tier comparisons as valid relative valuation.
+
     STEP 6: TARGET PRICE & ACTIONABLE SUGGESTION (GCCP Part V)
     Calculate Fair Value → apply MoS → Suggested Buy Price.
     Actionable: "BUY NOW" / "WAIT FOR P/E TO DROP TO Xx" / "AVOID".
+
+    ⚠️ TARGET PRICE CALCULATION RULE:
+    You MUST delegate the final target price calculation to the Data Specialist.
+    Provide them your chosen Fair Value P/E multiple, EPS, and required Margin of Safety percentage.
+    They will compute and return the exact target price. Do NOT perform this arithmetic yourself.
 
     STEP 7: COMPILE FINAL REPORT
     Embed chart images and compile all sections into the final output.

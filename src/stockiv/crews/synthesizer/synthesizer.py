@@ -5,14 +5,14 @@ Uses Process.sequential where agents execute specific tasks, but retain delegati
 """
 
 from crewai import Agent, Crew, Process, Task
-from crewai.project import CrewBase, agent, crew, task
+from crewai.project import CrewBase, agent, crew, task, before_kickoff
 from crewai.tools import tool
 
 from pydantic import BaseModel, Field
 from typing import Optional
 
 from stockiv.agents.base import light_llm, advanced_llm
-from stockiv.config.paths import PROCESSED_DIR, PROCESSED_ANNUAL_REPORTS_DIR
+from stockiv.config.paths import PROCESSED_ANNUAL_REPORTS_DIR
 from stockiv.knowledge.base import kb
 from crewai_tools import FileReadTool, DirectoryReadTool, MDXSearchTool
 
@@ -51,15 +51,6 @@ def execute_python_code(code: str) -> str:
         return f"Execution error: {str(e)}"
 
 
-@tool("read_file")
-def read_file(file_path: str) -> str:
-    """Read the content of a file given its absolute or relative path."""
-    if not os.path.exists(file_path):
-        return f"Error: File not found at {file_path}"
-    with open(file_path, "r", encoding="utf-8") as f:
-        return f.read()
-
-
 @tool("append_to_file")
 def append_to_file(file_path: str, content: str) -> str:
     """Append text or markdown content to an existing file."""
@@ -80,50 +71,17 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 from tools.sqlite_tools import (  # noqa: E402
-    QueryStockDatabaseTool,
     FetchRecentFinancialsTool,
     FetchPeerComparisonsTool,
     FetchCurrentMarketSnapshotTool,
     CalculateFrameworkMetricsTool,
 )
+from tools.brave_tools import search_market_context  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
-
-class BaselineMetrics(BaseModel):
-    """Raw, comprehensive data extraction from the Data Specialist."""
-
-    current_price_data: str = Field(
-        ...,
-        description="Current trading price of the stock, exact date, and 1-year momentum.",
-    )
-    current_vnindex: str = Field(
-        ..., description="Current VNINDEX value and recent momentum."
-    )
-    fundamental_ratios: str = Field(
-        ...,
-        description="Table or list of all recent fundamental ratios (P/E, P/B, ROE, etc).",
-    )
-    multi_year_comparisons: str = Field(
-        ...,
-        description="Table or list of financials across the last 4 quarters and max years (if enough data), including YoY growth percentages.",
-    )
-    peer_competitors: str = Field(
-        ...,
-        description="Table or list comparing target ratios to top domestic competitors.",
-    )
-
-    def to_markdown(self) -> str:
-        md = "## Data Specialist Baseline Metrics\n\n"
-        md += f"### Current Market Metrics\n{self.current_price_data}\n\n"
-        md += f"### VNINDEX Baseline\n{self.current_vnindex}\n\n"
-        md += f"### Fundamental Ratios\n{self.fundamental_ratios}\n\n"
-        md += f"### Multi-Year Comparisons & YoY\n{self.multi_year_comparisons}\n\n"
-        md += f"### Peer Competitors\n{self.peer_competitors}\n"
-        return md
 
 
 class SynthesizerReport(BaseModel):
@@ -192,10 +150,60 @@ class SynthesizerCrewInputs(BaseModel):
 
 @CrewBase
 class SynthesizerCrew:
-    """Synthesizer Crew - Hierarchical GCCP Data Interpreter and Evaluator"""
+    """Synthesizer Crew - Sequential GCCP Data Interpreter and Evaluator"""
 
     agents_config = "config/agents.yaml"
     tasks_config = "config/tasks.yaml"
+
+    @before_kickoff
+    def pre_compile_baseline_metrics(self, inputs: dict) -> dict:
+        """
+        Deterministically pre-compiles the baseline financial summary before the crew starts.
+        Skips this step if we are in a feedback revision loop (report_version > 1).
+        """
+        report_version = inputs.get("report_version", 1)
+        if report_version > 1:
+            print(
+                f"[SynthesizerCrew] Revision loop active (v{report_version}). Skipping baseline data pre-compilation."
+            )
+            return inputs
+
+        ticker = str(inputs.get("stock_symbols", ""))
+        financial_summary_path = str(inputs.get("financial_summary_path", ""))
+
+        if not ticker or not financial_summary_path:
+            print(
+                "[SynthesizerCrew] Missing ticker or financial_summary_path. Cannot pre-compile baseline data."
+            )
+            return inputs
+
+        print(f"[SynthesizerCrew] Pre-compiling baseline metrics for {ticker}...")
+
+        # Manually invoke the tools
+        market_snapshot = FetchCurrentMarketSnapshotTool()._run(ticker=ticker)
+        recent_financials = FetchRecentFinancialsTool()._run(ticker=ticker)
+        peer_comparisons = FetchPeerComparisonsTool()._run(target_ticker=ticker)
+        framework_metrics = CalculateFrameworkMetricsTool()._run(ticker=ticker)
+
+        # Assemble the markdown content deterministically
+        content = (
+            f"{market_snapshot}\n\n"
+            f"{recent_financials}\n\n"
+            f"{peer_comparisons}\n\n"
+            f"{framework_metrics}\n\n"
+        )
+
+        # Write to file directly
+        try:
+            with open(financial_summary_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            print(
+                f"[SynthesizerCrew] Successfully pre-compiled baseline metrics to {financial_summary_path}"
+            )
+        except Exception as e:
+            print(f"[SynthesizerCrew] Error writing pre-compiled data: {e}")
+
+        return inputs
 
     @agent
     def synthesizer_manager(self) -> Agent:
@@ -222,21 +230,12 @@ class SynthesizerCrew:
 
     @agent
     def data_specialist(self) -> Agent:
-        sentiment_dir_tool = DirectoryReadTool(
-            directory=str(PROCESSED_DIR / "sentiment")
-        )
         return Agent(
             config=self.agents_config["data_specialist"],
             llm=light_llm,
             tools=[
                 execute_python_code,
-                QueryStockDatabaseTool(),
-                FetchRecentFinancialsTool(),
-                FetchCurrentMarketSnapshotTool(),
-                FetchPeerComparisonsTool(),
-                CalculateFrameworkMetricsTool(),
                 FileReadTool(),
-                sentiment_dir_tool,
                 append_to_file,
             ],
         )
@@ -264,10 +263,12 @@ class SynthesizerCrew:
             verbose=False,
         )
 
-    @task
-    def collect_baseline_metrics(self) -> Task:
-        return Task(
-            config=self.tasks_config["collect_baseline_metrics"],
+    @agent
+    def market_researcher(self) -> Agent:
+        return Agent(
+            config=self.agents_config["market_researcher"],
+            llm=light_llm,
+            tools=[search_market_context],
         )
 
     @task
@@ -303,7 +304,8 @@ class SynthesizerCrew:
     def crew(self) -> Crew:
         """Creates the Synthesizer crew for FIRST PASS (full pipeline).
 
-        Tasks: collect_baseline_metrics → forensic_annual_report_review → compile_evaluation_report
+        Tasks: forensic_annual_report_review → compile_evaluation_report
+        (Baseline metrics are pre-compiled via @before_kickoff hook)
         """
         return Crew(
             agents=self.agents,
@@ -317,13 +319,14 @@ class SynthesizerCrew:
         """Creates a lean Synthesizer crew for REVISION (feedback loop).
 
         Tasks: evaluate_feedback ONLY — manager reads feedback + previous report himself.
-        Agents: all three are included so the manager can delegate data/forensic queries.
+        Agents: all delegates are included so the manager can delegate data/forensic/search queries.
         """
         return Crew(
             agents=[
                 self.synthesizer_manager(),
                 self.data_specialist(),
                 self.forensic_accountant(),
+                self.market_researcher(),
             ],
             tasks=[self._build_evaluate_feedback_task()],
             process=Process.sequential,
