@@ -1,6 +1,8 @@
 import json
 import sqlite3
 
+from tabulate import tabulate
+
 import pandas as pd
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
@@ -81,12 +83,25 @@ def _pivot_eav(df: pd.DataFrame, periods: list) -> str:
             return f"{val:,.2f}"
         return f"{val:.4f}"
 
-    # Apply formatting and convert to string to prevent to_markdown from
-    # re-formatting floats as scientific notation
+    # Apply formatting and rebuild as a pure-string DataFrame so that
+    # tabulate does not re-parse comma-formatted values as floats.
+    formatted = {}
     for col in pivot.columns:
-        pivot[col] = pivot[col].apply(fmt).astype(str)
+        formatted[col] = pivot[col].apply(fmt).tolist()
+    str_pivot = pd.DataFrame(formatted, index=pivot.index, dtype=object)
 
-    return pivot.to_markdown(floatfmt="s") + "\n"
+    # Use tabulate directly with disable_numparse to prevent '809,759,601'
+    # from being parsed as float 809759601.0 → '8.0976e+08'
+    return (
+        tabulate(
+            str_pivot,
+            headers="keys",
+            tablefmt="pipe",
+            showindex=True,
+            disable_numparse=True,
+        )
+        + "\n"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -608,17 +623,41 @@ class CalculateFrameworkMetricsTool(BaseTool):
                 res += "Margin data unavailable.\n\n"
 
             # --- 3. Base Metrics for Graham / Lynch ---
+            # Primary: Use live Vietstock crawl for P/E and P/B
+            # (same source as FetchCurrentMarketSnapshotTool)
+            live_ratios = None
+            vietstock_df = pd.read_sql_query(
+                "SELECT metrics_json FROM live_vietstock_ratios "
+                "WHERE ticker=? ORDER BY date DESC LIMIT 1",
+                conn,
+                params=(ticker,),
+            )
+            if not vietstock_df.empty:
+                try:
+                    live_ratios = json.loads(vietstock_df.iloc[0]["metrics_json"])
+                except (json.JSONDecodeError, KeyError):
+                    pass
+
+            # Fallback: ratio_summary for other metrics
             metrics_df = pd.read_sql_query(
                 "SELECT metrics_json FROM ratio_summary WHERE ticker=? ORDER BY date DESC LIMIT 1",
                 conn,
                 params=(ticker,),
             )
             pe, pb, ev_ebitda, roa_val, div_yield = 0, 0, 0, 0, 0
+
+            # Use live ratios for P/E and P/B if available
+            if live_ratios:
+                pe = float(live_ratios.get("PE", 0))
+                pb = float(live_ratios.get("PB", 0))
+
             if not metrics_df.empty:
                 try:
                     metrics = json.loads(metrics_df.iloc[0]["metrics_json"])
-                    pe = metrics.get("pe", 0)
-                    pb = metrics.get("pb", 0)
+                    # Only use ratio_summary for P/E and P/B as fallback
+                    if not live_ratios:
+                        pe = metrics.get("pe", 0)
+                        pb = metrics.get("pb", 0)
                     roa_val = metrics.get("roa", 0) * 100
                     div_yield = metrics.get("dividend", 0)
                     ev_ebitda = metrics.get("ev_per_ebitda", 0)
@@ -626,8 +665,31 @@ class CalculateFrameworkMetricsTool(BaseTool):
                     pass
 
             # Graham
-            res += "## 3. Graham Defensive Criteria (Estimation)\n"
+            res += "## 3. Graham Defensive Criteria (9-Point Checklist)\n"
+
+            # 1. Size (Market Cap >= 10,000 B VND)
+            price_df = pd.read_sql_query(
+                "SELECT close FROM historical_prices WHERE ticker=? ORDER BY date DESC LIMIT 1",
+                conn,
+                params=(ticker,),
+            )
+            latest_price = float(price_df.iloc[0]["close"]) if not price_df.empty else 0
+
+            comp_df = pd.read_sql_query(
+                "SELECT outstanding_shares FROM company_overview WHERE ticker=?",
+                conn,
+                params=(ticker,),
+            )
+            shares = (
+                float(comp_df.iloc[0]["outstanding_shares"]) if not comp_df.empty else 0
+            )
+            market_cap_b_vnd = (latest_price * 1000 * shares) / 1e9 if shares > 0 else 0
+
+            # 2. Current Ratio >= 2
             cr_df = get_ratio_yearly("Tỷ số thanh toán hiện hành (ngắn hạn)", limit=1)
+            cr_val = cr_df.iloc[0]["value"] if not cr_df.empty else 0
+
+            # 3. Debt/Equity <= 2
             de_df = pd.read_sql_query(
                 "SELECT value FROM financial_ratios WHERE ticker=? AND item_name LIKE '%Tỷ lệ nợ trên vốn chủ sở hữu%' ORDER BY period DESC LIMIT 1",
                 conn,
@@ -650,38 +712,90 @@ class CalculateFrameworkMetricsTool(BaseTool):
             else:
                 de_val = de_df.iloc[0]["value"]
 
-            cr_val = cr_df.iloc[0]["value"] if not cr_df.empty else 0
+            # 4. 10 yrs Positive Earnings
+            ni_10y_df = get_stmt_yearly(
+                "Lợi nhuận sau thuế của cổ đông của Công ty mẹ", limit=10
+            )
+            earnings_years = len(ni_10y_df)
+            pos_years = sum(ni_10y_df["value"] > 0)
+
+            # 5. 10 yrs Dividends
+            div_df = pd.read_sql_query(
+                "SELECT DISTINCT strftime('%Y', ex_dividend_date) as yr FROM dividend_history WHERE ticker=? ORDER BY yr DESC LIMIT 10",
+                conn,
+                params=(ticker,),
+            )
+            div_years = len(div_df)
+
+            # 6. 10 yr EPS Growth >= 33%
+            eps_10y_df = get_ratio_yearly("Thu nhập trên mỗi cổ phần", limit=10)
+            eps_growth_pass = False
+            eps_growth_val = 0
+            if len(eps_10y_df) >= 6:
+                # Sort ascending (oldest first) so we can take first 3 and last 3
+                eps_asc = eps_10y_df.sort_values("period", ascending=True).reset_index(
+                    drop=True
+                )
+                avg_first_3 = eps_asc.head(3)["value"].mean()
+                avg_last_3 = eps_asc.tail(3)["value"].mean()
+                if avg_first_3 > 0:
+                    eps_growth_val = ((avg_last_3 / avg_first_3) - 1) * 100
+                    eps_growth_pass = eps_growth_val >= 33
+
+            # 7, 8, 9 Combined Valuation Logic
+            # Graham Valuation: `(P/E < 15 AND P/B < 1.5) OR (P/E * P/B < 22.5)`
 
             graham_score = 0
             graham_checks = []
 
-            def check_graham(name, cond, val_str):
+            def check_graham(idx, name, cond, val_str):
                 nonlocal graham_score
                 if cond:
                     graham_score += 1
-                    graham_checks.append(f"- ✅ **{name}**: {val_str} (Pass)")
+                    graham_checks.append(f"{idx}. ✅ **{name}**: {val_str} (Pass)")
                 else:
-                    graham_checks.append(f"- ❌ **{name}**: {val_str} (Fail)")
+                    graham_checks.append(f"{idx}. ❌ **{name}**: {val_str} (Fail)")
 
-            check_graham("Current Ratio >= 2", cr_val >= 2, f"{cr_val:.2f}")
-            check_graham("Debt to Equity <= 2", de_val <= 2, f"{de_val:.2f}")
-            if not ni_df.empty:
-                pos_years = sum(ni_df["value"] > 0)
-                check_graham(
-                    f"Positive Earnings ({len(ni_df)}y)",
-                    pos_years == len(ni_df),
-                    f"{pos_years}/{len(ni_df)} years positive",
-                )
-            else:
-                check_graham("Positive Earnings", False, "No data")
+            check_graham(
+                1,
+                "Large Size (>10k B VND Market Cap)",
+                market_cap_b_vnd >= 10000,
+                f"{market_cap_b_vnd:,.0f} B VND",
+            )
+            check_graham(2, "Current Ratio >= 2", cr_val >= 2, f"{cr_val:.2f}")
+            check_graham(3, "Debt to Equity <= 2", de_val <= 2, f"{de_val:.2f}")
+            check_graham(
+                4,
+                "10 yrs Positive Earnings",
+                pos_years >= 10,
+                f"{pos_years}/{earnings_years} years positive",
+            )
+            check_graham(
+                5,
+                "10 yrs Dividends Uninterrupted",
+                div_years >= 10,
+                f"{div_years}/10 years paid",
+            )
+            check_graham(
+                6,
+                "EPS Growth >= 33% (10yr)",
+                eps_growth_pass,
+                f"{eps_growth_val:.1f}% growth (Avg L3Y vs F3Y)",
+            )
 
-            check_graham("P/E < 15", 0 < pe < 15, f"P/E = {pe:.2f}")
-            check_graham("P/B <= 1.5", 0 < pb <= 1.5, f"P/B = {pb:.2f}")
-            check_graham("P/E * P/B <= 22.5", 0 < (pe * pb) <= 22.5, f"{pe * pb:.2f}")
+            # Custom Rule 7: Valuation
+            val_cond = (0 < pe < 15 and 0 < pb < 1.5) or (0 < (pe * pb) < 22.5)
+            val_str = f"P/E={pe:.1f}, P/B={pb:.1f}, P/ExP/B={pe * pb:.1f}"
+            check_graham(
+                "7,8,9",
+                "Graham Valuation: (P/E < 15 & P/B < 1.5) OR (P/E * P/B < 22.5)",
+                val_cond,
+                val_str,
+            )
 
             for g in graham_checks:
                 res += g + "\n"
-            res += f"\n**Graham Score:** {graham_score}/6 checks verifiable.\n\n"
+            res += f"\n**Graham Score:** {graham_score}/7 criteria groups met (Note: Valuation counts for 3 checks). Minimum 8/9 (or ~6/7 groups) usually required for strict Defensive.\n\n"
 
             # Lynch & Greenblatt
             res += "## 4. Lynch & Greenblatt Metrics\n"
@@ -705,7 +819,7 @@ class CalculateFrameworkMetricsTool(BaseTool):
                 )
                 res += f"- **EPS {len(eps_df)}-Year CAGR:** {eps_cagr:.2f}%\n"
                 res += f"- **Dividend Yield:** {div_yield * 100:.2f}%\n"
-                res += f"- **Lynch PEG Ratio:** {peg:.2f} (Target < 1.0 for Fast Growers)\n"
+                res += f"- **Lynch PEG Ratio:** {peg:.2f} \n"
 
             conn.close()
             return res

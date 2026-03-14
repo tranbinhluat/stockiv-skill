@@ -1,13 +1,15 @@
 """
 Director Crew Output Models
 
-Structured output models for the Director's validation decisions.
+Simplified, flat output model for the Director's validation decisions.
+Replaces the previous 7-nested-sub-model structure with 5 flat booleans
+and 1 consolidated failures list.
 """
 
 import json
 
-from pydantic import BaseModel, Field, model_validator
-from typing import Any, Literal, List, Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import Literal, List, Optional
 
 
 class Anomaly(BaseModel):
@@ -22,127 +24,14 @@ class Anomaly(BaseModel):
     required: str = Field(description="What must be provided to address the anomaly")
 
 
-class FinancialStatementVerification(BaseModel):
-    """Verification status of required financial statements."""
-
-    income_statement: bool = Field(
-        description="Income Statement (3-5 years) provided and reviewed"
-    )
-    balance_sheet: bool = Field(
-        description="Balance Sheet (3-5 years) provided and reviewed"
-    )
-    cash_flow_statement: bool = Field(
-        description="Cash Flow Statement (3-5 years) provided and reviewed"
-    )
-    notes_reviewed: bool = Field(
-        description="Notes to Financial Statements reviewed for anomalies"
-    )
-
-
-class MethodologyCheck(BaseModel):
-    """Methodology validation results."""
-
-    style_verified: bool = Field(
-        description="Correct investment style used (Graham, Greenblatt, Lynch, All)"
-    )
-    all_criteria_evaluated: bool = Field(
-        description="All criteria evaluated (Graham=9, Greenblatt=5)"
-    )
-    scoring_correct: bool = Field(description="Scoring calculated correctly")
-    tier_comparison_valid: bool = Field(
-        description="Tier comparison valid (same tier only)"
-    )
-    industry_context_applied: bool = Field(
-        description="Industry-specific factors considered"
-    )
-
-
-class AccuracyCheck(BaseModel):
-    """Accuracy validation results."""
-
-    numbers_sourced: bool = Field(description="All numbers traceable to source")
-    data_current: bool = Field(description="Data is current (not stale)")
-    calculations_correct: bool = Field(description="Calculations verified accurate")
-    peer_comparison_valid: bool = Field(
-        description="Peer comparison valid (same tier and industry)"
-    )
-
-
-class CompletenessCheck(BaseModel):
-    """Completeness validation results."""
-
-    all_criteria_checked: bool = Field(
-        description="All investment style criteria evaluated"
-    )
-    risks_identified: bool = Field(description="Risk factors identified and analyzed")
-    red_flags_reported: bool = Field(description="Red flags reported (if they exist)")
-    downside_considered: bool = Field(description="Downside scenarios analyzed")
-
-
-class EvidenceCheck(BaseModel):
-    """Evidence validation results."""
-
-    pdfs_provided: bool = Field(description="PDF documents attached or linked")
-    page_references: bool = Field(
-        description="Page references provided for all key numbers"
-    )
-    excel_model: bool = Field(description="Excel model with formulas provided")
-    primary_sources: bool = Field(
-        description="Primary sources used (annual reports, filings)"
-    )
-
-
 class DirectorDecision(BaseModel):
     """
     Director's validation decision for stock analysis.
 
-    This structured output enables the Orchestrator to parse decisions
-    programmatically and route accordingly (APPROVED → Reporter, REJECTED → fix,
-    MORE_INFO_NEEDED → clarification).
+    Flat structure with 5 boolean checks. The flow (report_loop.py) reads
+    decision, feedback_summary, and next_steps for routing. The rest is
+    for the to_markdown() review file consumed by the Synthesizer on revision.
     """
-
-    @model_validator(mode="before")
-    @classmethod
-    def _coerce_json_strings(cls, data: Any) -> Any:
-        """Auto-parse fields that LLMs sometimes return as JSON strings."""
-        if not isinstance(data, dict):
-            return data
-
-        # Fields that should be dicts (nested sub-models)
-        dict_fields = [
-            "financial_statements",
-            "methodology",
-            "accuracy",
-            "completeness",
-            "evidence",
-        ]
-        # Fields that should be lists
-        list_fields = [
-            "anomalies",
-            "methodology_failures",
-            "accuracy_failures",
-            "completeness_failures",
-            "evidence_failures",
-            "next_steps",
-        ]
-
-        for field in dict_fields:
-            val = data.get(field)
-            if isinstance(val, str):
-                try:
-                    data[field] = json.loads(val)
-                except (json.JSONDecodeError, TypeError):
-                    pass
-
-        for field in list_fields:
-            val = data.get(field)
-            if isinstance(val, str):
-                try:
-                    data[field] = json.loads(val)
-                except (json.JSONDecodeError, TypeError):
-                    pass
-
-        return data
 
     decision: Literal["APPROVED", "REJECTED", "MORE_INFO_NEEDED"] = Field(
         description="Final decision: APPROVED (ready for publication), REJECTED (fatal flaws), "
@@ -153,37 +42,37 @@ class DirectorDecision(BaseModel):
         description="Investment style applied: Graham, Greenblatt, Lynch, or All"
     )
 
-    # Financial Statements (REQUIRED)
-    financial_statements: FinancialStatementVerification = Field(
-        description="Verification of required financial statements"
+    # --- Flat validation checks (replaces 5 nested sub-models) ---
+    financial_data_verified: bool = Field(
+        description="Were 3-5 years of Income Statement, Balance Sheet, and Cash Flow reviewed?"
+    )
+    methodology_sound: bool = Field(
+        description="Correct investment style applied? Criteria evaluated? Peer tier matching correct?"
+    )
+    numbers_accurate: bool = Field(
+        description="Calculations correct and verified against the Financial Ground Truth data?"
+    )
+    analysis_complete: bool = Field(
+        description="All relevant criteria checked? Risks identified? Red flags reported? Downside considered?"
+    )
+    logic_and_reasoning_sound: bool = Field(
+        description="Are the conclusions logically consistent with the data? (e.g., Target rating matches valuation/MoS, negative sentiment isn't ignored)."
+    )
+    evidence_traceable: bool = Field(
+        description="Claims traceable to SQLite DB, financial summary file, or annual reports? "
+        "Inline citations like [Source: SQLite Database] or [Financial Summary] count as valid evidence."
     )
 
-    # Anomaly Detection
+    # Anomaly Detection (kept — core value-add of the Director)
     anomalies: List[Anomaly] = Field(
         default_factory=list,
         description="List of detected anomalies requiring clarification",
     )
 
-    # Validation Checks
-    methodology: MethodologyCheck = Field(description="Methodology validation results")
-    accuracy: AccuracyCheck = Field(description="Accuracy validation results")
-    completeness: CompletenessCheck = Field(
-        description="Completeness validation results"
-    )
-    evidence: EvidenceCheck = Field(description="Evidence validation results")
-
-    # Detailed Feedback
-    methodology_failures: List[str] = Field(
-        default_factory=list, description="Specific methodology failures identified"
-    )
-    accuracy_failures: List[str] = Field(
-        default_factory=list, description="Specific accuracy failures identified"
-    )
-    completeness_failures: List[str] = Field(
-        default_factory=list, description="Specific completeness failures identified"
-    )
-    evidence_failures: List[str] = Field(
-        default_factory=list, description="Specific evidence failures identified"
+    # Consolidated failures list (replaces 4 separate *_failures lists)
+    failures: List[str] = Field(
+        default_factory=list,
+        description="Specific failures identified across methodology, accuracy, completeness, or evidence",
     )
 
     # Summary
@@ -197,6 +86,34 @@ class DirectorDecision(BaseModel):
         description="Specific next steps for REJECTED or MORE_INFO_NEEDED decisions",
     )
 
+    # --- Validators to handle LLM returning stringified JSON ---
+    @field_validator("next_steps", "failures", mode="before")
+    @classmethod
+    def _parse_stringified_list(cls, v):
+        """LLMs sometimes return list fields as stringified JSON strings."""
+        if isinstance(v, str):
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return parsed
+            except (json.JSONDecodeError, TypeError):
+                pass
+            return [v]  # Wrap single string as 1-item list
+        return v
+
+    @field_validator("anomalies", mode="before")
+    @classmethod
+    def _parse_stringified_anomalies(cls, v):
+        """LLMs sometimes return anomalies as a stringified JSON string."""
+        if isinstance(v, str):
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return parsed
+            except (json.JSONDecodeError, TypeError):
+                pass
+        return v
+
     def to_markdown(self) -> str:
         """Format the decision as a markdown report for human review."""
         lines = [
@@ -207,17 +124,18 @@ class DirectorDecision(BaseModel):
             "",
         ]
 
-        # Financial Statements
-        lines.append("## ✅ Financial Statements Verified:")
-        fs = self.financial_statements
+        # Validation Checks
+        lines.append("## Validation Checks")
         checks = [
-            ("Income Statement", fs.income_statement),
-            ("Balance Sheet", fs.balance_sheet),
-            ("Cash Flow Statement", fs.cash_flow_statement),
-            ("Notes Reviewed", fs.notes_reviewed),
+            ("Financial Data Verified", self.financial_data_verified),
+            ("Methodology Sound", self.methodology_sound),
+            ("Numbers Accurate", self.numbers_accurate),
+            ("Analysis Complete", self.analysis_complete),
+            ("Logic & Reasoning Sound", self.logic_and_reasoning_sound),
+            ("Evidence Traceable", self.evidence_traceable),
         ]
-        for name, verified in checks:
-            status = "✅" if verified else "❌"
+        for name, passed in checks:
+            status = "✅" if passed else "❌"
             lines.append(f"- {status} {name}")
         lines.append("")
 
@@ -230,47 +148,11 @@ class DirectorDecision(BaseModel):
                 lines.append(f"❓ **Question:** {anomaly.question}")
                 lines.append(f"📋 **Required:** {anomaly.required}")
             lines.append("")
-        else:
-            lines.append("## ✅ Anomaly Scan: No anomalies detected\n")
 
-        # Validation Checks
-        lines.append("## ✅ Methodology Verified:")
-        meth = self.methodology
-        lines.append(f"- Style verified: {'✅' if meth.style_verified else '❌'}")
-        lines.append(
-            f"- All criteria evaluated: {'✅' if meth.all_criteria_evaluated else '❌'}"
-        )
-        lines.append(f"- Scoring correct: {'✅' if meth.scoring_correct else '❌'}")
-        lines.append(
-            f"- Tier comparison valid: {'✅' if meth.tier_comparison_valid else '❌'}"
-        )
-        lines.append(
-            f"- Industry context applied: {'✅' if meth.industry_context_applied else '❌'}"
-        )
-        lines.append("")
-
-        # Failures by category
-        if self.methodology_failures:
-            lines.append("### ❌ Methodology Failures:")
-            for failure in self.methodology_failures:
-                lines.append(f"- {failure}")
-            lines.append("")
-
-        if self.accuracy_failures:
-            lines.append("### ❌ Accuracy Failures:")
-            for failure in self.accuracy_failures:
-                lines.append(f"- {failure}")
-            lines.append("")
-
-        if self.completeness_failures:
-            lines.append("### ❌ Completeness Failures:")
-            for failure in self.completeness_failures:
-                lines.append(f"- {failure}")
-            lines.append("")
-
-        if self.evidence_failures:
-            lines.append("### ❌ Evidence Failures:")
-            for failure in self.evidence_failures:
+        # Failures
+        if self.failures:
+            lines.append("## ❌ Failures:")
+            for failure in self.failures:
                 lines.append(f"- {failure}")
             lines.append("")
 
@@ -282,7 +164,7 @@ class DirectorDecision(BaseModel):
         # Next steps (if any)
         if self.next_steps:
             lines.append("## Next Steps")
-            for step in self.next_steps:
+            for step in self.next_steps or []:
                 lines.append(f"- {step}")
             lines.append("")
 

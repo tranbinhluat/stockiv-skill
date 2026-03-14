@@ -99,10 +99,39 @@ class SynthesizerReport(BaseModel):
         ...,
         description="The FULL detailed markdown report containing all analysis, citations, guidelines, and visuals, formatted comprehensively following the GCCP framework structure.",
     )
+    revision_notes: Optional[str] = Field(
+        default=None,
+        description="Detailed notes on what was revised based on Director's feedback. Do not include this text inside report_markdown.",
+    )
 
     def to_markdown(self) -> str:
         """Converts the structured Pydantic model into a beautifully formatted Markdown report."""
-        return self.report_markdown
+        lines = [
+            "# Synthesizer Evaluation Summary",
+            "",
+            "## Key Conclusions",
+            f"- **Good Company?** {'🟢 Yes' if self.is_good else '🔴 No'}",
+            f"- **Cheap Price?** {'🟢 Yes' if self.valuation_is_cheap else '🔴 No'}",
+            f"- **Actionable Suggestion:** **{self.actionable_suggestion}**",
+            f"- **Target Price:** {self.calculated_target_price}",
+            "",
+            "---",
+            "",
+            self.report_markdown,
+        ]
+
+        if self.revision_notes:
+            lines.extend(
+                [
+                    "",
+                    "---",
+                    "",
+                    "## Revision Notes",
+                    self.revision_notes,
+                ]
+            )
+
+        return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------

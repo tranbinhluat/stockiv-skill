@@ -27,8 +27,10 @@ compile_evaluation_report:
     Use your `FileReadTool` to read the full historical Income Statement, Balance Sheet, Cash Flow, and Key Ratios at `{financial_summary_path}`.
     You MUST read this yourselves. Do NOT ask the data specialist to read or fetch this for you.
 
-    STEP 1: CLASSIFY INDUSTRY DYNAMICS (GCCP Part II.1)
-    Classify: Slow Growth / Sustainable / Fast Growth / Cyclical. Incorporate sentiment findings here.
+    STEP 1: CLASSIFY INDUSTRY DYNAMICS & LYNCH CATEGORY (GCCP Part II.1)
+    Classify Industry: Slow Growth / Sustainable / Fast Growth / Cyclical. Incorporate sentiment findings here.
+    Classify Lynch Category: Justify the choice explicitly based on the numbers.
+    ⚠️ CLASSIFICATION RULE: You MUST strictly adhere to the numerical definitions in the knowledge base for your classifications. Explicitly provide a brief justification summarizing WHY you chose the Industry and Lynch classifications, considering the exact data metrics and sentiment context.
 
     STEP 2: EVALUATE GOOD COMPANY (Qualitative, GCCP Part II.2-3)
     - Business Model (Input → Engine → Output)
@@ -50,7 +52,18 @@ compile_evaluation_report:
     Data Specialist saves charts to `{synthesizer_output_dir}/charts/` and returns markdown embed links.
 
     STEP 5: EVALUATE CHEAP PRICE (GCCP Part IV)
-    Market Phase (Crisis/Fair/Bubble), Graham/Lynch criteria, Peer Comparison, Relative Valuation, Margin of Safety.
+    Market Phase (Crisis/Fair/Bubble), Graham/Lynch criteria, Margin of Safety.
+
+    ⚠️ GRAHAM CHECKLIST RULE:
+    The complete 9-point Graham Defensive Criteria checklist has ALREADY been deterministically computed and is available in your `{financial_summary_path}` under "3. Graham Defensive Criteria (9-Point Checklist)".
+    You MUST copy the exact numbered Pass/Fail results from that file into your report. Do NOT attempt to calculate the 10-year historical metrics or these 9 criteria yourself using raw data.
+
+    ⚠️ VALUATION METHODOLOGY MAPPING:
+    You MUST strictly map your valuation narrative to your STEP 1 classification:
+    - If classified as 'Defensive' (Slow/Sustainable Growth), focus heavily on Asset value, Dividend Yield, and the Graham Checklist.
+    - If classified as 'Fast Grower', explicitly rely on Lynch PEG metrics and the EPS CAGR.
+    - If classified as 'Cyclical', focus on P/B ratio and historical cycle timing.
+    Do not use PEG for Defensive stocks, and do not rely entirely on P/E for Cyclicals.
 
     ⚠️ ANTI-HALLUCINATION RULE FOR PEG RATIO:
     You MUST delegate PEG ratio calculation to the Data Specialist. The Data Specialist must use the HISTORICAL
@@ -59,25 +72,24 @@ compile_evaluation_report:
     "management target (unverified)" and use historical EPS CAGR for the actual PEG calculation.
     LLMs cannot do math — delegate ALL ratio calculations.
 
-    ⚠️ PEER COMPARISON RULE:
-    When comparing peers, you MUST verify they are in the SAME market cap tier:
-    - Large Cap: > 20,000B VND
-    - Mid Cap: 5,000–20,000B VND
-    - Small Cap: < 5,000B VND
-    If the pre-loaded peer data contains mismatched tiers, explicitly state the limitation in your report.
-    Do NOT present cross-tier comparisons as valid relative valuation.
+    ⚠️ PEER COMPARISON RULE (DISABLED):
+    Do NOT perform any peer comparisons or relative valuations. The peer comparison framework is currently disabled. Ignore any peer data.
 
     STEP 6: TARGET PRICE & ACTIONABLE SUGGESTION (GCCP Part V)
     Calculate Fair Value → apply MoS → Suggested Buy Price.
     Actionable: "BUY NOW" / "WAIT FOR P/E TO DROP TO Xx" / "AVOID".
 
-    ⚠️ TARGET PRICE CALCULATION RULE:
-    You MUST delegate the final target price calculation to the Data Specialist.
-    Provide them your chosen Fair Value P/E multiple, EPS, and required Margin of Safety percentage.
-    They will compute and return the exact target price. Do NOT perform this arithmetic yourself.
+    ⚠️ TARGET PRICE CALCULATION RULE (TRANSPARENCY):
+    You MUST include a dedicated "### Valuation Math" block in your Markdown report.
+    This block MUST document step-by-step how the target price was derived, showing:
+    1. Your chosen Fair Value multiple (e.g. Fair P/E)
+    2. The EPS used
+    3. The Required Margin of Safety %
+    4. The delegated final target price result computed by the Data Specialist. Do NOT perform arithmetic yourself.
 
     STEP 7: COMPILE FINAL REPORT
     Embed chart images and compile all sections into the final output.
+    You MUST include a dedicated subsection titled **"Sentiment & Market Psychology"** explaining the market sentiment explicitly.
   expected_output: >
     A single, valid JSON object matching the `SynthesizerReport` Pydantic schema.
     All fields must be populated. Include in your summary:
@@ -109,10 +121,11 @@ evaluate_feedback:
 
     STEP 5: REBUILD the full report: keep approved sections intact, fix only the weak sections.
 
-    STEP 6: Add a `Revision Notes` section (within `summary_of_findings`) stating:
+    STEP 6: Populate the `revision_notes` field with a detailed summary stating:
       - Which weaknesses were addressed
       - What new data or evidence was gathered
       - What remains as a known limitation
+    Do NOT include `revision_notes` inside your `report_markdown` string. Populate it in its dedicated field!
 
     WARNING: Do NOT re-run baseline data extraction or forensic standard checks unless
     the Director feedback explicitly demands it.

@@ -148,3 +148,4 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 ---
 
 *Update this file with significant lessons, decisions, and context as the project evolves.*
+\n### Recent Learnings (Synthesizer Agent)\n- Instead of using the native CrewAI BaseTool `max_usage_count` limits which are internal/undocumented in older versions, it is safer to create a dedicated agent (e.g., `market_researcher`) to wrap external tools. This way we can explicitly prompt the agent to strictly limit the number of tool usages per delegation (e.g., 1 search per delegation) and per full review (e.g., max 5 searches).

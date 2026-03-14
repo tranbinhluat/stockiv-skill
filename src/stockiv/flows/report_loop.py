@@ -425,6 +425,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
                 stock_symbols=ticker,
                 synthesis_report_path=synthesis_report_path,
                 review_output_path=review_output_path,
+                financial_summary_path=financial_summary_path,
                 report_content=report_content,
                 financial_summary_content=financial_summary_content,
             )

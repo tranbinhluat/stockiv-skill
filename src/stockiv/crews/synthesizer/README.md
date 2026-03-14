@@ -4,25 +4,33 @@ The **Synthesizer Crew** is the core analytical engine of the StockIV pipeline. 
 
 ## 🏗️ Architecture & Data Flow
 
-The Crew operates with **`Process.hierarchical`** — a manager agent delegates work to subordinate workers using CrewAI's native delegation.
+The Crew operates with **`Process.sequential`** — tasks execute in order, but the Manager retains delegation rights to subordinate agents via CrewAI's `ask_question_to_coworker`.
+
+Baseline financial data (Income Statement, Balance Sheet, Cash Flow, Key Ratios, Market Snapshot, Peer Comparisons) is **pre-compiled deterministically** via the `@before_kickoff` hook — no LLM involved.
 
 ```mermaid
 flowchart TD
+    %% Pre-compilation
+    subgraph PreCompile ["@before_kickoff (Deterministic Python)"]
+        direction LR
+        DB[("stockiv.db\n(SQLite)")] --> TOOLS["FetchCurrentMarketSnapshotTool\nFetchRecentFinancialsTool\nFetchPeerComparisonsTool\nCalculateFrameworkMetricsTool"]
+        TOOLS --> BASELINE["{symbol}_financial_summary.md"]
+    end
+
     %% Agents
     subgraph Agents ["Synthesizer Crew (3 Agents)"]
         direction TB
         MGR["🧠 Chief Synthesis Orchestrator\n(Manager — delegates)"]
-        DS["📊 Data Specialist\n(Worker — DB + Charts)"]
+        DS["📊 Data Specialist\n(Worker — Python + Charts)"]
         FA["🔍 Forensic Accountant\n(Worker — Annual Reports)"]
 
-        MGR -- "Delegate data queries\n& chart creation" --> DS
+        MGR -- "Delegate calculations\n& chart creation" --> DS
         MGR -- "Delegate forensic\nquestions" --> FA
     end
 
     %% Inputs
     subgraph Inputs ["Upstream Data"]
         direction TB
-        DB[("stockiv.db\n(SQLite)")]
         SENT["data/processed/sentiment/\n(Markdown Reports)"]
         AR["data/processed/annual_reports/\n(Markdown Reports)"]
         KB["GCCP Knowledge Base\n(Framework Rules)"]
@@ -32,20 +40,18 @@ flowchart TD
     %% Outputs
     subgraph Outputs ["Versioned Outputs"]
         direction TB
-        BASELINE["{symbol}_financial_summary.md"]
         CHARTS["charts/*.png"]
         REPORT_V1["{symbol}_GCCP_report_v1.md"]
         REPORT_VN["{symbol}_GCCP_report_vN.md"]
     end
 
     %% Data Relationships
-    DS -- "SQL Queries" --> DB
-    DS -- "Generates" --> BASELINE
-    DS -- "matplotlib" --> CHARTS
-    FA -- "read_file" --> AR
+    BASELINE --> MGR
+    DS -- "execute_python_code\n(matplotlib)" --> CHARTS
+    DS -- "FileReadTool" --> BASELINE
+    FA -- "MDXSearchTool" --> AR
     MGR -- "FileReadTool" --> SENT
     MGR -- "FileReadTool" --> FB
-    MGR -- "Brave Search" --> WEB["Brave Search API"]
     KB -- "Injected into backstory" --> MGR
     MGR -- "Compiles" --> REPORT_V1
     MGR -- "Revises" --> REPORT_VN
@@ -56,32 +62,34 @@ flowchart TD
 ## 🧑‍🤝‍🧑 The Agents (3 Total)
 
 ### 1. Chief Synthesis Orchestrator (`synthesizer_manager`)
-- **Role:** Manager — delegates work, reads sentiment, compiles final GCCP report
+- **Role:** Manager — reads pre-compiled data & sentiment, delegates calculations/charts/forensic work, compiles final GCCP report
 - **LLM:** `advanced_llm`
-- **Tools:** `FileReadTool`, `DirectoryReadTool` (sentiment), `search_market_context`
-- **Key Constraint:** 🚫 STRICTLY FORBIDDEN from reading annual reports (prevents hallucination). Delegates annual report analysis to `forensic_accountant`
+- **Tools:** `FileReadTool`
+- **Key Constraint:** 🚫 STRICTLY FORBIDDEN from reading annual reports (prevents hallucination). Delegates to `forensic_accountant`
 - **Key Constraint:** Does NOT make final PASS/FAIL decisions (Director's job)
+- **Key Constraint:** Must delegate ALL arithmetic to Data Specialist (LLMs unreliable at math)
 
 ### 2. Data Specialist (`data_specialist`)
-- **Role:** Extracts financial metrics from SQLite + generates charts via Python
+- **Role:** Calculates derived metrics via Python, generates matplotlib charts, reads pre-compiled files
 - **LLM:** `light_llm`
-- **Tools:** `QueryStockDatabaseTool`, `FetchRecentFinancialsTool`, `FetchPeerComparisonsTool`, `execute_python_code`
+- **Tools:** `execute_python_code`, `FileReadTool`, `append_to_file`
+- **Key Constraint:** No database access. All data comes from pre-compiled `{financial_summary_path}`
 
 ### 3. Forensic Accountant (`forensic_accountant`)
-- **Role:** Reads annual report Markdown files for forensic evidence
+- **Role:** Reads annual report Markdown files for forensic evidence via semantic search
 - **LLM:** `light_llm`
-- **Tools:** `DirectoryReadTool` (annual reports), `read_file`
+- **Tools:** `DirectoryReadTool` (annual reports), `MDXSearchTool`
 - **Unavailability Protocol:** Reports `ANNUAL_REPORT_NOT_AVAILABLE` if no report found
 
 ---
 
-## 📋 Task Breakdown (3 Tasks)
+## 📋 Task Breakdown (2 Tasks + Pre-compilation)
 
-| Task | Assigned To | Description |
-|:---|:---|:---|
-| `collect_baseline_metrics` | `data_specialist` | Extract 3-4 years of financials + peer comparisons, save to `{financial_summary_path}` |
-| `forensic_annual_report_review` | `forensic_accountant` | Check annual report availability, run 4 standard forensic checks |
-| `compile_evaluation_report` | `synthesizer_manager` | Synthesize all inputs into structured GCCP report with dynamic chart delegation |
+| Phase | Task | Assigned To | Description |
+|:---|:---|:---|:---|
+| Pre-compile | `@before_kickoff` | Python (no LLM) | Deterministically fetches baseline data from SQLite → writes `{financial_summary_path}` |
+| Task 1 | `forensic_annual_report_review` | `forensic_accountant` | Check annual report availability, run 4 standard forensic checks |
+| Task 2 | `compile_evaluation_report` | `synthesizer_manager` | Read baseline + sentiment, delegate calculations/charts, compile structured GCCP report |
 
 ---
 
@@ -100,7 +108,7 @@ flowchart LR
 **File structure per loop:**
 ```
 data/processed/synthesizer/{ticker}/
-├── {ticker}_financial_summary.md          # Baseline (once)
+├── {ticker}_financial_summary.md          # Baseline (pre-compiled once)
 ├── {ticker}_GCCP_report_v1.md             # Synthesizer V1
 ├── {ticker}_director_review_v1.md         # Director review of V1
 ├── {ticker}_GCCP_report_v2.md             # Synthesizer V2 (revised)
@@ -112,20 +120,23 @@ data/processed/synthesizer/{ticker}/
 
 ---
 
-## 📊 Structured Outputs (Pydantic Models)
+## 📊 Structured Output
 
-### `BaselineMetrics`
-- `current_price_data`, `current_vnindex`, `fundamental_ratios`, `multi_year_comparisons`, `peer_competitors`
-
-### `SynthesizerReport`
-- 20+ fields covering all GCCP pillars with `to_markdown()` for human-readable export
+### `SynthesizerReport` (Pydantic)
+- `is_good` — Overall good company?
+- `valuation_is_cheap` — Overall cheap price?
+- `actionable_suggestion` — BUY / WAIT / AVOID
+- `calculated_target_price` — Target price with Margin of Safety
+- `report_markdown` — Full GCCP report as markdown string
 
 ---
 
 ## ⚠️ Architectural Constraints
 
+- **Pre-compilation:** Baseline data assembled by deterministic Python, never by LLMs
 - **Anti-Hallucination:** Manager CANNOT read annual reports — delegates to forensic accountant
+- **Math Delegation:** Manager MUST delegate all arithmetic to Data Specialist's `execute_python_code`
 - **GCCP Knowledge Injection:** Full framework injected into manager's backstory at runtime
-- **Hierarchical Delegation Bug Guard:** No `agent:` field in `tasks.yaml` (forces manager to use delegation tools)
+- **No DB on Agents:** All SQLite tools removed from agent toolsets — data only via pre-compiled files
 - **Forensic Accountant Isolation:** Restricted to `data/processed/annual_reports/` only
-- **Manual Pydantic Parsing:** JSON extracted via regex due to CrewAI/Anthropic `tool_choice` bug
+- **Explicit `agent:` in tasks.yaml:** Tasks have explicit agent assignments (sequential process)

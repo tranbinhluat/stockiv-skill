@@ -31,6 +31,7 @@ def get_llm(model: str = DEFAULT_MODEL, base_url: str = DEFAULT_BASE_URL) -> LLM
         api_key=os.getenv("ANTHROPIC_API_KEY", os.getenv("ANTHROPIC_AUTH_TOKEN")),
         base_url=base_url,
         provider="anthropic",
+        parallel_tool_calls=False,
     )
 
 

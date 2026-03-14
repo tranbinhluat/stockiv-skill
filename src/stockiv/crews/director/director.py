@@ -49,6 +49,14 @@ class DirectorCrewInputs(BaseModel):
         description="Path to the financial summary data (source of truth from database). "
         "Director uses this to cross-check Synthesizer's numbers.",
     )
+    report_content: Optional[str] = Field(
+        default=None,
+        description="The actual string content of the synthesis report (in case of LLM tool skipping).",
+    )
+    financial_summary_content: Optional[str] = Field(
+        default=None,
+        description="The actual string content of the baseline data (in case of LLM tool skipping).",
+    )
 
 
 from stockiv.agents import advanced_llm  # noqa: E402

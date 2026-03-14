@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from datetime import datetime
 from crewai.tools import tool
 import requests
@@ -26,7 +27,8 @@ def search_market_context(query: str, days_back: int = 7) -> str:
     from stockiv.config.paths import RAW_CACHE_DIR
 
     today = datetime.now().strftime("%Y-%m-%d")
-    cache_file = RAW_CACHE_DIR / f"{query.replace(' ', '_')}_{today}.json"
+    safe_query = re.sub(r"[^a-zA-Z0-9_\-]", "_", query)
+    cache_file = RAW_CACHE_DIR / f"{safe_query}_{today}.json"
 
     if cache_file.exists():
         with open(cache_file, "r", encoding="utf-8") as f:

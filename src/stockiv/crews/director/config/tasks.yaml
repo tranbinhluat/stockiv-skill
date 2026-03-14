@@ -1,82 +1,58 @@
 validate_analysis:
   description: >
-    Perform comprehensive forensic review and validation of the stock analysis for {stock_symbols}.
+    Perform forensic review and validation of the stock analysis for {stock_symbols}.
 
-    **STEP 0 — SYNTHESIS REPORT (REQUIRED TO READ)**
+    **STEP 0 — SYNTHESIS REPORT (PRE-LOADED)**
     The synthesis report for {stock_symbols} is located at `{synthesis_report_path}`.
-    You MUST use the `read_file` tool to fully read this report before proceeding to analysis.
-    If the file content says "ERROR:" or cannot be read, set decision = "MORE_INFO_NEEDED" with the error details.
+    Its full content is provided below. If it says "ERROR:" or is empty, set decision = "MORE_INFO_NEEDED" with the error details.
 
-    **STEP 0.5 — FINANCIAL GROUND TRUTH (REQUIRED TO READ/VERIFY)**
+    --- BEGIN SYNTHESIS REPORT ---
+    {report_content}
+    --- END SYNTHESIS REPORT ---
+
+    **STEP 0.5 — FINANCIAL GROUND TRUTH (PRE-LOADED)**
     The financial data (collected directly from vnstock API database) is located at `{financial_summary_path}`.
-    You MUST check if this file exists and read it using the `read_file` tool.
-    Use this as your SOURCE OF TRUTH for cross-checking the Synthesizer's numbers.
+    Its full content is provided below. Use this as your SOURCE OF TRUTH for cross-checking the Synthesizer's numbers.
     If the Synthesizer's numbers contradict this data, flag it as an accuracy failure.
 
-    Your Output Format:
-    You must output your findings matching the ValidationDecision pydantic model.
+    --- BEGIN FINANCIAL GROUND TRUTH ---
+    {financial_summary_content}
+    --- END FINANCIAL GROUND TRUTH ---
 
-    {
+    Your Output Format:
+    You must output your findings matching the DirectorDecision pydantic model.
+
+    {{
       "decision": "APPROVED" | "REJECTED" | "MORE_INFO_NEEDED",
       "ticker": "stock symbol",
       "style": "Graham | Greenblatt | Lynch | All",
-      "financial_statements": {
-        "income_statement": true/false,
-        "balance_sheet": true/false,
-        "cash_flow_statement": true/false,
-        "notes_reviewed": true/false
-      },
+      "financial_data_verified": true/false,
+      "methodology_sound": true/false,
+      "numbers_accurate": true/false,
+      "analysis_complete": true/false,
+      "logic_and_reasoning_sound": true/false,
+      "evidence_traceable": true/false,
       "anomalies": [
-        {
+        {{
           "category": "revenue | margins | balance_sheet | cash_flow | equity | related_parties | governance",
           "description": "brief description",
           "data": "specific numbers",
           "question": "probing question",
           "required": "what must be provided"
-        }
+        }}
       ],
-      "methodology": {
-        "style_verified": true/false,
-        "all_criteria_evaluated": true/false,
-        "scoring_correct": true/false,
-        "tier_comparison_valid": true/false,
-        "industry_context_applied": true/false
-      },
-      "accuracy": {
-        "numbers_sourced": true/false,
-        "data_current": true/false,
-        "calculations_correct": true/false,
-        "peer_comparison_valid": true/false
-      },
-      "completeness": {
-        "all_criteria_checked": true/false,
-        "risks_identified": true/false,
-        "red_flags_reported": true/false,
-        "downside_considered": true/false
-      },
-      "evidence": {
-        "pdfs_provided": true/false,
-        "page_references": true/false,
-        "excel_model": true/false,
-        "primary_sources": true/false
-      },
-      "methodology_failures": ["specific failure 1", "specific failure 2"],
-      "accuracy_failures": ["specific failure 1"],
-      "completeness_failures": ["specific failure 1"],
-      "evidence_failures": ["specific failure 1"],
+      "failures": ["specific failure 1", "specific failure 2"],
       "feedback_summary": "human-readable summary of decision and key findings",
       "next_steps": ["step 1", "step 2"]
-    }
+    }}
 
-    **Step 1: Verify Financial Statements (REQUIRED)**
-    Confirm that the following have been provided and reviewed:
+    **Step 1: Verify Financial Data (→ financial_data_verified)**
+    Confirm that the synthesis report has reviewed and cited:
     - Income Statement (3-5 years)
     - Balance Sheet (3-5 years)
     - Cash Flow Statement (3-5 years)
-    - Notes to Financial Statements (for anomalies)
 
-    Set financial_statements fields to false if any are missing.
-    If NOT provided → decision = "REJECTED"
+    Set financial_data_verified = false if any are missing or clearly fabricated.
 
     **Step 2: Scan for Anomalies**
     Check for the following patterns and add to anomalies list:
@@ -96,104 +72,91 @@ validate_analysis:
     *Balance Sheet Anomalies:*
     - Inventory growing faster than sales (overproduction or obsolescence?)
     - Receivables aging increasing (collection problems?)
-    - Payables growing faster than payables period (cash flow stress?)
     - Goodwill >20% of assets (overpaid for acquisitions?)
-    - Deferred revenue declining (future revenue declining?)
     - Off-balance sheet liabilities (hidden debt?)
 
     *Cash Flow Anomalies:*
     - Net income positive, operating cash flow negative (low quality earnings?)
-    - Capex > depreciation for 5+ years (heavy investment phase - when does it pay off?)
-    - Free cash flow negative for 3+ years (cash burn - how long sustainable?)
-    - Financing cash flow consistently positive (dependency on external capital?)
+    - Free cash flow negative for 3+ years (cash burn?)
     - Dividends paid while FCF negative (unsustainable payout?)
-
-    *Equity Anomalies:*
-    - Share count increasing rapidly (dilution?)
-    - Retained earnings declining while profitable (dividends > earnings?)
-    - Minority interest growing (complex structure?)
 
     *Related Party & Governance Anomalies:*
     - Related party transactions >5% revenue (self-dealing risk?)
     - Loans to directors/executives (governance red flag?)
-    - Related party receivables (cash extraction?)
-    - Management compensation >5% of net income (excessive pay?)
     - Qualified audit opinion (auditor concerns?)
-    - Auditor change (potential red flag?)
     - Accounting policy changes (earnings management?)
-    - Restatements (historical inaccuracy?)
 
     For each anomaly detected, add to anomalies array with all required fields.
 
-    **Step 3: Validate Methodology**
-    Set methodology fields:
-    - style_verified: Correct investment style used? (Graham, Greenblatt, Lynch, All)
-    - all_criteria_evaluated: All criteria evaluated? (Graham = 9, Greenblatt = 5, All = 14)
-    - scoring_correct: Scoring calculated correctly?
-    - tier_comparison_valid: Tier comparison valid? (Large Cap >20,000B VND, Mid Cap 5,000-20,000B VND, Small Cap <5,000B VND)
-    - industry_context_applied: Industry-specific factors considered?
+    **Step 3: Validate Methodology (→ methodology_sound)**
+    Check whether:
+    - Correct investment style used (Graham, Greenblatt, Lynch, All)
+    - Investment criteria evaluated for the chosen style
+    - Industry-specific factors considered
 
-    **Step 4: Validate Accuracy**
-    Set accuracy fields:
-    - numbers_sourced: All numbers traceable to source?
-    - data_current: Data current? (Reject 2024 data in 2026)
-    - calculations_correct: Calculations verified accurate?
-    - peer_comparison_valid: Peer comparison valid (same tier and industry)?
+    **Step 4: Validate Accuracy (→ numbers_accurate)**
+    Cross-check the Synthesizer's numbers against the Financial Ground Truth:
+    - Are key ratios (P/E, P/B, EPS, ROE, ROA) consistent with ground truth?
+    - Are calculations (PEG ratio, target price, MoS) mathematically correct?
+    - Is data current (not stale)?
 
-    **Step 5: Validate Completeness**
-    Set completeness fields:
-    - all_criteria_checked: All investment style criteria evaluated?
-    - risks_identified: Risk factors identified and analyzed?
-    - red_flags_reported: Red flags reported (if they exist)? Note: Red flags existing is NOT reason to reject — not reporting them IS.
-    - downside_considered: Downside scenarios analyzed?
+    CRITICAL: Use the EXACT values from the Financial Ground Truth to verify.
+    For example, if the ground truth shows Lynch PEG = 2.19 and the report claims PEG = 0.43, that is an accuracy failure.
 
-    **Step 6: Validate Evidence**
-    Set evidence fields:
-    - pdfs_provided: Annual reports referenced or linked (database sources count)?
-    - page_references: Key numbers traceable to source (inline citations like [Source: SQLite DB] count)?
-    - excel_model: Explicit calculations shown for key metrics (P/E, PEG, target price)?
-    - primary_sources: Primary data sources identified (vnstock API/SQLite database, annual reports)?
+    **Step 5: Validate Completeness (→ analysis_complete)**
+    Check whether:
+    - Risk factors identified and analyzed
+    - Red flags reported if they exist (Note: red flags EXISTING is NOT reason to reject — NOT REPORTING them IS)
+    - Downside scenarios considered
+    - Key investment criteria for the chosen style addressed
 
-    NOTE: Our current data pipeline uses SQLite database (from vnstock API) and annual report MDX extraction.
-    Accept database-sourced data with inline "[Source: SQLite Database]" citations as valid evidence.
-    Do NOT reject solely because physical PDF files or Excel spreadsheets are not attached.
+    **Step 5B: Validate Logic & Reasoning (→ logic_and_reasoning_sound)**
+    Check whether the analysis conclusions make logical sense given the data:
+    - Dissonance check: Does the Actionable Suggestion match the Valuation? (e.g. claiming a stock is a "Wait" even when PEG is fantastic and MoS is huge).
+    - Sentiment check: Was strongly negative sentiment acknowledged and factored into the risk assessment?
+    - Classification check: Does the categorization numerically match reality? (e.g. calling a 5% grower a "Fast Grower" is illogical).
+    If the logic is twisted or nonsensical, set logic_and_reasoning_sound = false and explain it in failures.
+
+    **Step 6: Validate Evidence (→ evidence_traceable)**
+    Check whether claims are traceable to data sources:
+    - References to the Financial Summary file or SQLite database
+    - Inline citations like [Source: SQLite Database] or [Financial Summary]
+    - Annual report references (if applicable)
+
+    ⚠️ IMPORTANT: Our data pipeline uses SQLite database (from vnstock API) and annual report MDX extraction.
+    Inline citations referencing database sources are VALID evidence.
+    Do NOT require literal Excel files, PDF attachments, or physical documents.
+    Transparent step-by-step calculations shown in prose satisfy the evidence requirement.
 
     **Step 7: Make Decision**
 
     Set decision based on validation:
 
     **"APPROVED"** when:
-    ✅ All financial_statements fields = true
+    ✅ financial_data_verified = true
     ✅ anomalies is empty OR all anomalies addressed with evidence
-    ✅ All methodology fields = true
-    ✅ All accuracy fields = true
-    ✅ All completeness fields = true
-    ✅ All evidence fields = true
+    ✅ methodology_sound = true
+    ✅ numbers_accurate = true
+    ✅ analysis_complete = true
+    ✅ logic_and_reasoning_sound = true
+    ✅ evidence_traceable = true
 
     **"REJECTED"** when:
-    ❌ Any financial_statements field = false
-    ❌ anomalies detected but not addressed
-    ❌ Any methodology field = false (wrong methodology applied)
-    ❌ Any accuracy field = false (unsourced or stale data)
-    ❌ peer_comparison_valid = false (wrong tier)
-    ❌ red_flags_reported = false (risks ignored)
-    ❌ Any evidence field = false (no evidence provided)
+    ❌ Any of the 6 booleans = false
+    ❌ Anomalies detected but not addressed
+    ❌ Numbers contradict Financial Ground Truth
 
     **"MORE_INFO_NEEDED"** when:
     🔄 Some checks incomplete (missing but not failed)
     🔄 Anomalies detected, clarification needed
-    🔄 Sources cited but not attached
 
-    Remember: You challenge the ANALYSIS, not the COMPANY. If Synthesizer reports "insider selling >3 in 6 months" with evidence → red_flags_reported = true → APPROVE (if all other checks pass). If they ignore insider selling → red_flags_reported = false → REJECT.
+    Remember: You challenge the ANALYSIS, not the COMPANY. If Synthesizer reports red flags with evidence → APPROVE. If they ignore red flags → REJECT.
 
-    For failures, add specific messages to methodology_failures, accuracy_failures, completeness_failures, or evidence_failures arrays.
-
+    For failures, add specific messages to the failures array.
     Provide feedback_summary as a concise human-readable summary.
-
     For REJECTED or MORE_INFO_NEEDED, provide next_steps array with specific actionable items.
   expected_output: >
     A well-formatted JSON document containing: decision (APPROVED, REJECTED, MORE_INFO_NEEDED),
-    ticker, style, financial_statements verification, anomalies list, validation checks
-    (methodology, accuracy, completeness, evidence), failure arrays, feedback_summary,
+    ticker, style, 5 validation booleans, anomalies list, failures list, feedback_summary,
     and optional next_steps. It MUST be valid JSON.
   agent: director
