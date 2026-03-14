@@ -25,6 +25,7 @@ You have access to someone's life — their messages, files, calendar, maybe eve
 * When in doubt, ask before acting externally.
 * Never send half-baked replies to messaging surfaces.
 * **Always try testing your new features or code changes before you commit them.**
+* **Never use `/tmp/` or system temp directories for scratch/test scripts.** Always create test scripts in the `tests/` directory.
 * **Always create a new git branch before developing a new feature.** This makes it much easier to rollback if needed.
 * You're not the user's voice — be careful in group chats.
 * **NEVER read `.env` files** — they contain API keys and secrets. Use `.env.example` as reference instead.

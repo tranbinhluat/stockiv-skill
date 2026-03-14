@@ -9,8 +9,14 @@ from stockiv.utils.logger import setup_global_logger
 
 
 def kickoff():
-    """CLI Entry Point."""
     import argparse
+    import os
+
+    # Bypass crewai_tools pydantic validation bug for local LLMs
+    if "OPENAI_API_KEY" not in os.environ:
+        os.environ["OPENAI_API_KEY"] = (
+            "dummy-key-for-local-llms"  # pragma: allowlist secret
+        )
 
     parser = argparse.ArgumentParser(description="StockIV AI Agent Orchestrator")
     parser.add_argument(
@@ -59,7 +65,7 @@ def kickoff():
         print("[System] Initializing Synthesizer->Director Loop Flow...")
         flow = SynthesizerReporterFlow()
         flow.state.max_loops = args.max_loops
-        flow.state.target_ticker = "FPT"  # Test default
+        flow.state.target_ticker = args.ticker.upper()
     else:
         print("[System] Unknown flow requested.")
         return

@@ -2,25 +2,16 @@ validate_analysis:
   description: >
     Perform comprehensive forensic review and validation of the stock analysis for {stock_symbols}.
 
-    **STEP 0 — REPORT CONTENT (PRE-LOADED)**
-    The synthesis report for {stock_symbols} has been pre-loaded below. Analyze this content for your review.
-    Report file: `{synthesis_report_path}`
+    **STEP 0 — SYNTHESIS REPORT (REQUIRED TO READ)**
+    The synthesis report for {stock_symbols} is located at `{synthesis_report_path}`.
+    You MUST use the `read_file` tool to fully read this report before proceeding to analysis.
+    If the file content says "ERROR:" or cannot be read, set decision = "MORE_INFO_NEEDED" with the error details.
 
-    --- BEGIN REPORT ---
-    {report_content}
-    --- END REPORT ---
-
-    If the report content above says "ERROR:", set decision = "MORE_INFO_NEEDED" with the error details.
-    You also have the `read_file` tool available if you need to read any additional files during your review.
-
-    **STEP 0.5 — FINANCIAL GROUND TRUTH (PRE-LOADED)**
-    The following financial data was collected directly from the vnstock API database.
+    **STEP 0.5 — FINANCIAL GROUND TRUTH (REQUIRED TO READ/VERIFY)**
+    The financial data (collected directly from vnstock API database) is located at `{financial_summary_path}`.
+    You MUST check if this file exists and read it using the `read_file` tool.
     Use this as your SOURCE OF TRUTH for cross-checking the Synthesizer's numbers.
     If the Synthesizer's numbers contradict this data, flag it as an accuracy failure.
-
-    --- BEGIN FINANCIAL GROUND TRUTH ---
-    {financial_summary_content}
-    --- END FINANCIAL GROUND TRUTH ---
 
     Your Output Format:
     You must output your findings matching the ValidationDecision pydantic model.
@@ -28,7 +19,7 @@ validate_analysis:
     {
       "decision": "APPROVED" | "REJECTED" | "MORE_INFO_NEEDED",
       "ticker": "stock symbol",
-      "style": "Graham | Greenblatt | Lynch",
+      "style": "Graham | Greenblatt | Lynch | All",
       "financial_statements": {
         "income_statement": true/false,
         "balance_sheet": true/false,
@@ -136,8 +127,8 @@ validate_analysis:
 
     **Step 3: Validate Methodology**
     Set methodology fields:
-    - style_verified: Correct investment style used? (Graham, Greenblatt, Lynch)
-    - all_criteria_evaluated: All criteria evaluated? (Graham = 9, Greenblatt = 5)
+    - style_verified: Correct investment style used? (Graham, Greenblatt, Lynch, All)
+    - all_criteria_evaluated: All criteria evaluated? (Graham = 9, Greenblatt = 5, All = 14)
     - scoring_correct: Scoring calculated correctly?
     - tier_comparison_valid: Tier comparison valid? (Large Cap >20,000B VND, Mid Cap 5,000-20,000B VND, Small Cap <5,000B VND)
     - industry_context_applied: Industry-specific factors considered?

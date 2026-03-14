@@ -1,92 +1,93 @@
 fetch_financials_task:
   description: >
-    Retrieve 10-year financial statements and historical ratios for {stock_symbols}.
+    DELEGATE this ENTIRE task to `market_data_fetcher` (Quantitative Market Data Specialist).
+    Do NOT delegate any part of this task to `macro_micro_scout` or `annual_report_analyst`.
 
-    You must act methodically. Follow these exact steps for each ticker:
-    1. First, use `fetch_historical_prices` to ensure the base price history exists in the SQLite database.
-    2. Second, use `fetch_financial_statements` to retrieve the Income Statement, Balance Sheet, and Cashflow data in year/quater period .
-    3. Third, use `fetch_financial_ratios` to record the historical fundamental ratios.
-    4. Fourth, use `fetch_dividend_history` to pull the dividend payout record.
+    `market_data_fetcher` must follow these exact steps for {stock_symbols}:
+    1. Use `fetch_historical_prices` with `days_back=30` to get only the LAST 30 DAYS of price data. Do NOT fetch more than 30 days — only recent momentum data is needed.
+    2. Use `fetch_financial_statements` to retrieve the Income Statement, Balance Sheet, and Cashflow data in year/quarter period (10 years of yearly + recent quarterly).
+    3. Use `fetch_financial_ratios` to record the historical fundamental ratios.
+    4. Use `fetch_dividend_history` to pull the dividend payout record.
 
-    Remember to check if the data already exists in the database to avoid unnecessary API calls.
+    `market_data_fetcher` should check if the data already exists in the database to avoid unnecessary API calls.
   expected_output: >
-    A confirmation message that the financial data (prices, statements, ratios, dividends)
-    A confirmation message that the financial data (prices, statements, ratios, dividends)
+    A confirmation message that the financial data (30 days of prices, 10 years of statements, ratios, dividends)
     for the requested tickers has been successfully saved to the SQLite database.
-  max_retries: 2
+  max_retries: 3
 
 fetch_daily_market_data_task:
   description: >
-    Retrieve the latest daily trading data, company overview (size/industry),
-    current P/E, P/B, and live market metrics for {stock_symbols}.
+    DELEGATE this ENTIRE task to `market_data_fetcher` (Quantitative Market Data Specialist).
+    Do NOT delegate any part of this task to `macro_micro_scout` or `annual_report_analyst`.
 
-    CRITICAL INSTRUCTION: You represent the UPSTREAM DATA AUTHORITY. You MUST guarantee all holistic data is present for downstream analytics.
-    1. First, use `fetch_historical_prices` to fetch the real-time `VNINDEX` and store it in the database.
-    2. Second, hit the API directly using `fetch_company_overview` and `fetch_ratio_summary` to update the local SQLite database with today's values for {stock_symbols}.
-    3. Third, identify 1-2 top domestic competitors (peers in the same industry in Vietnam) for {stock_symbols} and execute `fetch_ratio_summary` on those peers so the database is pre-loaded for downstream peer comparisons.
+    CRITICAL: This task guarantees all holistic market data is present for downstream analytics.
+    `market_data_fetcher` must follow these exact steps:
+    1. Use `fetch_historical_prices` to fetch the real-time `VNINDEX` and store it in the database.
+    2. Use `fetch_company_overview` and `fetch_ratio_summary` to update the local SQLite database with today's values for {stock_symbols}.
+    3. Identify 1-2 top domestic competitors (peers in the same industry in Vietnam) for {stock_symbols} and execute `fetch_ratio_summary` on those peers so the database is pre-loaded for downstream peer comparisons.
 
-    VERIFICATION PROTOCOL: Before finishing this task, you MUST independently query the `data/stockiv.db` (if you possess a database reading tool) OR verify your raw output logs to absolutely confirm that:
+    VERIFICATION: Before finishing, `market_data_fetcher` MUST verify that:
     - VNINDEX price rows exist today.
-    - {stock_symbols}'s ratio summary (which contains the P/E and P/B ratios) has been successfully inserted.
+    - {stock_symbols}'s ratio summary (containing P/E and P/B ratios) has been successfully inserted.
   expected_output: >
     A confirmation message detailing that today's market metrics for VNINDEX, {stock_symbols}, and its top peers have been successfully updated in the SQLite database and verified.
-    A confirmation message detailing that today's market metrics for VNINDEX, {stock_symbols}, and its top peers have been successfully updated in the SQLite database and verified.
   context: [fetch_financials_task]
-  max_retries: 2
+  max_retries: 3
 
 fetch_macro_context_task:
   description: >
-    Gather overarching global macroeconomic conditions, Vietnam domestic economy health,
-    and broad sector/industry trends.
+    DELEGATE this ENTIRE task to `macro_micro_scout` (Macroeconomic & Market Context Researcher).
+    Do NOT delegate any part of this task to `market_data_fetcher` or `annual_report_analyst`.
 
-    You must act methodically. Follow these exact steps:
-    1. First, MUST use the `clean_expired_cache` tool to remove stale context cache files (older than 14 days) so that your subsequent searches return fresh live data.
-    2. Second, use `search_market_context` to broadly query current macroeconomic trends (e.g. interest rates, inflation, GDP, WAR, policy, etc) affecting Vietnam and global markets within a week.
-    3. Third, review your initial findings and identify the 1-2 most impactful macroeconomic storylines or shock events.
-    4. Fourth, use `search_market_context` again to drill down specifically into those 1-2 top storylines to build a profound, data-backed understanding.
+    `macro_micro_scout` must follow these exact steps:
+    1. MUST use the `clean_expired_cache` tool to remove stale context cache files (older than 14 days) so that subsequent searches return fresh live data.
+    2. Use `search_market_context` to broadly query current macroeconomic trends (e.g. interest rates, inflation, GDP, WAR, policy, etc) affecting Vietnam and global markets within a week.
+    3. Review initial findings and identify the 1-2 most impactful macroeconomic storylines or shock events.
+    4. Use `search_market_context` again to drill down specifically into those 1-2 top storylines to build a profound, data-backed understanding.
 
-    CRITICAL: DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
-    CRITICAL: Exclude outdated information from previous years unless explicitly analyzing historical context. Focus exclusively on the current week's news and the current year's data. You should explicitly append the current year ({current_year}) to your search queries to prioritize fresh content.
-    CRITICAL: you are allowed to use tools up to 3 times. Keep searches extremely precise to not exceed your limits.
+    CRITICAL: DO NOT SUMMARIZE. PRESERVE THE FULL VIEW of gathered information.
+    CRITICAL: Exclude outdated information from previous years unless explicitly analyzing historical context. Focus exclusively on the current week's news and the current year's data. Explicitly append the current year ({current_year}) to search queries to prioritize fresh content.
+    CRITICAL: `macro_micro_scout` is allowed to use tools up to 3 times. Keep searches extremely precise.
   expected_output: >
     A comprehensive RAW DATA COMPILATION containing the full text, critical claims,
     snippets, supporting statistics, and URLs for all impactful macroeconomic
     and industry-wide news.
   output_file: "{market_context_path}"
-  max_retries: 2
+  max_retries: 3
 
 fetch_ticker_context_task:
   description: >
-    Gather specific news, management interviews, and localized events explicitly
-    for the {stock_symbols} ticker.
+    DELEGATE this ENTIRE task to `macro_micro_scout` (Macroeconomic & Market Context Researcher).
+    Do NOT delegate any part of this task to `market_data_fetcher` or `annual_report_analyst`.
 
-    Now that you understand the macro environment, your focus shifts EXCLUSIVELY to
-    the specific ticket. Search for company-specific news, product launches, earnings
+    Now that macro context has been gathered, `macro_micro_scout` must shift focus EXCLUSIVELY
+    to the {stock_symbols} ticker. Search for company-specific news, product launches, earnings
     leaks, or management statements.
 
-    If your previous macro research highlighted a specificl headwind (e.g. "chip shortage"),
-    you should search to see how the specific ticket ({stock_symbols}) is reacting to it.
+    If previous macro research highlighted a specific headwind (e.g. "chip shortage"),
+    `macro_micro_scout` should search to see how {stock_symbols} is reacting to it.
 
-    CRITICAL: you are allowed to use tools up to 3 times. Keep searches extremely precise to not exceed your limits.
-
+    CRITICAL: `macro_micro_scout` is allowed to use tools up to 3 times. Keep searches extremely precise.
   expected_output: >
     A comprehensive RAW DATA COMPILATION containing the full text, critical claims,
     direct quotes, supporting statistics, and URLs for all impactful ticker-specific news.
-    CRITICAL: DO NOT SUMMARIZE. YOU MUST PRESERVE THE FULL VIEW of the information you found.
-    CRITICAL: Exclude outdated information from previous years unless explicitly analyzing historical context. Focus exclusively on the current week's news and the current year's data. You should explicitly append the current year ({current_year}) to your search queries to prioritize fresh content.
+    CRITICAL: DO NOT SUMMARIZE. PRESERVE THE FULL VIEW of gathered information.
+    CRITICAL: Exclude outdated information from previous years. Focus exclusively on the current week's news and the current year's data. Explicitly append the current year ({current_year}) to search queries.
   output_file: "{ticker_context_path}"
   context: [fetch_macro_context_task]
-  max_retries: 2
+  max_retries: 3
 
 fetch_annual_report_task:
   description: >
-    Find and download the most recent Annual Report (Báo cáo thường niên) PDF for {stock_symbols}.
+    DELEGATE this ENTIRE task to `annual_report_analyst` (Corporate Archive Retrieval Specialist).
+    Do NOT delegate any part of this task to `market_data_fetcher` or `macro_micro_scout`.
 
-    1. First, calculate the most recent completed financial year (e.g., if today is mid 2026, you should search for the 2025 Annual Report).
+    `annual_report_analyst` must follow these steps:
+    1. Calculate the most recent completed financial year (e.g., if today is mid 2026, search for the 2025 Annual Report).
     2. Use `search_annual_report_pdf` with the ticker and that calculated year. Look for direct URLs ending in `.pdf`.
-    3. Once you find a valid PDF URL, use `download_and_convert_pdf` to download and translate it into a local Markdown file. You MUST explicitly provide `md_path="{annual_report_md_dir}/{stock_symbols}_annual_report_<YEAR>.md"` (replacing <YEAR> with the calculated year) and `pdf_dir="{annual_report_pdf_dir}"` to the tool.
+    3. Once a valid PDF URL is found, use `download_and_convert_pdf` to download and translate it into a local Markdown file. MUST explicitly provide `md_path="{annual_report_md_dir}/{stock_symbols}_annual_report_<YEAR>.md"` (replacing <YEAR> with the calculated year) and `pdf_dir="{annual_report_pdf_dir}"` to the tool.
 
-    CRITICAL: Do NOT attempt multiple searches if the first one fails. You are strictly subject to tight tool limits to preserve API quotas. If the URL doesn't look like a PDF, the download fails, or the tool reports it's an unreadable scanned image, simply report failure.
+    CRITICAL: Do NOT attempt multiple searches if the first one fails. Strict tool limits to preserve API quotas. If the URL doesn't look like a PDF, the download fails, or the tool reports it's an unreadable scanned image, simply report failure.
   expected_output: >
     A confirmation message that the Annual Report PDF has been successfully found, downloaded, and converted to Markdown, including the final file path (e.g. data/processed/annual_reports/FPT_annual_report_2025.md).
-  max_retries: 2
+  max_retries: 3

@@ -16,6 +16,7 @@ from stockiv.crews.sentiment_analyst.sentiment_analyst import (
     SentimentAnalystCrew,
     SentimentAnalystCrewInputs,
 )
+from stockiv.utils.freshness import is_file_fresh, get_file_age_days
 
 
 class WeeklyReportFlow(Flow[PipelineState]):
@@ -67,14 +68,27 @@ class WeeklyReportFlow(Flow[PipelineState]):
     def execute_collector_news(self):
         """
         Run Collector Crew, but restrict it to only the macro news context task.
+        Skips if the output file is still fresh (<7 days old).
         """
+        market_context_path = self.state.shared_data["market_context_path"]
+
+        if is_file_fresh(market_context_path, max_age_days=7):
+            age = get_file_age_days(market_context_path)
+            print(
+                f"\n[WeeklyReport Flow] ⏭️  Skipping Collector (macro context fresh: {age:.1f} days old)"
+            )
+            self.state.history += (
+                f"Collector skipped: market_context.md is fresh ({age:.1f} days old).\n"
+            )
+            return
+
         print("\n[WeeklyReport Flow] 🚀 Launching Collector Crew (Macro News Only)...")
 
         try:
             collector_inst = CollectorCrew()
             crew_inst = collector_inst.crew()
 
-            # Filter the tasks to ONLY include macro context tool
+            # Filter the tasks to ONLY include macro context task
             target_task_names = ["fetch_macro_context_task"]
             filtered_tasks = [t for t in crew_inst.tasks if t.name in target_task_names]
 
@@ -86,7 +100,7 @@ class WeeklyReportFlow(Flow[PipelineState]):
             crew_inst.tasks = filtered_tasks
 
             inputs = CollectorCrewInputs(
-                market_context_path=self.state.shared_data["market_context_path"],
+                market_context_path=market_context_path,
                 current_year=self.state.shared_data["report_year"],
             )
             result = crew_inst.kickoff(inputs=inputs.model_dump())
@@ -103,21 +117,45 @@ class WeeklyReportFlow(Flow[PipelineState]):
             f"\n[WeeklyReport Flow] 🚀 Launching Sentiment Analyst Crew (Macro Phase)... (Year: {self.state.shared_data.get('report_year')}, Week: {self.state.shared_data.get('report_week')})..."
         )
 
+        # --- Freshness check: skip tasks whose output is fresh ---
+        skip_tasks: list[str] = []
+        freshness_checks = {
+            "summarize_current_week_macro": self.state.shared_data[
+                "macro_sentiment_md_path"
+            ],
+            "synthesize_recent_trends": self.state.shared_data[
+                "overall_macro_sentiment_md_path"
+            ],
+        }
+        for task_name, file_path in freshness_checks.items():
+            if is_file_fresh(file_path, max_age_days=7):
+                age = get_file_age_days(file_path)
+                print(f"  ⏭️  Skipping {task_name} (fresh: {age:.1f} days old)")
+                skip_tasks.append(task_name)
+            else:
+                print(f"  ✅ Will run {task_name} (file missing or stale)")
+
         try:
             sentiment_inst = SentimentAnalystCrew()
             crew_inst = sentiment_inst.crew()
 
-            # Isolate ONLY the macro sentiment tasks
+            # Isolate ONLY the macro sentiment tasks, then remove fresh ones
             target_task_names = [
                 "summarize_current_week_macro",
                 "synthesize_recent_trends",
             ]
-            filtered_tasks = [t for t in crew_inst.tasks if t.name in target_task_names]
+            filtered_tasks = [
+                t
+                for t in crew_inst.tasks
+                if t.name in target_task_names and t.name not in skip_tasks
+            ]
 
             if not filtered_tasks:
-                raise ValueError(
-                    "Could not find macro sentiment tasks in the SentimentAnalystCrew configuration."
+                print(
+                    "  ⏭️  All Sentiment macro tasks are fresh — skipping Sentiment crew entirely."
                 )
+                self.state.history += "Sentiment skipped: all macro tasks fresh.\n"
+                return
 
             crew_inst.tasks = filtered_tasks
 

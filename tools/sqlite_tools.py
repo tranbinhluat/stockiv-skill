@@ -68,7 +68,9 @@ def _pivot_eav(df: pd.DataFrame, periods: list) -> str:
     ordered_cols = [p for p in periods if p in pivot.columns]
     pivot = pivot[ordered_cols]
 
-    # Format numbers: comma separators, NO scientific notation
+    # Drop rows where all values are NaN (which happens if an item is not present in ANY of the chosen periods)
+    pivot = pivot.dropna(how="all")
+
     def fmt(val):
         if pd.isna(val):
             return "-"
@@ -129,17 +131,17 @@ class FetchRecentFinancialsTool(BaseTool):
             if stmts_df.empty and ratios_df.empty:
                 return f"No financial data found for {ticker}."
 
-            # Mix Yearly (last 4 years) and Quarterly (last 4 quarters) periods
-            # e.g., ['2025', '2024', '2023', '2022', '2025-Q4', '2025-Q3', '2025-Q2', '2025-Q1']
+            # Mix Yearly (last 3 years) and Quarterly (last 2 quarters) periods
+            # e.g., ['2025', '2024', '2023', '2025-Q4', '2025-Q3']
             all_stmt_periods = sorted(stmts_df["period"].unique(), reverse=True)
-            yearly_periods = [p for p in all_stmt_periods if "-Q" not in p][:4]
-            quarterly_periods = [p for p in all_stmt_periods if "-Q" in p][:4]
+            yearly_periods = [p for p in all_stmt_periods if "-Q" not in p][:3]
+            quarterly_periods = [p for p in all_stmt_periods if "-Q" in p][:2]
             mixed_periods = yearly_periods + quarterly_periods
 
             # The same for ratios, though typically aligned
             all_ratio_periods = sorted(ratios_df["period"].unique(), reverse=True)
-            r_yearly = [p for p in all_ratio_periods if "-Q" not in p][:4]
-            r_quarterly = [p for p in all_ratio_periods if "-Q" in p][:4]
+            r_yearly = [p for p in all_ratio_periods if "-Q" not in p][:3]
+            r_quarterly = [p for p in all_ratio_periods if "-Q" in p][:2]
             mixed_ratio_periods = r_yearly + r_quarterly
 
             res = f"# Financial Data for {ticker} (Pivot Tables)\n\n"
@@ -218,24 +220,29 @@ class FetchCurrentMarketSnapshotTool(BaseTool):
                 params=(ticker,),
             )
 
-            # 2. Market cap from ratio_summary
+            # 2. Extract metrics_json for Market Cap, EPS TTM, and BVPS
+            metrics = {}
             cap_df = pd.read_sql_query(
                 "SELECT date, metrics_json FROM ratio_summary "
                 "WHERE ticker=? ORDER BY date DESC LIMIT 1",
                 conn,
                 params=(ticker,),
             )
+            if not cap_df.empty:
+                try:
+                    metrics = json.loads(cap_df.iloc[0]["metrics_json"])
+                except (json.JSONDecodeError, KeyError):
+                    pass
 
-            # 3. Key ratios from latest quarterly period
+            # 3. Dynamic Ratios Computation (Live Price)
+            # Fetch explicitly live ratios instead of depending on outdated static quarterly ratios
             ratios_df = pd.read_sql_query(
                 "SELECT item_name, value FROM financial_ratios "
                 "WHERE ticker=? AND period = ("
                 "  SELECT MAX(period) FROM financial_ratios WHERE ticker=?"
-                ") AND item_name IN ({})".format(
-                    ",".join(["?"] * len(self._RATIO_ITEMS))
-                ),
+                ") AND item_name IN ('Tỷ suất cổ tức', 'Giá trị doanh nghiệp trên lợi nhuận trước thuế, khấu hao và lãi vay (EV/EBITDA)')",
                 conn,
-                params=(ticker, ticker, *self._RATIO_ITEMS),
+                params=(ticker, ticker),
             )
 
             # 4. VNINDEX
@@ -251,28 +258,37 @@ class FetchCurrentMarketSnapshotTool(BaseTool):
             res = f"# Current Market Snapshot for {ticker}\n"
             res += "⚠️ USE THESE VALUES EXACTLY — DO NOT APPROXIMATE OR HALLUCINATE\n\n"
 
+            latest_price_k = 0
             if not price_df.empty:
                 row = price_df.iloc[0]
+                latest_price_k = float(row["close"])
                 res += "| Metric | Value |\n|--------|-------|\n"
-                res += f"| **Current Price** | **{row['close']:,.1f} (x1000 VND)** |\n"
+                res += (
+                    f"| **Current Price** | **{latest_price_k:,.1f} (x1000 VND)** |\n"
+                )
                 res += f"| Price Date | {row['date']} |\n"
                 res += f"| Volume | {row['volume']:,.0f} |\n"
 
-            # Parse market cap from metrics_json
-            if not cap_df.empty:
-                try:
-                    metrics = json.loads(cap_df.iloc[0]["metrics_json"])
-                    if "market_cap" in metrics:
-                        res += f"| Market Cap | {metrics['market_cap']:,.0f} VND |\n"
-                except (json.JSONDecodeError, KeyError):
-                    pass
+            if "market_cap" in metrics:
+                res += f"| Market Cap | {metrics['market_cap']:,.0f} VND |\n"
 
-            # Valuation ratios
-            if not ratios_df.empty:
-                res += "\n### Valuation Ratios (Latest Quarter)\n"
-                res += "| Ratio | Value |\n|-------|-------|\n"
-                for _, r in ratios_df.iterrows():
-                    res += f"| {r['item_name']} | {r['value']:.2f} |\n"
+            # Dynamic P/E and P/B
+            res += "\n### Valuation Ratios (Live Computation)\n"
+            res += "| Ratio | Value |\n|-------|-------|\n"
+
+            eps_ttm = metrics.get("eps_ttm", metrics.get("eps", 0))
+            bvps = metrics.get("bvps", 0)
+
+            if eps_ttm > 0 and latest_price_k > 0:
+                live_pe = (latest_price_k * 1000) / eps_ttm
+                res += f"| Chỉ số giá thị trường trên thu nhập (P/E Live) | {live_pe:.2f} |\n"
+            if bvps > 0 and latest_price_k > 0:
+                live_pb = (latest_price_k * 1000) / bvps
+                res += f"| Chỉ số giá thị trường trên giá trị sổ sách (P/B Live) | {live_pb:.2f} |\n"
+
+            # Other Ratios (EV/EBITDA, Dividend)
+            for _, r in ratios_df.iterrows():
+                res += f"| {r['item_name']} | {r['value']:.2f} |\n"
 
             # VNINDEX
             if not idx_df.empty:

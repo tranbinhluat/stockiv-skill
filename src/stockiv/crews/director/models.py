@@ -4,8 +4,10 @@ Director Crew Output Models
 Structured output models for the Director's validation decisions.
 """
 
-from pydantic import BaseModel, Field
-from typing import Literal, List, Optional
+import json
+
+from pydantic import BaseModel, Field, model_validator
+from typing import Any, Literal, List, Optional
 
 
 class Anomaly(BaseModel):
@@ -41,7 +43,7 @@ class MethodologyCheck(BaseModel):
     """Methodology validation results."""
 
     style_verified: bool = Field(
-        description="Correct investment style used (Graham, Greenblatt, Lynch)"
+        description="Correct investment style used (Graham, Greenblatt, Lynch, All)"
     )
     all_criteria_evaluated: bool = Field(
         description="All criteria evaluated (Graham=9, Greenblatt=5)"
@@ -99,13 +101,56 @@ class DirectorDecision(BaseModel):
     MORE_INFO_NEEDED → clarification).
     """
 
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_json_strings(cls, data: Any) -> Any:
+        """Auto-parse fields that LLMs sometimes return as JSON strings."""
+        if not isinstance(data, dict):
+            return data
+
+        # Fields that should be dicts (nested sub-models)
+        dict_fields = [
+            "financial_statements",
+            "methodology",
+            "accuracy",
+            "completeness",
+            "evidence",
+        ]
+        # Fields that should be lists
+        list_fields = [
+            "anomalies",
+            "methodology_failures",
+            "accuracy_failures",
+            "completeness_failures",
+            "evidence_failures",
+            "next_steps",
+        ]
+
+        for field in dict_fields:
+            val = data.get(field)
+            if isinstance(val, str):
+                try:
+                    data[field] = json.loads(val)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+
+        for field in list_fields:
+            val = data.get(field)
+            if isinstance(val, str):
+                try:
+                    data[field] = json.loads(val)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+
+        return data
+
     decision: Literal["APPROVED", "REJECTED", "MORE_INFO_NEEDED"] = Field(
         description="Final decision: APPROVED (ready for publication), REJECTED (fatal flaws), "
         "MORE_INFO_NEEDED (clarification required)"
     )
     ticker: str = Field(description="Stock ticker symbol analyzed")
     style: str = Field(
-        description="Investment style applied: Graham, Greenblatt, or Lynch"
+        description="Investment style applied: Graham, Greenblatt, Lynch, or All"
     )
 
     # Financial Statements (REQUIRED)

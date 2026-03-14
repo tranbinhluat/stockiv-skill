@@ -10,7 +10,14 @@ from stockiv.agents.base import (
     primary_llm,
     get_llm,
     light_llm,
-    advanced_llm
+    advanced_llm,
 )
 
-__all__ = ["get_llm", "primary_llm", "DEFAULT_MODEL", "DEFAULT_BASE_URL", "light_llm"]
+__all__ = [
+    "get_llm",
+    "primary_llm",
+    "DEFAULT_MODEL",
+    "DEFAULT_BASE_URL",
+    "light_llm",
+    "advanced_llm",
+]

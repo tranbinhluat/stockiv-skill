@@ -60,6 +60,17 @@ def read_file(file_path: str) -> str:
         return f.read()
 
 
+@tool("append_to_file")
+def append_to_file(file_path: str, content: str) -> str:
+    """Append text or markdown content to an existing file."""
+    try:
+        with open(file_path, "a", encoding="utf-8") as f:
+            f.write(f"\n\n{content}\n")
+        return f"Successfully appended content to {file_path}"
+    except Exception as e:
+        return f"Failed to append to {file_path}: {str(e)}"
+
+
 # Import SQLite and search tools
 import sys  # noqa: E402
 from pathlib import Path  # noqa: E402
@@ -73,6 +84,7 @@ from tools.sqlite_tools import (  # noqa: E402
     FetchRecentFinancialsTool,
     FetchPeerComparisonsTool,
     FetchCurrentMarketSnapshotTool,
+    CalculateFrameworkMetricsTool,
 )
 
 
@@ -117,180 +129,22 @@ class BaselineMetrics(BaseModel):
 class SynthesizerReport(BaseModel):
     """The final structured evaluation report from the Synthesizer crew."""
 
-    stock_symbol: str = Field(..., description="The stock symbol being evaluated.")
-    current_metrics: str = Field(
-        ...,
-        description="The current trading price, current date, and active market cap.",
-    )
-    quantitative_metrics_summary: str = Field(
-        ...,
-        description="A markdown table citing the exact financial metrics (revenue, profit, debt, margins) you extracted from the database.",
-    )
-    quantitative_anomaly_flags: str = Field(
-        ...,
-        description="Explicitly detail any anomalies YOU found in the database metrics (e.g., sudden margin drops, debt spikes, or bizarre ROE). State 'No quantitative anomalies detected' if the numbers are stable.",
-    )
-
-    # Business Model
-    business_model_is_good: bool = Field(
-        ...,
-        description="Does the company have a good, simple, and focused business model?",
-    )
-    business_model_input_analysis: str = Field(
-        ..., description="Analysis of raw materials and sourcing."
-    )
-    business_model_output_analysis: str = Field(
-        ..., description="Analysis of product, customers, and revenue streams."
-    )
-    business_model_core_engine_analysis: str = Field(
-        ..., description="Analysis of factories, workforce, and distribution network."
-    )
-
-    # Management & Governance
-    management_is_good: bool = Field(
-        ..., description="Is the management reputed and shareholder-aligned?"
-    )
-    management_analysis: str = Field(
-        ..., description="Analysis of shareholder structure, board, and reputation."
-    )
-
-    # Industry Analysis
-    industry_classification: str = Field(
-        ...,
-        description="Classification of the industry (Slow, Sustainable, Fast, Cyclical).",
-    )
-    industry_dynamics_analysis: str = Field(
-        ...,
-        description="Deep analysis of the industry risks and tailwinds, explicitly incorporating qualitative data from the sentiment reports.",
-    )
-
-    # Financial Health
-    is_good: bool = Field(
-        ...,
-        description="Does the financial health meet the minimum requirements (e.g., ROE > 15%, ROA > 6%, OCF > Net Income)?",
-    )
-    capital_structure: str = Field(
-        ..., description="Analysis of debt vs equity and asset location."
-    )
-    profitability: str = Field(
-        ..., description="Analysis of Gross/Operating/Net Margins, ROE, and ROA."
-    )
-    cash_generation: str = Field(
-        ..., description="Analysis of OCF vs Net Income and FCF Margin."
-    )
-    forensic_anomalies: str = Field(
-        ...,
-        description="Analysis of accounting anomalies (e.g., related party transactions, inventory bloat, fake revenue) based on the financial reading guide. Note: Requires Annual Report Notes.",
-    )
-
-    # Valuation & Margin of Safety
-    valuation_is_cheap: bool = Field(
-        ...,
-        description="Is the price cheap relative to its growth, assets, and market context?",
-    )
-    market_phase_context: str = Field(
-        ...,
-        description="Current market phase (Crisis, Fair, Bubble) and how it affects the valuation.",
-    )
-    investment_criteria_analysis: str = Field(
-        ...,
-        description="Explicit computation of specific investment criteria: Benjamin Graham's safe conditions (e.g. P/E * P/B < 22.5) OR Peter Lynch's classifications (e.g. PEG ratio for Fast Growers).",
-    )
-    competitive_peer_comparison: str = Field(
-        ...,
-        description="Explicit benchmarking of the company's valuation metrics against its sector peers or an explanation of its monopoly status.",
-    )
-    relative_valuation_analysis: str = Field(
-        ...,
-        description="Analysis of P/E, P/B, and EV/EBITDA against sector benchmarks and growth rate.",
-    )
-    margin_of_safety_analysis: str = Field(
-        ..., description="Conclusion on Margin of Safety based on market phase."
-    )
-
-    # Summary and Suggestions
-    summary_of_findings: str = Field(
-        ...,
-        description="A final BLUF outlining the overall facts found during synthesis without stating a definitive pass/fail decision.",
-    )
+    is_good: bool = Field(..., description="Overall good company?")
+    valuation_is_cheap: bool = Field(..., description="Overall cheap price?")
     actionable_suggestion: str = Field(
-        ...,
-        description="A clear, direct action recommendation based on the current Margin of Safety (e.g., 'BUY NOW', 'WAIT FOR P/E TO DROP TO 14x', 'AVOID').",
+        ..., description="Actionable suggestion (BUY, WAIT, AVOID)"
     )
     calculated_target_price: str = Field(
-        ...,
-        description="Explicit calculation of the Fair Value and the suggested Buy Price after applying the required Margin of Safety (MoS) discount based on the market context and business risks.",
+        ..., description="Target price with Margin of Safety"
     )
-    critical_warnings: str = Field(
+    report_markdown: str = Field(
         ...,
-        description="Explicitly state 'What to wait for' and 'What to be careful about' regarding this investment.",
-    )
-    delegated_visuals: str = Field(
-        ...,
-        description="Links or descriptions of embedded visuals/tables delegated to the Data Specialist.",
-    )
-    citations_and_footnotes: str = Field(
-        ...,
-        description="Write the detailed footnote definitions here (e.g., '[^1]: According to... (Source: SQLite DB)'). If no footnotes were used, leave this empty, but you MUST use footnotes for your quantitative claims.",
+        description="The FULL detailed markdown report containing all analysis, citations, guidelines, and visuals, formatted comprehensively following the GCCP framework structure.",
     )
 
     def to_markdown(self) -> str:
         """Converts the structured Pydantic model into a beautifully formatted Markdown report."""
-
-        def bool_to_badge(val: bool) -> str:
-            return "🟢 **PASS**" if val else "🔴 **FAIL**"
-
-        md = f"# GCCP Synthesis Report: {self.stock_symbol}\n\n"
-        md += f"**Current Metrics:** {self.current_metrics}\n"
-        md += f"**Industry Classification:** {self.industry_classification}\n\n"
-
-        md += "## Part I: Quantitative Summary & Industry Dynamics\n"
-        md += f"{self.quantitative_metrics_summary}\n\n"
-        md += f"### Quantitative Anomaly Flags:\n{self.quantitative_anomaly_flags}\n\n"
-        md += f"### Industry Context & Sentiment Risk:\n{self.industry_dynamics_analysis}\n\n"
-
-        md += f"## Part II: Good Company (Qualitative) | Overall Status: {bool_to_badge(self.business_model_is_good and self.management_is_good)}\n"
-        md += f"### 1. Business Model & Moat | Status: {bool_to_badge(self.business_model_is_good)}\n"
-        md += f"- **Input (Raw Materials):** {self.business_model_input_analysis}\n"
-        md += (
-            f"- **Output (Product/Customers):** {self.business_model_output_analysis}\n"
-        )
-        md += f"- **Core Engine:** {self.business_model_core_engine_analysis}\n\n"
-
-        md += f"### 2. Management & Governance | Status: {bool_to_badge(self.management_is_good)}\n"
-        md += f"- **Analysis:** {self.management_analysis}\n\n"
-
-        md += f"## Part III: Good Company (Quantitative) | Financial Health Status: {bool_to_badge(self.is_good)}\n"
-        md += f"- **Capital Structure (Debt):** {self.capital_structure}\n"
-        md += f"- **Profitability (Margins/ROE):** {self.profitability}\n"
-        md += f"- **Cash Generation (OCF/FCF):** {self.cash_generation}\n"
-        md += f"- **Accounting Forensics (Anomalies):** {self.forensic_anomalies}\n\n"
-
-        md += f"## Part IV: Cheap Price | Overall Status: {bool_to_badge(self.valuation_is_cheap)}\n"
-        md += "### Market Phase & Criteria Validation\n"
-        md += f"- **Market Context:** {self.market_phase_context}\n"
-        md += f"- **Strategy Criteria (Graham/Lynch):** {self.investment_criteria_analysis}\n"
-        md += f"- **Peer Comparison:** {self.competitive_peer_comparison}\n"
-        md += f"- **Relative Valuation:** {self.relative_valuation_analysis}\n"
-        md += f"- **Margin of Safety:** {self.margin_of_safety_analysis}\n\n"
-
-        md += "## Part V: Final Synthesis Summary & Actionable Advice\n"
-        md += f"**Overall BLUF:** {self.summary_of_findings}\n\n"
-
-        md += "### Valuation Target & Margin of Safety\n"
-        md += f"- **Target/Suggested Entry Price:** {self.calculated_target_price}\n\n"
-
-        md += "### Actionable Suggestion\n"
-        md += f"> **{self.actionable_suggestion}**\n\n"
-
-        md += "### Critical Warnings & Observations\n"
-        md += f"{self.critical_warnings}\n\n"
-
-        md += "## Part VI: Visuals, Footnotes and Citation Sources\n"
-        md += f"{self.delegated_visuals}\n\n"
-        md += f"{self.citations_and_footnotes}\n"
-
-        return md
+        return self.report_markdown
 
 
 # ---------------------------------------------------------------------------
@@ -380,8 +234,10 @@ class SynthesizerCrew:
                 FetchRecentFinancialsTool(),
                 FetchCurrentMarketSnapshotTool(),
                 FetchPeerComparisonsTool(),
+                CalculateFrameworkMetricsTool(),
                 FileReadTool(),
                 sentiment_dir_tool,
+                append_to_file,
             ],
         )
 
@@ -487,4 +343,3 @@ class SynthesizerCrew:
         if revision:
             return self.revision_crew().kickoff(inputs=inputs.model_dump())
         return self.crew().kickoff(inputs=inputs.model_dump())
-

@@ -1,139 +1,97 @@
-# BaselineMetrics: FPT
+# Financial Baseline Summary for FPT
 
-## I. Current Stock Metrics (2025-Q4)
+## Current Market Snapshot (from Step 0 — IMMUTABLE, do NOT change these values)
 
 | Metric | Value |
 |--------|-------|
-| Ticker | FPT |
-| Period | 2025-Q4 |
-| P/E Ratio | 15.92 |
-| P/B Ratio | 3.73 |
-| P/S Ratio | 8.07 |
-| EPS (Trailing) | 6016.81 VND |
-| BVPS | 25682 VND |
-| Beta | 0.64 |
-| Dividend Yield | 0.02 |
+| **Current Price** | **77.7 (x1000 VND)** |
+| Price Date | 2026-03-12 |
+| Volume | 12,722,400 |
 
-## II. Financial Statement Highlights (2025-Q4)
-
-### Balance Sheet (VND)
-| Item | Value |
-|------|-------|
-| Total Assets | 88,089,600,000,000 |
-| Total Liabilities | 44,338,200,000,000 |
-| Owners Equity | 43,751,500,000,000 |
-| Short-term Assets | 58,103,000,000,000 |
-| Long-term Assets | 29,986,700,000,000 |
-| Cash & Equivalents | 10,540,200,000,000 |
-| Short-term Liabilities | 41,552,800,000,000 |
-| Long-term Liabilities | 2,785,370,000,000 |
-
-### Income Statement (VND)
-| Item | Value |
-|------|-------|
-| Net Revenue | 20,225,500,000,000 |
-| Gross Profit | 7,054,150,000,000 |
-| Operating Profit | 3,477,290,000,000 |
-| Profit Before Tax | 3,498,400,000,000 |
-| Net Profit After Tax | 2,988,150,000,000 |
-| EPS (VND) | 1168 |
-
-## III. Financial Ratios (2025-Q4)
-
+### Valuation Ratios (Latest Quarter)
 | Ratio | Value |
 |-------|-------|
-| ROE (Trailing 4Q) | 27.23% |
-| ROA (Trailing 4Q) | 11.48% |
-| ROCE | 7.97% |
-| Gross Profit Margin | 34.88% |
-| Net Profit Margin | 14.77% |
-| EBIT Margin | 18.32% |
-| EBITDA/Net Revenue | 21.29% |
-| Current Ratio | 1.40 |
-| Quick Ratio | 1.35 |
-| Cash Ratio | 0.25 |
-| Interest Coverage | 17.90 |
-| EV/EBITDA | 29.69 |
-| EV/EBIT | 48.85 |
+| Giá trị sổ sách của cổ phiếu (BVPS) | 25682.00 |
+| Tỷ suất cổ tức | 0.02 |
+| Giá trị doanh nghiệp trên lợi nhuận trước thuế, khấu hao và lãi vay (EV/EBITDA) | 29.69 |
+| Chỉ số giá thị trường trên giá trị sổ sách (P/B) | 3.73 |
+| Chỉ số giá thị trường trên thu nhập (P/E) | 15.92 |
 
-## IV. YoY Growth Percentages (2025-Q4)
+### Market Index
+| Index | Value | Date |
+|-------|-------|------|
+| VNINDEX | 1,710.97 | 2026-03-12 |
 
-| Growth Metric | YoY Change (%) |
-|---------------|----------------|
-| Total Assets | 22.32% |
-| Owners Equity | 22.22% |
-| Liabilities | 22.42% |
-| Net Revenue | 14.87% |
-| Gross Profit | 8.88% |
-| Profit Before Tax | 18.20% |
-| Profit After Tax (Parent) | 19.92% |
-| Long-term Liabilities | 93.93% |
-| Charter Capital | 15.80% |
+*Source: [SQLite Database — stockiv.db]*
 
-## V. Quarter-over-Quarter Comparison (2025-Q4 vs 2025-Q3)
+## Historical Financials (from Step 1 — Pivot Table format)
 
-| Metric | 2025-Q4 | 2025-Q3 | Change |
-|--------|---------|---------|--------|
-| Trailing EPS | 6016.81 | 5988.42 | +28.39 |
-| ROE (Trailing) | 27.23% | 27.33% | -0.10% |
-| ROA (Trailing) | 11.48% | 11.54% | -0.06% |
-| P/E Ratio | 15.92 | 15.53 | +0.39 |
-| P/B Ratio | 3.73 | 3.70 | +0.03 |
-| Current Ratio | 1.40 | 1.48 | -0.08 |
-| Quick Ratio | 1.35 | 1.42 | -0.07 |
-| Net Profit Margin | 14.77% | 16.87% | -2.10% |
-| Revenue Growth (YoY) | 14.87% | 8.19% | +6.68% |
-| Profit Before Tax Growth (YoY) | 18.20% | 16.03% | +2.17% |
+### YEARLY Income Statement (3-5 years)
+| item_name                                          |           2025 |           2024 |           2023 |           2022 |
+|:---------------------------------------------------|---------------:|---------------:|---------------:|---------------:|
+| Trong đó :Chi phí lãi vay                          |   809759601    |   551639362    |   832648611    |   645725556    |
+| 1. Doanh thu bán hàng và cung cấp dịch vụ          | 70207689409    | 62962652135    | 52625174861    | 44023010881    |
+| 10. Chi phí quản lý doanh nghiệp                   |  7330786999    |  7074038615    |  6625373638    |  5846280654    |
+| 11. Lợi nhuận thuần từ hoạt động kinh doanh        | 12946913204    | 11025080773    |  9111745534    |  7589289622    |
+| 12. Thu nhập khác                                  |   142891794    |   175450600    |   200956011    |   184323926    |
+| 13. Chi phí khác                                   |    50935701    |   130864955    |   109695447    |   111330589    |
+| 14. Lợi nhuận khác                                 |    91956093    |    44585645    |    91260564    |    72993338    |
+| 15. Tổng lợi nhuận kế toán trước thuế              | 13038869297    | 11069666418    |  9203006099    |  7662282960    |
+| 16. Chi phí thuế TNDN hiện hành                    |  1918759235    |  1922927615    |  1424017002    |  1193613667    |
+| 17. Chi phí thuế TNDN hoãn lại                     |  -105413134    |  -280683727    |    -9060643    |   -22674162    |
+| 18. Lợi nhuận sau thuế thu nhập doanh nghiệp       | 11225523196    |  9427422530    |  7788049740    |  6491343454    |
+| 19. Lãi cơ bản trên cổ phiếu (*) (VNÐ)             |        5211    |        4944    |        4661    |        4429    |
+| 2. Các khoản giảm trừ doanh thu                    |    94863844    |   113857783    |     7274034    |    13483200    |
+| 20. Lãi suy giảm trên cổ phiếu (*)                 |           5.00 |           5.00 |           5.00 |           4.00 |
+| 3. Doanh thu thuần về bán hàng và cung cấp dịch vụ | 70112825565    | 62848794351    | 52617900827    | 44009527681    |
+| 4. Giá vốn hàng bán                                | 44217420809    | 39150445981    | 32298347383    | 26842249040    |
+| 5. Lợi nhuận gộp về bán hàng và cung cấp dịch vụ   | 25895404756    | 23698348370    | 20319553445    | 17167278641    |
+| 6.Doanh thu hoạt động tài chính                    |  2977156212    |  1935749115    |  2336069090    |  1998503980    |
+| 7. Chi phí tài chính                               |  1672045217    |  1811547382    |  1718298464    |  1687369702    |
+| 8. Phần lãi/lỗ trong công ty liên doanh, liên kết  |   658024835    |   392531256    |    42347009    |   483598048    |
+| 9. Chi phí bán hàng                                |  7580840384    |  6115961972    |  5242551907    |  4526440692    |
+| Lợi nhuận sau thuế của cổ đông của Công ty mẹ      |  9369309781    |  7856767812    |  6465190433    |  5310108591    |
+| Lợi ích của cổ đông thiểu số                       |  1856213415    |  1570654718    |  1322859307    |  1181234863    |
 
-## VI. Peer Comparison Summary (FPT)
+*Source: [SQLite Database — stockiv.db]*
 
-| Metric | FPT Value |
-|--------|-----------|
-| Market Cap (implied from PE) | ~148,205,119,527,000 VND (EV) |
-| Revenue (TTM) | 70,207,689,409,081 VND |
-| Revenue Growth (YoY) | 11.51% |
-| Net Profit (TTM) | 9,369,309,781,066 VND |
-| Net Profit Growth (YoY) | 19.25% |
-| ROE | 28.27% |
-| ROA | 11.71% |
-| ROIC | 16.94% |
-| P/E | 15.82 |
-| P/B | 4.06 |
-| EPS (TTM) | 5500.01 VND |
-| BVPS | 21,416.77 VND |
-| Current Ratio | 1.40 |
-| Quick Ratio | 0.60 |
-| Cash Ratio | 0.25 |
-| Gross Margin | 36.93% |
-| Net Profit Margin | 13.36% |
-| EBIT Margin | 15.67% |
-| Dividend Yield | 1.15% |
-| Debt-to-Equity | 1.01 |
-| EV/EBITDA | 11.43 |
+### QUARTERLY Income Statement (last 4 quarters)
+| item_name                                          |        2025-Q4 |        2025-Q3 |        2025-Q2 |        2025-Q1 |
+|:---------------------------------------------------|---------------:|---------------:|---------------:|---------------:|
+| Trong đó :Chi phí lãi vay                          |   207025853    |   233582914    |   216761296    |   152389538    |
+| 1. Doanh thu bán hàng và cung cấp dịch vụ          | 20258866135    | 17225507122    | 16658335761    | 16064980391    |
+| 10. Chi phí quản lý doanh nghiệp                   |  1892395898    |  1647276733    |  1913706634    |  1877437057    |
+| 11. Lợi nhuận thuần từ hoạt động kinh doanh        |  3477285511    |  3346375733    |  3129379259    |  2993843379    |
+| 12. Thu nhập khác                                  |    40088827    |    34839400    |    28751046    |    39212522    |
+| 13. Chi phí khác                                   |    18969734    |     6476534    |    17127044    |     8362390    |
+| 14. Lợi nhuận khác                                 |    21119093    |    28362865    |    11624002    |    30850132    |
+| 15. Tổng lợi nhuận kế toán trước thuế              |  3498404604    |  3374738598    |  3141003262    |  3024693511    |
+| 16. Chi phí thuế TNDN hiện hành                    |   487956258    |   589553627    |   463961750    |   377287600    |
+| 17. Chi phí thuế TNDN hoãn lại                     |    22299783    |  -116360782    |   -63200567    |    51848431    |
+| 18. Lợi nhuận sau thuế thu nhập doanh nghiệp       |  2988148563    |  2901545753    |  2740242078    |  2595557480    |
+| 19. Lãi cơ bản trên cổ phiếu (*) (VNÐ)             |        1168    |        1036    |        1529    |        1478    |
+| 2. Các khoản giảm trừ doanh thu                    |    33415778    |    20985896    |    33622721    |     6839449    |
+| 20. Lãi suy giảm trên cổ phiếu (*)                 |           1.00 |           1.00 |           2.00 |           1.00 |
+| 3. Doanh thu thuần về bán hàng và cung cấp dịch vụ | 20225450357    | 17204521225    | 16624713040    | 16058140942    |
+| 4. Giá vốn hàng bán                                | 13171300027    | 10685654746    | 10603672997    |  9756793038    |
+| 5. Lợi nhuận gộp về bán hàng và cung cấp dịch vụ   |  7054150330    |  6518866479    |  6021040043    |  6301347904    |
+| 6.Doanh thu hoạt động tài chính                    |   553701777    |   613110474    |  1236993027    |   573331893    |
+| 7. Chi phí tài chính                               |   476741111    |   352575080    |   531366215    |   311343769    |
+| 8. Phần lãi/lỗ trong công ty liên doanh, liên kết  |   283746137    |   130833426    |   106714936    |   136730337    |
+| 9. Chi phí bán hàng                                |  2045175725    |  1916582833    |  1790295897    |  1828785929    |
+| Lợi nhuận sau thuế của cổ đông của Công ty mẹ      |  2502704372    |  2434841435    |  2257433265    |  2174301387    |
+| Lợi ích của cổ đông thiểu số                       |   485444191    |   466704318    |   482808813    |   421256094    |
 
-## VII. VNINDEX Baseline
+*Source: [SQLite Database — stockiv.db]*
 
-| Metric | Value |
-|--------|-------|
-| Latest Date | Data unavailable in current query |
-| Open | N/A |
-| High | N/A |
-| Low | N/A |
-| Close | N/A |
-| Volume | N/A |
-
-## VIII. Additional Financial Metrics (Peer Summary)
-
-| Metric | Value |
-|--------|-------|
-| Issue Share | 1,703,507,121 |
-| Charter Capital | 17,035,071,210,000 VND |
-| EBITDA | 13,883,301,950,079 VND |
-| EBIT | 10,983,777,373,795 VND |
-| P/CF | 14.55 |
-| Asset Turnover | 0.88 |
-| Fixed Asset Turnover | 4.36 |
-| DSO (Days Sales Outstanding) | 17.50 days |
-| DPO (Days Payable Outstanding) | 34.10 days |
-| CCC (Cash Conversion Cycle) | 112.17 days |
-| ACP (Average Collection Period) | 60.57 days |
+### YEARLY Balance Sheet (3-5 years)
+| item_name                                           | 2025            |            2024 | 2023           |           2022 |
+|:----------------------------------------------------|:----------------|----------------:|:---------------|---------------:|
+| - Giá trị hao mòn lũy kế (*)                        | -13,762,875,753 | -11,683,165,705 | -9,906,845,403 | -8,293,751,259 |
+| - Nguyên giá                                        | 29,148,692,599  |  24,457,733,667 | 22,288,962,278 | 19,007,982,397 |
+| - Cổ phiếu phổ thông có quyền biểu quyết            | 17,035,071,210  |  14,710,691,830 | 12,699,688,750 | 10,970,265,720 |
+| - LNST chưa phân phối kỳ này                        | 6,924,484,515   |   5,572,300,562 | 4,202,230,790  |  3,607,894,037 |
+| - LNST chưa phân phối lũy kế đến cuối kỳ trước      | 7,399,799,985   |   5,458,228,109 | 4,471,895,918  |  4,103,787,448 |
+| 1. Chi phí trả trước dài hạn                        | 4,200,230,383   |   3,765,187,625 | 3,391,434,749  |  3,488,252,135 |
+| 1. Chi phí trả trước ngắn hạn                       | 641,070,241     |     479,707,219 | 449,245,738    |    409,346,699 |
+| 1. Hàng tồn kho                                     | 2,250,812,491   |   1,990

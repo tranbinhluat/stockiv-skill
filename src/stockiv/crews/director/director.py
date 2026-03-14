@@ -33,7 +33,6 @@ def read_file(file_path: str) -> str:
         return f"Error reading file: {e}"
 
 
-
 class DirectorCrewInputs(BaseModel):
     stock_symbols: Optional[str] = Field(
         default=None, description="The stock ticker symbol being analyzed."
@@ -45,13 +44,9 @@ class DirectorCrewInputs(BaseModel):
     review_output_path: Optional[str] = Field(
         default=None, description="Path where Director writes their review markdown."
     )
-    report_content: Optional[str] = Field(
+    financial_summary_path: Optional[str] = Field(
         default=None,
-        description="Pre-read content of the synthesis report (injected by flow).",
-    )
-    financial_summary_content: Optional[str] = Field(
-        default=None,
-        description="Pre-read content of the financial summary (source of truth from database). "
+        description="Path to the financial summary data (source of truth from database). "
         "Director uses this to cross-check Synthesizer's numbers.",
     )
 

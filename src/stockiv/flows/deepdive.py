@@ -24,7 +24,7 @@ from stockiv.crews.sentiment_analyst.sentiment_analyst import (
     SentimentAnalystCrew,
     SentimentAnalystCrewInputs,
 )
-from stockiv.crews.reporter.reporter import ReporterCrew, ReporterCrewInputs
+from stockiv.utils.freshness import is_file_fresh, get_file_age_days
 
 
 class DeepDiveFlow(Flow[PipelineState]):
@@ -108,12 +108,36 @@ class DeepDiveFlow(Flow[PipelineState]):
     def execute_collector(self):
         """
         2. RUN COLLECTOR CREW (full: macro + ticker + annual reports)
+           Skips web-search tasks whose output files are still fresh (<7 days).
         """
         ticker = self.state.target_ticker
         print(f"\n[DeepDive Flow] 🚀 Launching Collector Crew for {ticker}...")
 
+        # --- Freshness check: determine which tasks to skip ---
+        skip_tasks: list[str] = []
+        freshness_checks = {
+            "fetch_macro_context_task": self.state.shared_data["market_context_path"],
+            "fetch_ticker_context_task": self.state.shared_data["ticker_context_path"],
+        }
+        for task_name, file_path in freshness_checks.items():
+            if is_file_fresh(file_path, max_age_days=7):
+                age = get_file_age_days(file_path)
+                print(f"  ⏭️  Skipping {task_name} (fresh: {age:.1f} days old)")
+                skip_tasks.append(task_name)
+            else:
+                print(f"  ✅ Will run {task_name} (file missing or stale)")
+
         try:
             collector = CollectorCrew()
+            crew_inst = collector.crew()
+
+            # Filter out fresh tasks
+            if skip_tasks:
+                crew_inst.tasks = [
+                    t for t in crew_inst.tasks if t.name not in skip_tasks
+                ]
+                self.state.history += f"Collector: skipped fresh tasks {skip_tasks}.\n"
+
             inputs = CollectorCrewInputs(
                 stock_symbols=ticker,
                 market_context_path=self.state.shared_data["market_context_path"],
@@ -122,7 +146,7 @@ class DeepDiveFlow(Flow[PipelineState]):
                 annual_report_pdf_dir=str(RAW_ANNUAL_REPORT_DIR),
                 current_year=self.state.shared_data["report_year"],
             )
-            result = collector.run(inputs=inputs)
+            result = crew_inst.kickoff(inputs=inputs.model_dump())
             self.state.history += f"Collector executed. Result: {str(result)}\n"
         except Exception as e:
             self.state.history += f"Collector Failed: {str(e)}\n"
@@ -132,12 +156,40 @@ class DeepDiveFlow(Flow[PipelineState]):
     def execute_sentiment(self):
         """
         3. RUN SENTIMENT ANALYST CREW (full: macro + ticker)
+           Skips macro sentiment tasks whose output files are still fresh (<7 days).
         """
         ticker = self.state.target_ticker
         print(f"\n[DeepDive Flow] 🚀 Launching Sentiment Analyst Crew for {ticker}...")
 
+        # --- Freshness check: determine which tasks to skip ---
+        skip_tasks: list[str] = []
+        freshness_checks = {
+            "summarize_current_week_macro": self.state.shared_data[
+                "macro_sentiment_md_path"
+            ],
+            "synthesize_recent_trends": self.state.shared_data[
+                "overall_macro_sentiment_md_path"
+            ],
+        }
+        for task_name, file_path in freshness_checks.items():
+            if is_file_fresh(file_path, max_age_days=7):
+                age = get_file_age_days(file_path)
+                print(f"  ⏭️  Skipping {task_name} (fresh: {age:.1f} days old)")
+                skip_tasks.append(task_name)
+            else:
+                print(f"  ✅ Will run {task_name} (file missing or stale)")
+
         try:
-            sentiment_crew = SentimentAnalystCrew()
+            sentiment_inst = SentimentAnalystCrew()
+            crew_inst = sentiment_inst.crew()
+
+            # Filter out fresh tasks
+            if skip_tasks:
+                crew_inst.tasks = [
+                    t for t in crew_inst.tasks if t.name not in skip_tasks
+                ]
+                self.state.history += f"Sentiment: skipped fresh tasks {skip_tasks}.\n"
+
             inputs = SentimentAnalystCrewInputs(
                 stock_symbols=ticker,
                 year=self.state.shared_data["report_year"],
@@ -153,7 +205,7 @@ class DeepDiveFlow(Flow[PipelineState]):
                 ticker_context_path=self.state.shared_data["ticker_context_path"],
                 ticker_sentiment_path=self.state.shared_data["ticker_sentiment_path"],
             )
-            result = sentiment_crew.run(inputs=inputs)
+            result = crew_inst.kickoff(inputs=inputs.model_dump())
             self.state.shared_data["news_sentiment_analysis"] = str(result)
             self.state.history += (
                 "Sentiment Analyst executed. Result recorded in State.\n"
@@ -162,44 +214,44 @@ class DeepDiveFlow(Flow[PipelineState]):
             self.state.history += f"Sentiment Analyst Failed: {str(e)}\n"
             raise
 
+    # @listen(execute_sentiment)
+    # def execute_synthesizer_loop(self):
+    #     """
+    #     4. TODO: Integrate report_loop sub-flow here.
+    #     Synthesizer → Director feedback loop → approved synthesis output.
+    #     For now this is a placeholder that passes through to Reporter.
+    #     """
+    #     ticker = self.state.target_ticker
+    #     print(
+    #         f"\n[DeepDive Flow] ⏳ Synthesizer Loop placeholder for {ticker} "
+    #         f"(report_loop integration pending)..."
+    #     )
+    #     self.state.history += "Synthesizer Loop: placeholder (not yet implemented).\n"
+
+    # @listen(execute_synthesizer_loop)
+    # def execute_reporter(self):
+    #     """
+    #     5. RUN REPORTER CREW (Translation & Publishing)
+    #     """
+    #     print(
+    #         "\n[DeepDive Flow] 🚀 Launching Reporter Crew (Translation & Publishing Phase)..."
+    #     )
+
+    #     try:
+    #         reporter_inst = ReporterCrew()
+    #         inputs = ReporterCrewInputs(
+    #             stock_symbols=self.state.target_ticker,
+    #             source_md_path=self.state.shared_data["synthesizer_md_path"],
+    #             pdf_output_path=self.state.shared_data["report_pdf_path"],
+    #             report_title=self.state.shared_data["report_title"],
+    #         )
+    #         reporter_inst.run(inputs=inputs)
+    #         self.state.history += "Reporter executed. Sent payload to Discord.\n"
+    #     except Exception as e:
+    #         self.state.history += f"Reporter Failed: {str(e)}\n"
+    #         raise
+
     @listen(execute_sentiment)
-    def execute_synthesizer_loop(self):
-        """
-        4. TODO: Integrate report_loop sub-flow here.
-        Synthesizer → Director feedback loop → approved synthesis output.
-        For now this is a placeholder that passes through to Reporter.
-        """
-        ticker = self.state.target_ticker
-        print(
-            f"\n[DeepDive Flow] ⏳ Synthesizer Loop placeholder for {ticker} "
-            f"(report_loop integration pending)..."
-        )
-        self.state.history += "Synthesizer Loop: placeholder (not yet implemented).\n"
-
-    @listen(execute_synthesizer_loop)
-    def execute_reporter(self):
-        """
-        5. RUN REPORTER CREW (Translation & Publishing)
-        """
-        print(
-            "\n[DeepDive Flow] 🚀 Launching Reporter Crew (Translation & Publishing Phase)..."
-        )
-
-        try:
-            reporter_inst = ReporterCrew()
-            inputs = ReporterCrewInputs(
-                stock_symbols=self.state.target_ticker,
-                source_md_path=self.state.shared_data["synthesizer_md_path"],
-                pdf_output_path=self.state.shared_data["report_pdf_path"],
-                report_title=self.state.shared_data["report_title"],
-            )
-            reporter_inst.run(inputs=inputs)
-            self.state.history += "Reporter executed. Sent payload to Discord.\n"
-        except Exception as e:
-            self.state.history += f"Reporter Failed: {str(e)}\n"
-            raise
-
-    @listen(execute_reporter)
     def finish_flow(self):
         print(
             f"\n[DeepDive Flow] 🏁 Flow successfully completed for {self.state.target_ticker}."

@@ -12,33 +12,22 @@ collect_baseline_metrics:
     Step 2: Use `FetchPeerComparisonsTool` for `{stock_symbols}` — gather peer comparison ratios.
     Step 3: **Use `CalculateFrameworkMetricsTool` for `{stock_symbols}` to compute Cash Flow Divergence, Margins, and GCCP Criteria deterministically. DO NOT calculate these yourself.**
     Step 4: Use `QueryStockDatabaseTool` if needed for additional data points.
-    Step 5: Organize ALL data into the financial summary with clearly separated sections:
+    Step 5: You MUST use the `append_to_file` tool iteratively to construct the final document at `{financial_summary_path}`.
+    Because the tables are large, DO NOT try to output the entire document as your Final Answer!
+    Instead, call `append_to_file` sequentially:
+      1. Append the Current Market Snapshot.
+      2. Append the Historical Financials (Income Statement).
+      3. Append the Historical Financials (Balance Sheet).
+      4. Append the Historical Financials (Cash Flow Statement).
+      5. Append Key Ratios and Framework Metrics.
 
-      ## Current Market Snapshot (from Step 0 — IMMUTABLE, do NOT change these values)
-      - Current Price, Date, P/E, P/B, EV/EBITDA, Market Cap, VNINDEX
-
-      ## Historical Financials (from Step 1 — Pivot Table format)
-      - Income Statement (Mixed 4 Years & 4 Quarters)
-      - Balance Sheet (Mixed 4 Years & 4 Quarters)
-      - Cash Flow Statement (Mixed 4 Years & 4 Quarters)
-      - Key Ratios (Mixed 4 Years & 4 Quarters)
-
-      ## Peer Comparison (from Step 2)
-      - Top competitors with P/E, P/B, EPS, ROE
-
-      ## Framework Metrics (from Step 3 - EXTREMELY IMPORTANT)
-      - Exact output from `CalculateFrameworkMetricsTool` regarding Margins, Cash Flow Divergence, Graham Criteria, and Lynch PEG.
-
-    IMPORTANT: If yearly data is missing (tool shows "⚠️ No yearly data available"), explicitly state this as a data limitation — do NOT fabricate yearly figures from quarterly data.
+    IMPORTANT: If yearly data is missing (tool shows "⚠️ No yearly data available"), explicitly state this as a data limitation.
     You MUST explicitly cite the data source (e.g., `[Source: vnstock/SQLite Database]`) beneath every markdown table you generate.
 
-    CRITICAL: Return the complete markdown output directly as your FINAL ANSWER. The system will automatically save it to `{financial_summary_path}` via the output_file configuration. DO NOT use the execute_python_code tool to try and write or save this markdown file yourself.
+    CRITICAL: Only return "DONE: File written to {financial_summary_path}" as your FINAL ANSWER *after* you have successfully appended all sections using the tool. DO NOT output the raw markdown tables in your final answer.
   expected_output: >
-    A rigidly structured output matching the `BaselineMetrics` pydantic model fields.
-    All fields must contain rich markdown tables with exact numbers.
-    Must include the consolidated mixed tables for financials and ratios.
+    The string "DONE: File written to {financial_summary_path}"
   agent: data_specialist
-  output_file: "{financial_summary_path}"
 
 forensic_annual_report_review:
   description: >

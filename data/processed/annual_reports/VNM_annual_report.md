@@ -1782,12 +1782,12 @@ của Vinamilk.
 
 **Khởi tạo cơ hội kinh doanh mới**
 
-                                                                                                                   
-                                                                                                                   
+
+
 **Phát triển sản phẩm và trải nghiệm ưu việt cho người** cơ hội mở rộng danh mục sản phẩm;
-**tiêu dùng**                                                            
+**tiêu dùng**
                                                                                - Tái cấu trúc danh mục sản phẩm dựa trên cấu trúc thương khách hàng xuất khẩu mới;
-hiệu cho dài hạn;                                                                         
+hiệu cho dài hạn;
                                                                                - Rà soát chất lượng sản phẩm và tối ưu quy trình tung sản
 phẩm mới; kinh doanh sản phẩm của Vinamilk;
 
@@ -2477,7 +2477,7 @@ VNINDEX
 
 
 
-**1** Cổ đông Nhà nước 752.476.602 36,00% 1 1 
+**1** Cổ đông Nhà nước 752.476.602 36,00% 1 1
 
 **2** Cổ đông sáng lập/ cổ đông FDI
 
@@ -2491,9 +2491,9 @@ Cổ đông lớn (sở hữu từ 5% vốn
 
 
 
-Trong nước - 0,00% - - 
+Trong nước - 0,00% - -
 
-Nước ngoài 648.041.788 31,01% 3 3 
+Nước ngoài 648.041.788 31,01% 3 3
 
 
 (triệu cổ phiếu) 74,000
@@ -2539,9 +2539,9 @@ Nước ngoài 648.041.788 31,01% 3 3
 
 
 
-**4** Công đoàn Công ty - - - - 
+**4** Công đoàn Công ty - - - -
 
-**5** Cổ phiếu quỹ - 0,00% - - 
+**5** Cổ phiếu quỹ - 0,00% - -
 
 **6** Cổ đông sở hữu cổ phiếu ưu đãi
 
@@ -3130,7 +3130,7 @@ HĐQT (DCP) – Viện Thành viên HĐQT Việt Nam (VIOD).
 
 - Ông có hơn 8 năm kinh nghiệm đảm nhiệm vị trí Giám đốc Kiểm toán và Kiểm soát Nội bộ tại Big C Việt Nam. CTCP (Vilico).
 
-- Ông có gần 6 năm kinh nghiệm với vị trí Vụ phó Vụ Kế toán 
+- Ông có gần 6 năm kinh nghiệm với vị trí Vụ phó Vụ Kế toán
   - Kho bạc Nhà nước Việt Nam – Bộ Tài chính. Inc.
 
 - Trước đó, ông cũng có hơn 11 năm kinh nghiệm công tác tại Vụ Kế toán - Kho bạc Nhà nước Việt Nam ở cấp Chuyên
@@ -15812,5 +15812,3 @@ tỉnh Xiêng Khoảng, Lào.
 **Fax:** (+856) 21563054
 
 **Email:** laojagro@yahoo.com
-
-

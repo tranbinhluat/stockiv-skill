@@ -153,9 +153,18 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
         )
         ticker_sentiment_dir = PROCESSED_SENTIMENT_TICKER_DIR / ticker
         ticker_sentiment_dir.mkdir(parents=True, exist_ok=True)
+
+        # Find latest weekly sentiment file, fallback to hardcoded name
+        sentiment_files = list(ticker_sentiment_dir.glob("*.md"))
+        if sentiment_files:
+            sentiment_files.sort(reverse=True)
+            chosen_sentiment = sentiment_files[0]
+        else:
+            chosen_sentiment = ticker_sentiment_dir / f"{ticker}_sentiment.md"
+
         self.state.shared_data.setdefault(
             "ticker_sentiment_path",
-            str(ticker_sentiment_dir / f"{ticker}_sentiment.md"),
+            str(chosen_sentiment),
         )
 
         self.state.history += f"ReportLoop setup complete for {ticker}.\n"
@@ -173,13 +182,21 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
 
         mock_content = f"# MOCK GCCP Synthesis Report: {ticker} (v{version})\n\n"
         mock_content += (
-            "This is a simulated report to test the Director feedback loop.\n\n"
+            "This is a simulated report to test the Director feedback loop. "
+            "It applies the **All** investment style criteria.\n\n"
         )
         mock_content += "## 1. Business Model & Moat | Status: 🟢 **PASS**\n"
         mock_content += (
             "- **Analysis:** The company shows strong recurring revenue.\n\n"
         )
-        mock_content += "## 2. Management & Governance | Status: 🟢 **PASS**\n"
+        mock_content += "## 2. Financial Statements Review\n"
+        mock_content += (
+            "- **Income Statement:** Reviewed (3-5 years) [Source: SQLite Database]\n"
+            "- **Balance Sheet:** Reviewed (3-5 years) [Source: SQLite Database]\n"
+            "- **Cash Flow Statement:** Reviewed (3-5 years) [Source: SQLite Database]\n"
+            "- **Notes to Financial Statements:** Reviewed [Source: Annual Reports]\n\n"
+        )
+        mock_content += "## 3. Management & Governance | Status: 🟢 **PASS**\n"
         mock_content += "- **Analysis:** Management is transparent and has good capital allocation.\n\n"
         mock_content += "## Part III: Good Company (Quantitative) | Financial Health Status: 🟢 **PASS**\n"
         mock_content += (
@@ -206,6 +223,22 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             f"[ReportLoop Flow - MOCK] 📝 Wrote mock synthesis report to {report_path}"
         )
 
+        financial_summary_path = self.state.shared_data.get(
+            "financial_summary_path",
+            str(Path(output_dir) / f"{ticker}_financial_summary.md"),
+        )
+        if not os.path.exists(financial_summary_path):
+            mock_fs = f"# MOCK Financial Summary for {ticker}\n\n"
+            mock_fs += "This file serves as the ground truth for financial data.\n"
+            mock_fs += "- Revenue: 1000\n"
+            mock_fs += "- Net Income: 200\n"
+            mock_fs += "- Total Equity: 500\n"
+            with open(financial_summary_path, "w", encoding="utf-8") as f:
+                f.write(mock_fs)
+            print(
+                f"[ReportLoop Flow - MOCK] 📝 Wrote mock financial summary to {financial_summary_path}"
+            )
+
     def _run_synthesizer_full_kickoff(self):
         """Run full Synthesizer crew kickoff (first pass — 3-task pipeline)."""
         ticker = self.state.target_ticker
@@ -220,7 +253,9 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
 
             synthesizer_crew = SynthesizerCrew()
             inputs = self._build_synthesizer_inputs()
-            result = synthesizer_crew.run(inputs=SynthesizerCrewInputs(**inputs), revision=False)
+            result = synthesizer_crew.run(
+                inputs=SynthesizerCrewInputs(**inputs), revision=False
+            )
 
             if hasattr(result, "pydantic") and result.pydantic:
                 md_content = result.pydantic.to_markdown()
@@ -260,7 +295,9 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
 
             synthesizer_crew = SynthesizerCrew()
             inputs = self._build_synthesizer_inputs()
-            result = synthesizer_crew.run(inputs=SynthesizerCrewInputs(**inputs), revision=True)
+            result = synthesizer_crew.run(
+                inputs=SynthesizerCrewInputs(**inputs), revision=True
+            )
 
             if hasattr(result, "pydantic") and result.pydantic:
                 md_content = result.pydantic.to_markdown()
@@ -371,11 +408,15 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
 
             # Pre-read financial summary as ground truth for Director
             financial_summary_content = ""
-            financial_summary_path = self.state.shared_data.get("financial_summary_path", "")
+            financial_summary_path = self.state.shared_data.get(
+                "financial_summary_path", ""
+            )
             if financial_summary_path and os.path.exists(financial_summary_path):
                 with open(financial_summary_path, "r", encoding="utf-8") as f:
                     financial_summary_content = f.read()
-                print(f"  ✅ Pre-read financial summary: {len(financial_summary_content)} chars")
+                print(
+                    f"  ✅ Pre-read financial summary: {len(financial_summary_content)} chars"
+                )
             else:
                 financial_summary_content = "No financial summary available."
                 print(f"  ⚠️ Financial summary not found at: {financial_summary_path}")
