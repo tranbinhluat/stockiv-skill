@@ -37,6 +37,10 @@ class ReporterCrewInputs(BaseModel):
     pdf_output_path: Optional[str] = Field(
         default=None, description="Destination path for the generated PDF report."
     )
+    financial_summary_path: Optional[str] = Field(
+        default=None,
+        description="Path to the financial summary .md file for PDF appendix.",
+    )
     discord_channel_id: Optional[str] = Field(
         default=None,
         description="Discord channel ID to publish the report to.",

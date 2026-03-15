@@ -70,6 +70,7 @@ export_to_pdf:
     Output path: `{pdf_output_path}`.
 
     CRITICAL INSTRUCTION: You MUST use the `markdown_to_pdf` tool exactly once. Pass the entire text content as `markdown_content` and `{pdf_output_path}` as the `output_file_path`.
+    If a financial summary path is provided ('{financial_summary_path}'), you MUST also pass it as the `financial_summary_path` argument. This will generate a landscape appendix with the financial data tables. If the path is empty or 'None', do NOT pass it.
   expected_output: >
     The absolute file path of the generated PDF document, e.g., `{pdf_output_path}`.
   agent: pdf_generator

@@ -103,10 +103,15 @@ class SynthesizerReport(BaseModel):
         description="Detailed notes on what was revised based on Director's feedback. Do not include this text inside report_markdown.",
     )
 
-    def to_markdown(self) -> str:
+    def to_markdown(self, ticker: str = "") -> str:
         """Converts the structured Pydantic model into a beautifully formatted Markdown report."""
+        if ticker:
+            title = f"# Phân tích Cổ phiếu {ticker} theo Khung GCCP"
+        else:
+            title = "# Phân tích Cổ phiếu (GCCP)"
+
         lines = [
-            "# Synthesizer Evaluation Summary",
+            title,
             "",
             "## Key Conclusions",
             f"- **Good Company?** {'🟢 Yes' if self.is_good else '🔴 No'}",
@@ -119,16 +124,8 @@ class SynthesizerReport(BaseModel):
             self.report_markdown,
         ]
 
-        if self.revision_notes:
-            lines.extend(
-                [
-                    "",
-                    "---",
-                    "",
-                    "## Revision Notes",
-                    self.revision_notes,
-                ]
-            )
+        # revision_notes kept in Pydantic model for internal tracking
+        # but NOT included in the user-facing report
 
         return "\n".join(lines)
 

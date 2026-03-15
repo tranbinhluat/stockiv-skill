@@ -112,6 +112,7 @@ compile_evaluation_report:
     STEP 7: COMPILE FINAL REPORT
     Embed chart images and compile all sections into the final output.
     You MUST include a dedicated subsection titled **"Sentiment & Market Psychology"** explaining the market sentiment explicitly.
+    You MUST begin your `report_markdown` with a catchy one-line hook (in italics) that summarizes the investment thesis in plain language. Examples: *"Công ty tốt, giá chưa hấp dẫn — chờ điểm mua vào tốt hơn"* or *"Tăng trưởng mạnh, định giá hợp lý — cơ hội đầu tư dài hạn"*. This hook should be the very first line of report_markdown, before any headings.
   expected_output: >
     A single, valid JSON object matching the `SynthesizerReport` Pydantic schema.
     All fields must be populated. Include in your summary:
@@ -143,6 +144,7 @@ evaluate_feedback:
 
     STEP 5: REBUILD the full report: keep approved sections intact, fix only the weak sections.
     ⚠️ CRITICAL RETENTION RULE: You MUST retain all previously generated sections exactly as they were, especially the "Industry Risks & Potentials" subsection and the "Actionable Suggestion" format. Do not drop or summarize previously approved sections.
+    ⚠️ CHART RETENTION RULE: You MUST preserve ALL chart image markdown embeds (![...](path.png)) from the previous report version. Copy them exactly as-is into the revised report_markdown. Do NOT drop chart references when revising.
 
     STEP 6: Populate the `revision_notes` field with a detailed summary stating:
       - Which weaknesses were addressed
