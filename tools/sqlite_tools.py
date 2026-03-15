@@ -52,6 +52,9 @@ def _pivot_eav(df: pd.DataFrame, periods: list) -> str:
     """Pivot an EAV DataFrame (item_name, period, value) into a markdown table
     where columns = periods and rows = item_name.
     Values are formatted with comma separators for readability.
+
+    If a 'sort_order' column is present, rows are ordered by it (Vietnam standard
+    format) instead of alphabetically by item_name.
     """
     if df.empty:
         return "No data available.\n"
@@ -61,17 +64,32 @@ def _pivot_eav(df: pd.DataFrame, periods: list) -> str:
     if df.empty:
         return "No data for the requested periods.\n"
 
+    # Build the sort order mapping BEFORE pivoting (pivot_table destroys row order)
+    has_sort_order = "sort_order" in df.columns
+    if has_sort_order:
+        # Take the first sort_order value per item_name (they should all be the same)
+        sort_map = df.groupby("item_name")["sort_order"].first().sort_values()
+        ordered_items = sort_map.index.tolist()
+
     # Pivot: rows=item_name, columns=period
     pivot = df.pivot_table(
         index="item_name", columns="period", values="value", aggfunc="first"
     )
 
-    # Reorder columns to match periods (most recent first)
+    # Reorder columns to match requested period order
     ordered_cols = [p for p in periods if p in pivot.columns]
     pivot = pivot[ordered_cols]
 
-    # Drop rows where all values are NaN (which happens if an item is not present in ANY of the chosen periods)
+    # Drop rows where all values are NaN
     pivot = pivot.dropna(how="all")
+
+    # Reorder rows by sort_order (Vietnam standard format) if available
+    if has_sort_order:
+        # Filter ordered_items to only those present in pivot after NaN drop
+        final_order = [item for item in ordered_items if item in pivot.index]
+        # Append any items that somehow weren't in sort_map
+        remaining = [item for item in pivot.index if item not in final_order]
+        pivot = pivot.reindex(final_order + remaining)
 
     def fmt(val):
         if pd.isna(val):
@@ -130,14 +148,14 @@ class FetchRecentFinancialsTool(BaseTool):
         try:
             conn = sqlite3.connect(self.db_path)
             stmts_df = pd.read_sql_query(
-                "SELECT statement_type, period, item_name, value "
-                "FROM financial_statements WHERE ticker=? ORDER BY period DESC",
+                "SELECT statement_type, period, item_name, value, sort_order "
+                "FROM financial_statements WHERE ticker=? ORDER BY sort_order, period DESC",
                 conn,
                 params=(ticker,),
             )
             ratios_df = pd.read_sql_query(
-                "SELECT period, item_name, value "
-                "FROM financial_ratios WHERE ticker=? ORDER BY period DESC",
+                "SELECT period, item_name, value, sort_order "
+                "FROM financial_ratios WHERE ticker=? ORDER BY sort_order, period DESC",
                 conn,
                 params=(ticker,),
             )
@@ -146,21 +164,24 @@ class FetchRecentFinancialsTool(BaseTool):
             if stmts_df.empty and ratios_df.empty:
                 return f"No financial data found for {ticker}."
 
-            # Mix Yearly (last 3 years) and Quarterly (last 2 quarters) periods
-            # e.g., ['2025', '2024', '2023', '2025-Q4', '2025-Q3']
+            # Build period lists: yearly oldest→newest, then quarterly oldest→newest
             all_stmt_periods = sorted(stmts_df["period"].unique(), reverse=True)
-            yearly_periods = [p for p in all_stmt_periods if "-Q" not in p][:5]
-            quarterly_periods = [p for p in all_stmt_periods if "-Q" in p][:2]
+            yearly_periods = sorted(
+                [p for p in all_stmt_periods if "-Q" not in p][-5:]
+            )  # oldest→newest
+            quarterly_periods = sorted(
+                [p for p in all_stmt_periods if "-Q" in p][:4]
+            )  # oldest→newest
             mixed_periods = yearly_periods + quarterly_periods
 
-            # The same for ratios, though typically aligned
+            # The same for ratios
             all_ratio_periods = sorted(ratios_df["period"].unique(), reverse=True)
-            r_yearly = [p for p in all_ratio_periods if "-Q" not in p][:5]
-            r_quarterly = [p for p in all_ratio_periods if "-Q" in p][:2]
+            r_yearly = sorted([p for p in all_ratio_periods if "-Q" not in p][-5:])
+            r_quarterly = sorted([p for p in all_ratio_periods if "-Q" in p][:4])
             mixed_ratio_periods = r_yearly + r_quarterly
 
             res = f"# Financial Data for {ticker} (Pivot Tables)\n\n"
-            res += "## Financial Statements (Mixed Yearly & Quarterly)\n\n"
+            res += "## Financial Statements (Yearly & Quarterly)\n\n"
             for stmt_type, label in [
                 ("income", "Income Statement"),
                 ("balance", "Balance Sheet"),
@@ -173,7 +194,7 @@ class FetchRecentFinancialsTool(BaseTool):
                     res += "\n"
 
             if not ratios_df.empty:
-                res += "### Key Ratios (Mixed)\n"
+                res += "### Key Ratios\n"
 
                 # Exclude P/E, P/B from this historical table since the user wants to rely
                 # on the FetchCurrentMarketSnapshotTool / ratio_summary for current valuation ratios.

@@ -259,6 +259,10 @@ def fetch_financial_statements(ticker: str) -> str:
                 if df is None or df.empty:
                     continue
 
+                # Build sort_order map from the API's original row index
+                # The API returns items in Vietnam standard format order
+                sort_order_map = {row["item_id"]: idx for idx, row in df.iterrows()}
+
                 # Melt the KBS dataframe structure: [item, item_id, 2025-Q4, 2025-Q3, ...]
                 id_vars = ["item", "item_id"]
                 # Only keep quarter columns, sometimes there are extraneous columns
@@ -279,10 +283,11 @@ def fetch_financial_statements(ticker: str) -> str:
 
                 # Insert into database using parameterization
                 for _, row in melted_df.iterrows():
+                    sort_idx = sort_order_map.get(row["item_id"], 999)
                     cursor.execute(
                         """
-                    INSERT OR REPLACE INTO financial_statements (ticker, statement_type, period, item_id, item_name, value, source, confidence, citation)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO financial_statements (ticker, statement_type, period, item_id, item_name, value, sort_order, source, confidence, citation)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                         (
                             ticker,
@@ -291,6 +296,7 @@ def fetch_financial_statements(ticker: str) -> str:
                             row["item_id"],
                             row["item"],
                             row["value"],
+                            sort_idx,
                             "vnstock-KBS",
                             1.0,
                             "",
@@ -347,6 +353,9 @@ def fetch_financial_ratios(ticker: str) -> str:
             if df is None or df.empty:
                 continue
 
+            # Build sort_order map from the API's original row index
+            sort_order_map = {row["item_id"]: idx for idx, row in df.iterrows()}
+
             # Melt the KBS dataframe structure
             id_vars = ["item", "item_id"]
             val_vars = [
@@ -364,10 +373,11 @@ def fetch_financial_ratios(ticker: str) -> str:
             melted_df = melted_df.dropna(subset=["value"])
 
             for _, row in melted_df.iterrows():
+                sort_idx = sort_order_map.get(row["item_id"], 999)
                 cursor.execute(
                     """
-                INSERT OR REPLACE INTO financial_ratios (ticker, period, item_id, item_name, value, source, confidence, citation)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT OR REPLACE INTO financial_ratios (ticker, period, item_id, item_name, value, sort_order, source, confidence, citation)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
                         ticker,
@@ -375,6 +385,7 @@ def fetch_financial_ratios(ticker: str) -> str:
                         row["item_id"],
                         row["item"],
                         row["value"],
+                        sort_idx,
                         "vnstock-KBS",
                         1.0,
                         "",
