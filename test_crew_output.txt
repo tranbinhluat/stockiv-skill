@@ -1,0 +1,11 @@
+Found langtrace api key.
+[32mInitializing Langtrace SDK..[39m
+[37m⭐ Leave our github a star to stay on top of our updates - https://github.com/Scale3-Labs/langtrace[39m
+[34mExporting spans to Stockew..[39m
+[34mLangtrace Project URL: https://app.langtrace.ai/project/cmmhaq8ot000n21ze7yyqopxu/traces[39m
+Consider using the pymupdf_layout package for a greatly improved page layout analysis.
+Found langtrace api key.
+[32mInitializing Langtrace SDK..[39m
+[37m⭐ Leave our github a star to stay on top of our updates - https://github.com/Scale3-Labs/langtrace[39m
+[34mExporting spans to Stockew..[39m
+[34mLangtrace Project URL: https://app.langtrace.ai/project/cmmhaq8ot000n21ze7yyqopxu/traces[39m

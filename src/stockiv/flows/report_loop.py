@@ -122,7 +122,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
         report_path = str(Path(output_dir) / f"{ticker}_GCCP_report_v{version}.md")
 
         if hasattr(result, "pydantic") and result.pydantic:
-            md_content = result.pydantic.to_markdown()
+            md_content = result.pydantic.to_markdown(ticker=ticker)
             print(
                 f"[ReportLoop Flow] ✅ Parsed pydantic → markdown ({len(md_content)} chars)"
             )
@@ -618,6 +618,9 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             inputs = ReporterCrewInputs(
                 stock_symbols=ticker,
                 source_md_path=synthesis_report_path,
+                financial_summary_path=self.state.shared_data.get(
+                    "financial_summary_path", ""
+                ),
                 discord_channel_id=self.state.discord_channel_id,
             )
             ReporterCrew().run(inputs=inputs)

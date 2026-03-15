@@ -1,0 +1,20 @@
+
+PEG Ratio Calculation:
+P/E Ratio: 12.9
+Growth Rate: 20.84%
+Dividend Yield: 1.25%
+PEG Ratio = P/E / (Growth Rate + Dividend Yield)
+PEG Ratio = 12.9 / (20.84 + 1.25)
+PEG Ratio = 12.9 / 22.09
+PEG Ratio = 0.584
+
+Target Buy Price Calculation:
+Fair P/E: 16.0
+Current EPS: 6016 VND
+Margin of Safety: 25.0%
+Fair Value = Fair P/E * EPS = 16.0 * 6016 = 96256.0 VND
+Target Buy Price = Fair Value * (1 - Margin of Safety) = 96256.0 * (1 - 0.25) = 72192 VND
+
+Final Results:
+PEG Ratio: 0.584
+Target Buy Price: 72192 VND
