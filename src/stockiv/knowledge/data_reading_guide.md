@@ -9,7 +9,7 @@ The macro market environment is represented by the **VNINDEX**. The Collector cr
 - **Input:** `days_back` (integer, e.g., 30 for the last month, 90 for the last quarter).
 - **Return Format:** A Markdown table containing the recent trading history of VNINDEX.
 
-*Note on VNINDEX Returns and PE:* `vnstock`'s VCI provider explicitly restricts fetching the `ratio_summary` for broad indices. VNINDEX does not have a P/E ratio in this database. You must analyze the price action itself.
+*Note on VNINDEX Valuation Ratios:* The Collector crew also scrapes the current VNINDEX P/E, P/B, and Market Cap from Simplize.vn via the `Crawl VNINDEX Ratios` tool. These values are stored in the `live_vietstock_ratios` table (with `ticker='VNINDEX'`) and are automatically included in the `FetchCurrentMarketSnapshotTool` output under the "### Market Index" section.
 
 ## 2. Accessing Specific Stock Metrics (P/E, P/B, ROE)
 Detailed fundamental metrics for specific stocks (e.g., FPT) are stored inside the `ratio_summary` table. Because `vnstock` returns 46 separate columns of data, this information is stored as a JSON object inside the `metrics_json` column.

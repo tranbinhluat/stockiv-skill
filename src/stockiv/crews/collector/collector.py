@@ -35,6 +35,7 @@ from tools.vnstock_tools import (  # noqa: E402
     fetch_ratio_summary,
     fetch_dividend_history,
     crawl_vietstock_ratios,
+    crawl_vnindex_ratios,
 )
 from tools.brave_tools import search_market_context  # noqa: E402
 from tools.report_finder_tools import search_annual_report_pdf, download_and_convert_pdf  # noqa: E402
@@ -98,6 +99,7 @@ class CollectorCrew:
                 fetch_ratio_summary,
                 fetch_dividend_history,
                 crawl_vietstock_ratios,
+                crawl_vnindex_ratios,
             ],
         )
 

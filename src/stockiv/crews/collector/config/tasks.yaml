@@ -13,7 +13,7 @@ fetch_financials_task:
   expected_output: >
     A confirmation message that the financial data (30 days of prices, 10 years of statements, ratios, dividends)
     for the requested tickers has been successfully saved to the SQLite database.
-  max_retries: 3
+  max_retries: 5
 
 fetch_daily_market_data_task:
   description: >
@@ -32,7 +32,7 @@ fetch_daily_market_data_task:
   expected_output: >
     A confirmation message detailing that today's market metrics for VNINDEX, {stock_symbols}, and its top peers have been successfully updated in the SQLite database and verified.
   context: [fetch_financials_task]
-  max_retries: 3
+  max_retries: 5
 
 crawl_live_ratios_task:
   description: >
@@ -41,10 +41,11 @@ crawl_live_ratios_task:
 
     Use exactly the `crawl_vietstock_ratios` tool to extract the LIVE market valuation (EPS, PE, Beta, Dividend Yield, Market Capitalization) for {stock_symbols}.
     This guarantees we have up-to-the-minute data if the underlying APIs are stale.
+    Also use `crawl_vnindex_ratios` to fetch the current VNINDEX P/E, P/B, and Market Cap from Simplize.vn.
   expected_output: >
-    A confirmation string that the live Vietstock ratios for the ticker have been successfully inserted into the SQLite database.
+    A confirmation string that the live Vietstock ratios for the ticker AND the VNINDEX ratios have been successfully inserted into the SQLite database.
   context: [fetch_daily_market_data_task]
-  max_retries: 3
+  max_retries: 7
 
 fetch_macro_context_task:
   description: >
@@ -65,7 +66,7 @@ fetch_macro_context_task:
     snippets, supporting statistics, and URLs for all impactful macroeconomic
     and industry-wide news.
   output_file: "{market_context_path}"
-  max_retries: 3
+  max_retries: 5
 
 fetch_ticker_context_task:
   description: >
@@ -87,7 +88,7 @@ fetch_ticker_context_task:
     CRITICAL: Exclude outdated information from previous years. Focus exclusively on the current week's news and the current year's data. Explicitly append the current year ({current_year}) to search queries.
   output_file: "{ticker_context_path}"
   context: [fetch_macro_context_task]
-  max_retries: 3
+  max_retries: 5
 
 fetch_annual_report_task:
   description: >
@@ -102,4 +103,4 @@ fetch_annual_report_task:
     CRITICAL: Do NOT attempt multiple searches if the first one fails. Strict tool limits to preserve API quotas. If the URL doesn't look like a PDF, the download fails, or the tool reports it's an unreadable scanned image, simply report failure.
   expected_output: >
     A confirmation message that the Annual Report PDF has been successfully found, downloaded, and converted to Markdown, including the final file path (e.g. data/processed/annual_reports/FPT/FPT_annual_report_2025.md).
-  max_retries: 3
+  max_retries: 5
