@@ -104,15 +104,14 @@ def markdown_to_pdf(
             ul, ol { margin-bottom: 1em; padding-left: 2em; }
             li { margin-bottom: 0.5em; }
             img {
-                max-width: 50%;
+                display: block;
+                max-width: 60%;
                 height: auto;
-                float: right;
-                margin: 0 0 1em 1.5em;
+                margin: 1em auto;
                 border: 1px solid #e2e8f0;
                 border-radius: 4px;
             }
-            /* Clear floats after image paragraphs */
-            h1, h2, h3 { color: #1a365d; margin-top: 1.5em; margin-bottom: 0.5em; clear: both; }
+            h1, h2, h3 { color: #1a365d; margin-top: 1.5em; margin-bottom: 0.5em; }
             table {
                 width: 100%;
                 border-collapse: collapse;
