@@ -156,6 +156,7 @@ class DeepDiveFlow(Flow[PipelineState]):
             inputs = CollectorCrewInputs(
                 stock_symbols=ticker,
                 company_name=company_name,
+                annual_report_year=str(int(self.state.shared_data["report_year"]) - 1),
                 market_context_path=self.state.shared_data["market_context_path"],
                 ticker_context_path=self.state.shared_data["ticker_context_path"],
                 annual_report_md_dir=str(PROCESSED_ANNUAL_REPORTS_DIR / ticker),

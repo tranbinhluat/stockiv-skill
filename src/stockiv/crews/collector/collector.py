@@ -53,6 +53,10 @@ class CollectorCrewInputs(BaseModel):
         default=None,
         description="Full company name for the ticker (e.g. 'FPT Corporation'). Used by search agents to avoid ticker ambiguity.",
     )
+    annual_report_year: Optional[str] = Field(
+        default=None,
+        description="Target year for annual report (e.g. '2025'). Pre-computed as current_year - 1.",
+    )
     market_context_path: Optional[str] = Field(
         default=None,
         description="File path to save the generated macro market context.",
