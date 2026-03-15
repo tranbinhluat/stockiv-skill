@@ -71,6 +71,12 @@ compile_evaluation_report:
     STEP 5: EVALUATE CHEAP PRICE (GCCP Part IV)
     Market Phase (Crisis/Fair/Bubble), Graham/Lynch criteria, Margin of Safety.
 
+    ⚠️ MARKET PHASE RULE: The VNINDEX P/E and P/B ratios are provided by the FetchCurrentMarketSnapshotTool output inside `{financial_summary_path}`. Use these concrete values to classify the Market Phase:
+    - Crisis: VNINDEX P/E < 10
+    - Fair: VNINDEX P/E 10-17
+    - Bubble: VNINDEX P/E > 17
+    Do NOT guess or hallucinate the VNINDEX valuation. Copy the exact P/E and P/B values from the Market Index section.
+
     ⚠️ GRAHAM CHECKLIST RULE:
     The complete 9-point Graham Defensive Criteria checklist has ALREADY been deterministically computed and is available in your `{financial_summary_path}` under "3. Graham Defensive Criteria (9-Point Checklist)".
     You MUST copy the exact numbered Pass/Fail results from that file into your report. Do NOT attempt to calculate the 10-year historical metrics or these 9 criteria yourself using raw data.

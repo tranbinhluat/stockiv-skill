@@ -697,3 +697,100 @@ def crawl_vietstock_ratios(ticker: str) -> str:
     except Exception as e:
         conn.close()
         return f"Error crawling Vietstock for {ticker}: {str(e)}"
+
+
+@tool("Crawl VNINDEX Ratios")
+def crawl_vnindex_ratios() -> str:
+    """
+    Crawls the live VNINDEX P/E, P/B, and Market Cap from Simplize.vn.
+    This fills the gap where vnstock APIs do not provide ratio_summary for broad market indices.
+
+    Returns:
+        A confirmation message that VNINDEX ratios have been extracted and saved to SQLite.
+    """
+    import json
+    import re
+    import requests
+
+    _ensure_db_exists()
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Cache check — reuse live_vietstock_ratios table with ticker='VNINDEX'
+    cursor.execute(
+        "SELECT date FROM live_vietstock_ratios WHERE ticker = 'VNINDEX' AND date = ?",
+        (today_str,),
+    )
+    if cursor.fetchone():
+        conn.close()
+        return f"Cache hit: VNINDEX ratios already crawled today ({today_str})."
+
+    url = "https://simplize.vn/chi-so/VNINDEX"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Connection": "keep-alive",
+    }
+
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
+
+        if response.status_code != 200:
+            conn.close()
+            return f"Error crawling VNINDEX from Simplize: HTTP {response.status_code}"
+
+        html = response.text
+
+        # HTML pattern: <h6 class="css-1r49m3h">LABEL</h6> ... <h6 class="css-1rshmnm">VALUE</h6>
+        # Extract: P/E, P/B, Vốn hoá (Market Cap)
+        def extract_value(label: str) -> str | None:
+            pattern = (
+                r'css-1r49m3h">' + re.escape(label) + r"</h6>"
+                r'.*?css-1rshmnm">([\d,.]+[TBM]?)</h6>'
+            )
+            match = re.search(pattern, html, re.DOTALL)
+            return match.group(1) if match else None
+
+        pe_str = extract_value("P/E")
+        pb_str = extract_value("P/B")
+        market_cap_str = extract_value("Vốn hoá")
+
+        if not pe_str and not pb_str:
+            conn.close()
+            return "Error crawling VNINDEX: Could not extract P/E or P/B from Simplize HTML. Page structure may have changed."
+
+        # Build metrics dict matching the live_vietstock_ratios JSON format
+        metrics = {}
+        if pe_str:
+            metrics["PE"] = float(pe_str.replace(",", ""))
+        if pb_str:
+            metrics["PB"] = float(pb_str.replace(",", ""))
+        if market_cap_str:
+            metrics["MarketCapital"] = market_cap_str
+
+        final_json = json.dumps(metrics)
+
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO live_vietstock_ratios (ticker, date, metrics_json, source)
+            VALUES (?, ?, ?, ?)
+            """,
+            ("VNINDEX", today_str, final_json, "simplize-crawler"),
+        )
+
+        conn.commit()
+        conn.close()
+
+        return (
+            f"Successfully crawled VNINDEX ratios from Simplize.vn (Date: {today_str}). "
+            f"P/E={metrics.get('PE', 'N/A')}, P/B={metrics.get('PB', 'N/A')}, "
+            f"Market Cap={metrics.get('MarketCapital', 'N/A')}"
+        )
+
+    except Exception as e:
+        conn.close()
+        return f"Error crawling Simplize for VNINDEX: {str(e)}"

@@ -138,8 +138,24 @@ class DeepDiveFlow(Flow[PipelineState]):
                 ]
                 self.state.history += f"Collector: skipped fresh tasks {skip_tasks}.\n"
 
+            # --- Auto-resolve company name from vnstock ---
+            company_name = ticker  # fallback
+            try:
+                from vnstock import Vnstock
+
+                listing = (
+                    Vnstock().stock(symbol=ticker, source="VCI").listing.all_symbols()
+                )
+                match = listing[listing["symbol"] == ticker]
+                if not match.empty and "organ_name" in match.columns:
+                    company_name = str(match.iloc[0]["organ_name"])
+                print(f"  📛 Resolved company name: {ticker} → {company_name}")
+            except Exception as e:
+                print(f"  ⚠️  Could not resolve company name for {ticker}: {e}")
+
             inputs = CollectorCrewInputs(
                 stock_symbols=ticker,
+                company_name=company_name,
                 market_context_path=self.state.shared_data["market_context_path"],
                 ticker_context_path=self.state.shared_data["ticker_context_path"],
                 annual_report_md_dir=str(PROCESSED_ANNUAL_REPORTS_DIR / ticker),

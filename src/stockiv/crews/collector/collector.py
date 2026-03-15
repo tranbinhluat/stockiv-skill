@@ -35,6 +35,7 @@ from tools.vnstock_tools import (  # noqa: E402
     fetch_ratio_summary,
     fetch_dividend_history,
     crawl_vietstock_ratios,
+    crawl_vnindex_ratios,
 )
 from tools.brave_tools import search_market_context  # noqa: E402
 from tools.report_finder_tools import search_annual_report_pdf, download_and_convert_pdf  # noqa: E402
@@ -47,6 +48,10 @@ class CollectorCrewInputs(BaseModel):
     stock_symbols: Optional[str] = Field(
         default=None,
         description="The stock ticker symbol to collect data for (e.g. 'FPT').",
+    )
+    company_name: Optional[str] = Field(
+        default=None,
+        description="Full company name for the ticker (e.g. 'FPT Corporation'). Used by search agents to avoid ticker ambiguity.",
     )
     market_context_path: Optional[str] = Field(
         default=None,
@@ -98,6 +103,7 @@ class CollectorCrew:
                 fetch_ratio_summary,
                 fetch_dividend_history,
                 crawl_vietstock_ratios,
+                crawl_vnindex_ratios,
             ],
         )
 
