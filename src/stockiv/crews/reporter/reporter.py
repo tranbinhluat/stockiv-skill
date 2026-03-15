@@ -37,6 +37,10 @@ class ReporterCrewInputs(BaseModel):
     pdf_output_path: Optional[str] = Field(
         default=None, description="Destination path for the generated PDF report."
     )
+    discord_channel_id: Optional[str] = Field(
+        default=None,
+        description="Discord channel ID to publish the report to.",
+    )
 
 
 @CrewBase
@@ -140,5 +144,22 @@ class ReporterCrew:
     def run(self, inputs: ReporterCrewInputs):
         """
         Executes the Reporter Crew with strongly typed inputs.
+        Auto-generates pdf_output_path and report_title from source_md_path if missing.
         """
+        from pathlib import Path
+        from stockiv.config.paths import REPORT_TICKER_DIR
+
+        if inputs.source_md_path and not inputs.pdf_output_path:
+            source = Path(inputs.source_md_path)
+            inputs.pdf_output_path = str(REPORT_TICKER_DIR / f"{source.stem}.pdf")
+
+        if inputs.source_md_path and not inputs.report_title:
+            inputs.report_title = Path(inputs.source_md_path).stem
+
+        if not inputs.discord_channel_id:
+            raise ValueError(
+                "discord_channel_id must be provided in ReporterCrewInputs. "
+                "Each flow decides which channel to publish to."
+            )
+
         return self.crew().kickoff(inputs=inputs.model_dump())

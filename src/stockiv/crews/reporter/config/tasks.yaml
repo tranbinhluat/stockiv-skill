@@ -91,7 +91,7 @@ publish_to_discord:
     - Provide the Discord styled summary from the formatting task as `content`.
     - Provide `{pdf_output_path}` as `file_path`.
 
-    Target Channel ID: '1477341143766143128'
+    Target Channel ID: '{discord_channel_id}'
   expected_output: >
     Confirmation that the brief summary has been successfully sent to the Discord channel along with the full PDF attachment, OR a rejection notice explaining why the payload failed the quality gate.
   agent: discord_publisher

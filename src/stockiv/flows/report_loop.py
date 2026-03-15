@@ -23,6 +23,7 @@ Retry Strategy:
 """
 
 from crewai.flow.flow import Flow, listen, start, router, or_
+import json
 import os
 from pathlib import Path
 
@@ -53,6 +54,12 @@ class ReportLoopState(PipelineState):
     max_loops: int = 5
     report_version: int = 1
 
+    # Output — populated after approval
+    approved_report_path: str = ""
+
+    # Reporter config — TODO: each parent flow should set the target channel
+    discord_channel_id: str = "1476822786575171604"
+
     # Legacy
     synthesized_insights: str = ""
 
@@ -79,6 +86,58 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             mocks = [m.lower() for m in mock_val]
             return "all" in mocks or step_name.lower() in mocks
         return False
+
+    @staticmethod
+    def _extract_markdown_from_result(result_str: str) -> str:
+        """Extract clean markdown from a raw CrewAI result string.
+
+        When result.pydantic is None, CrewAI returns str(result) which is raw
+        JSON containing the 'report_markdown' field. This method parses it and
+        reconstructs clean markdown via SynthesizerReport.to_markdown().
+        Falls back to the raw string if parsing fails.
+        """
+        from stockiv.crews.synthesizer.synthesizer import SynthesizerReport
+
+        content = result_str.strip()
+        if content.startswith("{"):
+            try:
+                data = json.loads(content)
+                if isinstance(data, dict) and "report_markdown" in data:
+                    report = SynthesizerReport(**data)
+                    return report.to_markdown()
+            except (json.JSONDecodeError, Exception) as e:
+                print(f"[ReportLoop Flow] ⚠️ Could not parse JSON result: {e}")
+
+        return content
+
+    def _write_synthesizer_output(self, result, ticker: str, version: int) -> None:
+        """Write Synthesizer result to disk as clean Markdown.
+
+        Handles both pydantic output and raw JSON string fallback.
+        Always writes clean .md — never raw JSON.
+        """
+        output_dir = self.state.shared_data.get(
+            "synthesizer_output_dir", str(PROCESSED_SYNTHESIZER_DIR / ticker)
+        )
+        report_path = str(Path(output_dir) / f"{ticker}_GCCP_report_v{version}.md")
+
+        if hasattr(result, "pydantic") and result.pydantic:
+            md_content = result.pydantic.to_markdown()
+            print(
+                f"[ReportLoop Flow] ✅ Parsed pydantic → markdown ({len(md_content)} chars)"
+            )
+        else:
+            raw = str(result)
+            md_content = self._extract_markdown_from_result(raw)
+            print(
+                f"[ReportLoop Flow] 🔄 Extracted markdown from raw result ({len(md_content)} chars)"
+            )
+
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write(md_content)
+
+        self.state.synthesized_insights = md_content
+        print(f"[ReportLoop Flow] 📝 Wrote clean markdown to {report_path}")
 
     def _build_synthesizer_inputs(self) -> dict:
         """Build the inputs dict for the Synthesizer crew."""
@@ -260,19 +319,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
                 inputs=SynthesizerCrewInputs(**inputs), revision=False
             )
 
-            if hasattr(result, "pydantic") and result.pydantic:
-                md_content = result.pydantic.to_markdown()
-                output_dir = self.state.shared_data.get(
-                    "synthesizer_output_dir", str(PROCESSED_SYNTHESIZER_DIR / ticker)
-                )
-                report_path = str(
-                    Path(output_dir) / f"{ticker}_GCCP_report_v{version}.md"
-                )
-                with open(report_path, "w", encoding="utf-8") as f:
-                    f.write(md_content)
-                self.state.synthesized_insights = md_content
-            else:
-                self.state.synthesized_insights = str(result)
+            self._write_synthesizer_output(result, ticker, version)
 
             self.state.history += f"Synthesizer v{version} full kickoff executed.\n"
 
@@ -302,19 +349,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
                 inputs=SynthesizerCrewInputs(**inputs), revision=True
             )
 
-            if hasattr(result, "pydantic") and result.pydantic:
-                md_content = result.pydantic.to_markdown()
-                output_dir = self.state.shared_data.get(
-                    "synthesizer_output_dir", str(PROCESSED_SYNTHESIZER_DIR / ticker)
-                )
-                report_path = str(
-                    Path(output_dir) / f"{ticker}_GCCP_report_v{version}.md"
-                )
-                with open(report_path, "w", encoding="utf-8") as f:
-                    f.write(md_content)
-                self.state.synthesized_insights = md_content
-            else:
-                self.state.synthesized_insights = str(result)
+            self._write_synthesizer_output(result, ticker, version)
 
             self.state.history += (
                 f"Synthesizer v{version} revision executed (evaluate_feedback only).\n"
@@ -559,7 +594,8 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
     @listen("route_to_reporter")
     def execute_reporter(self):
         """
-        Execute Reporter step handling approval.
+        Execute Reporter step after Director approval.
+        Report file on disk is already clean Markdown (guaranteed by _write_synthesizer_output).
         """
         print("\n[ReportLoop Flow] ✨ Analysis APPROVED! Generating final report...")
 
@@ -571,10 +607,9 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
         synthesis_report_path = str(
             Path(output_dir) / f"{ticker}_GCCP_report_v{version}.md"
         )
+        self.state.approved_report_path = synthesis_report_path
 
-        print(
-            f"[ReportLoop Flow] Preserving approved report at: {synthesis_report_path}"
-        )
+        print(f"[ReportLoop Flow] Approved report at: {synthesis_report_path}")
 
         if not self._is_mocking("reporter"):
             print(
@@ -583,6 +618,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             inputs = ReporterCrewInputs(
                 stock_symbols=ticker,
                 source_md_path=synthesis_report_path,
+                discord_channel_id=self.state.discord_channel_id,
             )
             ReporterCrew().run(inputs=inputs)
         else:
