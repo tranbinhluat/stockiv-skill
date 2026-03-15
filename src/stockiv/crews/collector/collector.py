@@ -49,6 +49,10 @@ class CollectorCrewInputs(BaseModel):
         default=None,
         description="The stock ticker symbol to collect data for (e.g. 'FPT').",
     )
+    company_name: Optional[str] = Field(
+        default=None,
+        description="Full company name for the ticker (e.g. 'FPT Corporation'). Used by search agents to avoid ticker ambiguity.",
+    )
     market_context_path: Optional[str] = Field(
         default=None,
         description="File path to save the generated macro market context.",

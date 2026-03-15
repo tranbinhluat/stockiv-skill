@@ -58,6 +58,8 @@ fetch_macro_context_task:
     3. Review initial findings and identify the 1-2 most impactful macroeconomic storylines or shock events.
     4. Use `search_market_context` again to drill down specifically into those 1-2 top storylines to build a profound, data-backed understanding.
 
+    CONTEXT: The target stock is {stock_symbols} ({company_name}). Keep this identity in mind when evaluating which macro trends are most relevant.
+
     CRITICAL: DO NOT SUMMARIZE. PRESERVE THE FULL VIEW of gathered information.
     CRITICAL: Exclude outdated information from previous years unless explicitly analyzing historical context. Focus exclusively on the current week's news and the current year's data. Explicitly append the current year ({current_year}) to search queries to prioritize fresh content.
     CRITICAL: `macro_micro_scout` is allowed to use tools up to 3 times. Keep searches extremely precise.
@@ -74,11 +76,13 @@ fetch_ticker_context_task:
     Do NOT delegate any part of this task to `market_data_fetcher` or `annual_report_analyst`.
 
     Now that macro context has been gathered, `macro_micro_scout` must shift focus EXCLUSIVELY
-    to the {stock_symbols} ticker. Search for company-specific news, product launches, earnings
+    to the {stock_symbols} ({company_name}) ticker. Search for company-specific news, product launches, earnings
     leaks, or management statements.
 
+    CRITICAL IDENTITY: {stock_symbols} is "{company_name}". Always include the full company name in search queries to avoid confusion with other tickers or companies.
+
     If previous macro research highlighted a specific headwind (e.g. "chip shortage"),
-    `macro_micro_scout` should search to see how {stock_symbols} is reacting to it.
+    `macro_micro_scout` should search to see how {stock_symbols} ({company_name}) is reacting to it.
 
     CRITICAL: `macro_micro_scout` is allowed to use tools up to 3 times. Keep searches extremely precise.
   expected_output: >
