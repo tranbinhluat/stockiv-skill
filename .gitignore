@@ -35,3 +35,4 @@ data/raw
 *.pdf
 
 *.png
+data/stockiv.db
