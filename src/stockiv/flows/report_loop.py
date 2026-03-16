@@ -37,8 +37,6 @@ from stockiv.flows.state import PipelineState
 from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew, SynthesizerCrewInputs
 from stockiv.crews.director.director import DirectorCrew, DirectorCrewInputs
 from stockiv.crews.director.models import DirectorDecision
-from stockiv.config.discord import get_discord_channel
-from stockiv.crews.reporter.reporter import ReporterCrew, ReporterCrewInputs
 
 
 class ReportLoopState(PipelineState):
@@ -58,14 +56,11 @@ class ReportLoopState(PipelineState):
     # Output — populated after approval
     approved_report_path: str = ""
 
-    # Reporter config — resolved from centralized discord registry
-    discord_channel_id: str = ""
-
     # Legacy
     synthesized_insights: str = ""
 
 
-class SynthesizerReporterFlow(Flow[ReportLoopState]):
+class ReportLoopFlow(Flow[ReportLoopState]):
     """
     Mini flow that orchestrates the Synthesizer Crew and Director Crew in a
     versioned file-based feedback loop.
@@ -177,7 +172,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
         ticker = self.state.target_ticker.upper()
         if not ticker:
             raise ValueError(
-                "target_ticker must be set on state before kicking off SynthesizerReporterFlow."
+                "target_ticker must be set on state before kicking off ReportLoopFlow."
             )
         self.state.target_ticker = ticker
 
@@ -545,7 +540,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
         on each loop iteration.
         """
         if self.state.director_approval == "APPROVED":
-            return "route_to_reporter"
+            return "route_to_success"
 
         if self.state.director_approval == "ERROR":
             return "route_to_failure"
@@ -584,7 +579,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             choice = input("Enter choice (1/2): ")
             if choice.strip() == "1":
                 print("Human overriding Director. Proceeding...")
-                return "route_to_reporter"
+                return "route_to_success"
             else:
                 return "route_to_failure"
         except EOFError:
@@ -592,15 +587,13 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
             print("No interactive terminal available. Defaulting to ABORT.")
             return "route_to_failure"
 
-    @listen("route_to_reporter")
-    def execute_reporter(self):
+    @listen("route_to_success")
+    def handle_success(self):
         """
-        Execute Reporter step after Director approval.
-        Report file on disk is already clean Markdown (guaranteed by _write_synthesizer_output).
+        Execute Success step after Director approval.
+        Report file on disk is already clean Markdown.
         """
-        if not self.state.discord_channel_id:
-            self.state.discord_channel_id = get_discord_channel("ticker_report")
-        print("\n[ReportLoop Flow] ✨ Analysis APPROVED! Generating final report...")
+        print("\n[ReportLoop Flow] ✨ Analysis APPROVED!")
 
         ticker = self.state.target_ticker or "TICKER"
         version = self.state.report_version
@@ -614,25 +607,7 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
 
         print(f"[ReportLoop Flow] Approved report at: {synthesis_report_path}")
 
-        if not self._is_mocking("reporter"):
-            print(
-                "[ReportLoop Flow] 📝 Launching Reporter Crew to process and publish..."
-            )
-            inputs = ReporterCrewInputs(
-                stock_symbols=ticker,
-                source_md_path=synthesis_report_path,
-                financial_summary_path=self.state.shared_data.get(
-                    "financial_summary_path", ""
-                ),
-                discord_channel_id=self.state.discord_channel_id,
-            )
-            ReporterCrew().run(inputs=inputs)
-        else:
-            print(
-                f"[ReportLoop Flow - MOCK] 📝 Mocking Reporter Crew for path: {synthesis_report_path}"
-            )
-
-        print("✅ Success! Report sent to reporter crew.")
+        print("✅ Success! Report is ready.")
         return "SUCCESS"
 
     @listen("route_to_failure")
@@ -642,6 +617,6 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
 
 
 if __name__ == "__main__":
-    flow = SynthesizerReporterFlow()
+    flow = ReportLoopFlow()
     # path = flow.plot("report_loop_flow.html")
     # print(f"✅ Plot saved to absolute path: {path}")

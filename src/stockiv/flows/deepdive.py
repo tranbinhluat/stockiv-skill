@@ -25,6 +25,8 @@ from stockiv.crews.sentiment_analyst.sentiment_analyst import (
     SentimentAnalystCrew,
     SentimentAnalystCrewInputs,
 )
+from stockiv.flows.report_loop import ReportLoopFlow
+from stockiv.crews.reporter.reporter import ReporterCrew, ReporterCrewInputs
 from stockiv.utils.freshness import is_file_fresh, get_file_age_days
 
 
@@ -232,45 +234,63 @@ class DeepDiveFlow(Flow[PipelineState]):
             self.state.history += f"Sentiment Analyst Failed: {str(e)}\n"
             raise
 
-    # @listen(execute_sentiment)
-    # def execute_synthesizer_loop(self):
-    #     """
-    #     4. TODO: Integrate report_loop sub-flow here.
-    #     Synthesizer → Director feedback loop → approved synthesis output.
-    #     For now this is a placeholder that passes through to Reporter.
-    #     """
-    #     ticker = self.state.target_ticker
-    #     print(
-    #         f"\n[DeepDive Flow] ⏳ Synthesizer Loop placeholder for {ticker} "
-    #         f"(report_loop integration pending)..."
-    #     )
-    #     self.state.history += "Synthesizer Loop: placeholder (not yet implemented).\n"
-
-    # @listen(execute_synthesizer_loop)
-    # def execute_reporter(self):
-    #     """
-    #     5. RUN REPORTER CREW (Translation & Publishing)
-    #     """
-    #     print(
-    #         "\n[DeepDive Flow] 🚀 Launching Reporter Crew (Translation & Publishing Phase)..."
-    #     )
-
-    #     try:
-    #         reporter_inst = ReporterCrew()
-    #         inputs = ReporterCrewInputs(
-    #             stock_symbols=self.state.target_ticker,
-    #             source_md_path=self.state.shared_data["synthesizer_md_path"],
-    #             pdf_output_path=self.state.shared_data["report_pdf_path"],
-    #             report_title=self.state.shared_data["report_title"],
-    #             discord_channel_id=get_discord_channel("ticker_report"),
-    #         )
-    #         reporter_inst.run(inputs=inputs)
-    #         self.state.history += "Reporter executed. Sent payload to Discord.\n"
-    #     except Exception as e:
-    #         self.state.history += f"Reporter Failed: {str(e)}\n"
-    #         raise
-
     @listen(execute_sentiment)
+    def execute_synthesizer_loop(self):
+        """
+        4. Integrate report_loop sub-flow here.
+        Synthesizer → Director feedback loop → approved synthesis output.
+        """
+        ticker = self.state.target_ticker
+        print(f"\n[DeepDive Flow] ⏳ Synthesizer Loop for {ticker}...")
+        report_loop = ReportLoopFlow()
+
+        report_loop.state.target_ticker = ticker
+        report_loop.state.shared_data = self.state.shared_data
+        report_loop.state.mock = self.state.mock
+
+        result = report_loop.kickoff()
+        if result == "FAILURE":
+            raise Exception("ReportLoopFlow failed to get Director approval.")
+
+        self.state.shared_data["approved_report_path"] = (
+            report_loop.state.approved_report_path
+        )
+        self.state.history += "Synthesizer Loop executed successfully.\n"
+
+    @listen(execute_synthesizer_loop)
+    def execute_reporter(self):
+        """
+        5. RUN REPORTER CREW (Translation & Publishing)
+        """
+        print(
+            "\n[DeepDive Flow] 🚀 Launching Reporter Crew (Translation & Publishing Phase)..."
+        )
+
+        try:
+            approved_report_path = self.state.shared_data.get("approved_report_path")
+            if not approved_report_path:
+                raise ValueError(
+                    "No approved report path returned from ReportLoopFlow."
+                )
+
+            reporter_inst = ReporterCrew()
+            inputs = ReporterCrewInputs(
+                stock_symbols=self.state.target_ticker,
+                source_md_path=approved_report_path,
+                pdf_output_path=self.state.shared_data["report_pdf_path"],
+                report_title=self.state.shared_data["report_title"],
+                financial_summary_path=self.state.shared_data.get(
+                    "financial_summary_path", ""
+                ),
+                discord_channel_id=get_discord_channel("ticker_report"),
+            )
+            reporter_inst.run(inputs=inputs)
+            self.state.history += "Reporter executed. Sent payload to Discord.\n"
+        except Exception as e:
+            self.state.history += f"Reporter Failed: {str(e)}\n"
+            raise
+
+    @listen(execute_reporter)
     def finish_flow(self):
         print(
             f"\n[DeepDive Flow] 🏁 Flow successfully completed for {self.state.target_ticker}."

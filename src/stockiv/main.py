@@ -4,7 +4,7 @@ Main Entry Point & Master Flow Orchestrator for StockIV.
 
 from stockiv.flows.deepdive import DeepDiveFlow
 from stockiv.flows.weekly import WeeklyReportFlow
-from stockiv.flows.report_loop import SynthesizerReporterFlow
+from stockiv.flows.report_loop import ReportLoopFlow
 from stockiv.utils.logger import setup_global_logger
 
 
@@ -63,7 +63,7 @@ def kickoff():
         flow = WeeklyReportFlow()
     elif args.flow == "reportloop":
         print("[System] Initializing Synthesizer->Director Loop Flow...")
-        flow = SynthesizerReporterFlow()
+        flow = ReportLoopFlow()
         flow.state.max_loops = args.max_loops
         flow.state.target_ticker = args.ticker.upper()
     else:

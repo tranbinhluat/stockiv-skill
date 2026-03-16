@@ -1,7 +1,7 @@
 # [REJECTED]
 
 **Ticker:** FPT
-**Style:** All
+**Style:** Lynch
 
 ## Validation Checks
 - ✅ Financial Data Verified
@@ -13,23 +13,29 @@
 
 ## 🔍 Anomalies Detected:
 
-### 1. balance_sheet
-📊 **Data:** AR growth: 20.85% (2025), Revenue growth: 11.56% (2025)
-❓ **Question:** Is the rapid increase in receivables a sign of channel stuffing or deteriorating credit quality?
-📋 **Required:** Management commentary on DSO trends and customer credit risk assessment
+### 1. revenue
+📊 **Data:** AR growth: 20.9%, Revenue growth: 11.6% in 2025
+❓ **Question:** Does this indicate a loosening of credit terms to inflate sales figures, and what is the impact on cash conversion cycle?
+📋 **Required:** Provide analysis of Days Sales Outstanding (DSO) trend and management commentary on credit policy from annual report.
+
+### 2. margins
+📊 **Data:** Gross Margin: 39.01% (2022) → 36.93% (2025)
+❓ **Question:** What are the primary drivers of this sustained margin pressure, and is it expected to stabilize or continue?
+📋 **Required:** Provide segment-level margin analysis or direct quotes from management discussion on cost pressures.
 
 ## ❌ Failures:
-- Target Price (72,192 VND) is LOWER than Current Price (77,000 VND), yet recommendation is 'BUY NOW' — this is logically impossible
-- Lynch PEG ratio calculation is fundamentally flawed. The report uses an unrealistic 30% forward growth rate instead of the historical 4-5 year CAGR (~20.84% for net profit). Using the correct CAGR, PEG = 12.9 / 20.84 = ~0.62, which is still acceptable, but the justification is wrong.
-- The synthesis report claims a dividend yield of ~7.5%, but the Financial Ground Truth shows a yield of only 1.25%. This is a massive and material error.
+- The reported EPS for 2025 is 6,017 VND, but the Financial Ground Truth shows the correct value is 6,016 VND.
+- The analysis uses a Net Profit CAGR of 20.84% for PEG calculation, which is inconsistent with the actual EPS CAGR of 4.64%. For a Lynch 'Fast Grower' classification, EPS growth is the standard metric, not net profit growth, making the PEG ratio of 0.58 fundamentally flawed and misleading.
+- The 'Fast Grower' classification is not justified by the historical EPS growth data (4.64% CAGR), which is characteristic of a slow or stalwart grower, not a fast grower. The 30% forward target is an assumption, not a historical fact, and cannot be used to justify the current classification for a backward-looking framework like Lynch's.
 
 ## Summary
-The analysis is REJECTED due to critical failures in logic and numerical accuracy. The most egregious error is recommending a 'BUY' when the calculated target price is BELOW the current market price, which is nonsensical. Additionally, the claimed dividend yield of 7.5% is wildly inaccurate (actual is 1.25%), and the PEG ratio justification relies on an unsupported forward growth estimate instead of historical CAGR. While the report correctly identifies the accounts receivable anomaly, the core valuation and recommendation are fatally flawed.
+The analysis is rejected due to critical failures in numerical accuracy and logical reasoning. The EPS figure is incorrect, and more importantly, the core 'Fast Grower' classification and resulting PEG ratio are based on net profit growth instead of EPS growth, which is a fundamental methodological error for Lynch-style analysis. The actual EPS CAGR of 4.64% does not support the 'Fast Grower' label. While the report correctly identifies key anomalies like receivables growth and margin compression, the foundational valuation logic is unsound.
 
 ## Next Steps
-- Recalculate the target price and ensure the investment recommendation is logically consistent (i.e., BUY only if Target Price > Current Price).
-- Correct the dividend yield figure to the accurate 1.25% from the Financial Ground Truth and revise any conclusions based on the erroneous 7.5% figure.
-- Recalculate the Lynch PEG ratio using the historical Net Profit CAGR of 20.84% as the growth input, not the speculative 30% forward guidance.
+- Correct the 2025 EPS figure to 6,016 VND as per the Financial Ground Truth.
+- Recalculate all growth metrics and the PEG ratio using the correct EPS CAGR of 4.64%.
+- Re-evaluate the Lynch category assignment based on the actual historical EPS growth rate. If the company is not a Fast Grower, the entire valuation methodology (Fair P/E of 15x) must be revised.
+- Address the identified anomalies with specific data from the annual report or financial statements as requested.
 
 
 ---
