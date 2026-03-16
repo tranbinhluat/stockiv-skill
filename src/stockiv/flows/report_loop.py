@@ -37,6 +37,7 @@ from stockiv.flows.state import PipelineState
 from stockiv.crews.synthesizer.synthesizer import SynthesizerCrew, SynthesizerCrewInputs
 from stockiv.crews.director.director import DirectorCrew, DirectorCrewInputs
 from stockiv.crews.director.models import DirectorDecision
+from stockiv.config.discord import get_discord_channel
 from stockiv.crews.reporter.reporter import ReporterCrew, ReporterCrewInputs
 
 
@@ -57,8 +58,8 @@ class ReportLoopState(PipelineState):
     # Output — populated after approval
     approved_report_path: str = ""
 
-    # Reporter config — TODO: each parent flow should set the target channel
-    discord_channel_id: str = "1476822786575171604"
+    # Reporter config — resolved from centralized discord registry
+    discord_channel_id: str = ""
 
     # Legacy
     synthesized_insights: str = ""
@@ -597,6 +598,8 @@ class SynthesizerReporterFlow(Flow[ReportLoopState]):
         Execute Reporter step after Director approval.
         Report file on disk is already clean Markdown (guaranteed by _write_synthesizer_output).
         """
+        if not self.state.discord_channel_id:
+            self.state.discord_channel_id = get_discord_channel("ticker_report")
         print("\n[ReportLoop Flow] ✨ Analysis APPROVED! Generating final report...")
 
         ticker = self.state.target_ticker or "TICKER"

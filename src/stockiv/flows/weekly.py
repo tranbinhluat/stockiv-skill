@@ -5,6 +5,7 @@ Weekly Report Flow - Runs Collector (context tasks only) and Sentiment Analyst.
 from crewai.flow.flow import Flow, listen, start
 from datetime import datetime
 
+from stockiv.config.discord import get_discord_channel
 from stockiv.config.paths import (
     PROCESSED_SENTIMENT_MARKET_DIR,
     RAW_CONTEXT_DIR,
@@ -195,6 +196,7 @@ class WeeklyReportFlow(Flow[PipelineState]):
                 source_md_path=self.state.shared_data["macro_sentiment_md_path"],
                 pdf_output_path=self.state.shared_data["report_pdf_path"],
                 report_title=self.state.shared_data["report_title"],
+                discord_channel_id=get_discord_channel("weekly_report"),
             )
             reporter_inst.run(inputs=inputs)
             self.state.history += "Reporter executed. Sent payload to Discord.\n"
