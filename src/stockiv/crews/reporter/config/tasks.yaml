@@ -22,6 +22,7 @@ translate_report:
         4. ENGLISH RETENTION: Keep specific technical terms or globally recognized names (like AI, FDI, IT Outsourcing, Fed, FTSE Russell, MSCI) in English, or put them in parentheses next to the Vietnamese translation.
 
     Make sure to maintain the formatting (Markdown) and numerical data exactly as they appear in the source text. The final text must flow smoothly and be easily understood by a non-financial Vietnamese investor.
+    URL INTEGRITY — CRITICAL: All URLs, inline citations `[[1]](URL)`, and reference links MUST be preserved CHARACTER-FOR-CHARACTER from the source. NEVER modify, reconstruct, or "fix" any URL. Copy them exactly as-is.
   expected_output: >
     The fully translated version of the report into natural Vietnamese, preserving the original Markdown structure and professional tone.
   agent: translator

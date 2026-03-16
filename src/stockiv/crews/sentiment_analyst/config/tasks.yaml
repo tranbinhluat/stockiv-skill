@@ -12,7 +12,8 @@ summarize_current_week_macro:
     - **III. Structural Shifts:** Identify any early signs of structural shifts in the economy based solely on this week's news flow.
     - **IV. Upcoming Macro Catalysts:** A markdown table with columns for `Timeframe`, `Event`, and `Expected Impact (High/Med/Low)`.
     - **V. Additional Crucial Findings:** (Optional) A section where you can highlight any critical themes, events, or unquantifiable data from the context that do not cleanly fit into the above sections but are vital for market understanding.
-    **(CITATION REQUIREMENT: Every factual claim MUST be cited using standard markdown inline links as numbers, e.g., `[[1]](URL)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax because it is not universally clickable in all previewers. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. Format each reference as: `1. [Article Title](URL)`.)**
+    **(CITATION REQUIREMENT: Every factual claim MUST be cited using standard markdown inline links as numbers, e.g., `[[1]](URL)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax because it is not universally clickable in all previewers. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. Format each reference as: `1. [Article Title](URL)`.
+    URL INTEGRITY — CRITICAL: You MUST copy-paste URLs EXACTLY and CHARACTER-FOR-CHARACTER as they appear in the source text. NEVER reconstruct, rephrase, shorten, or "fix" a URL from memory. Pay special attention to the domain extension — `.vn` is NOT `.cn`, `.com` is NOT `.co`. A single wrong character creates a dead link.)**
   output_file: "{macro_sentiment_md_path}"
   agent: macro_sentiment_analyst
 
@@ -37,7 +38,8 @@ synthesize_recent_trends:
       - *Bear Case (20%):* [What is the hidden systemic risk?]
     - **IV. The Consensus Fallacy (Contrarian View):** Identify where consensus is crowded. What happens if the market "base case" pricing is wrong?
     - **V. Strategic Allocation Playbook:** Bullet points detailing which sectors/themes to Overweight and Underweight for long-term investing based on these trends.
-    **(CITATION REQUIREMENT: Every factual claim, trend, or regime shift MUST be explicitly cited using standard markdown inline links as numbers, e.g., `[[1]](W10_market_report.md)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. e.g. "War at Middle East became worse, causing oil prices to peak [[1]](W10_market_report.md) against previous stability [[2]](W09_market_report.md)").**
+    **(CITATION REQUIREMENT: Every factual claim, trend, or regime shift MUST be explicitly cited using standard markdown inline links as numbers, e.g., `[[1]](W10_market_report.md)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. e.g. "War at Middle East became worse, causing oil prices to peak [[1]](W10_market_report.md) against previous stability [[2]](W09_market_report.md)").
+    URL INTEGRITY — CRITICAL: You MUST copy-paste URLs and file references EXACTLY and CHARACTER-FOR-CHARACTER as they appear in the source files. NEVER reconstruct or modify a URL from memory.**
     DO NOT generate individual weekly summaries. Provide a single, unified view of the market's trajectory.
   output_file: "{overall_macro_sentiment_md_path}"
   agent: trend_analyst
@@ -58,6 +60,7 @@ summarize_symbol_sentiment:
     - **III. Macro Resilience:** How does this specific stock's business model (its moat, pricing power, balance sheet) practically defend against the macro headwinds identified in the overall market report?
     - **IV. Thesis Invalidation (The "Sell" Triggers):** What specific fundamental operations/business failures, metric drops, or management missteps (NOT generic market price action) would invalidate the long-term investment thesis for this stock?
     - **V. Additional Crucial Findings:** (Optional) A section where you can highlight any critical themes, events, or unquantifiable data from the context that do not cleanly fit into the above sections but are vital for market understanding.
-    **(CITATION REQUIREMENT: Every factual claim MUST be cited using standard markdown inline links as numbers, e.g., `[[1]](URL)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax because it is not universally clickable in all previewers. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. Format each reference as: `1. [Article Title](URL)`.)**
+    **(CITATION REQUIREMENT: Every factual claim MUST be cited using standard markdown inline links as numbers, e.g., `[[1]](URL)`, placed immediately after the claim. DO NOT use the `[^1]` footnote syntax because it is not universally clickable in all previewers. At the very bottom of the document, you MUST include a "References" section listing all sources explicitly cited above. Format each reference as: `1. [Article Title](URL)`.
+    URL INTEGRITY — CRITICAL: You MUST copy-paste URLs EXACTLY and CHARACTER-FOR-CHARACTER as they appear in the source text. NEVER reconstruct, rephrase, shorten, or "fix" a URL from memory. Pay special attention to the domain extension — `.vn` is NOT `.cn`, `.com` is NOT `.co`. A single wrong character creates a dead link.)**
   output_file: "{ticker_sentiment_path}"
   agent: ticker_sentiment_analyst
