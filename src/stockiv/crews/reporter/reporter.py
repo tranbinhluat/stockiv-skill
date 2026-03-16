@@ -59,13 +59,6 @@ class ReporterCrew:
     # ------------------
 
     @agent
-    def reporter(self) -> Agent:
-        return Agent(
-            config=self.agents_config["reporter"],
-            llm=primary_llm,
-        )
-
-    @agent
     def translator(self) -> Agent:
         return Agent(
             config=self.agents_config["translator"],

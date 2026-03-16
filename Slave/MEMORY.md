@@ -14,9 +14,9 @@
 - Likes clean git history with meaningful commits
 
 **Current Project: StockIV**
-- Location: `/home/luattb/Documents/Work/stockew`
+- Location: `~/Documents/projects/stock-agent`
 - Framework: CrewAI 1.9.3 for AI agent orchestration
-- LLM: Gemini 3 Flash
+- LLM: Qwen models via DashScope (qwen3.5-plus, qwen3-coder-plus, qwen3-max, qwen2.5-vl-72b-instruct)
 - Structure: Proper Python package under `src/stockiv/`
 - Entry point: `uv run stockiv-run` or `python -m stockiv`
 
@@ -32,14 +32,13 @@ uv run pre-commit run --all-files  # Run security hooks
 
 ## Project Structure & Architecture
 
-**7 StockIV Crews:**
-- collector - Data gathering from sources
-- quant_analyst - Quantitative analysis (metrics, ratios)
-- sentiment_analyst - Market sentiment/mood analysis
-- synthesizer - Combine multi-source analysis
-- reporter - Generate comprehensive reports
-- director - Validate analysis quality
-- orchestrator - Coordinate workflow between crews
+**6 StockIV Crews:**
+- collector - Data gathering from APIs (vnstock, Brave Search, PDF reports)
+- sentiment_analyst - Macro and ticker-specific sentiment analysis
+- synthesizer - GCCP framework evaluation engine
+- director - Quality control & anomaly detection
+- reporter - Translation, PDF export, Discord publishing
+- orchestrator - User request classification & routing
 
 **Directory Roles:**
 - `src/stockiv/crews/` - Location for individual crews.

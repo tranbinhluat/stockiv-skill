@@ -69,6 +69,8 @@ The crew is composed of exactly **4 agents**: 1 Manager and 3 Specialized Worker
   - `fetch_ratio_summary`
   - `fetch_company_overview`
   - `fetch_dividend_history`
+  - `crawl_vietstock_ratios`
+  - `crawl_vnindex_ratios`
 
 ### 2. Macroeconomic & Market Context Researcher (`macro_micro_scout`)
 - **Role:** Hunts down global events, domestic news, and qualitative macro/micro text context. Must clear stale data before querying.
@@ -86,15 +88,16 @@ The crew is composed of exactly **4 agents**: 1 Manager and 3 Specialized Worker
 
 ## 📋 Task Breakdown (Input & Output Mapping)
 
-The table below breaks down the 5 main tasks, matching exactly which agent is delegated the work, their inputs, outputs, and the specific tools used. *(Note: The manager assigns all of these initially.)*
+The table below breaks down the 6 main tasks, matching exactly which agent is delegated the work, their inputs, outputs, and the specific tools used. *(Note: The manager assigns all of these initially.)*
 
 | Task Name | Assigned Agent | Input Variables | Expected Output | Tools Principally Used |
 |:---|:---|:---|:---|:---|
 | **`fetch_financials_task`** | `market_data_fetcher` | `{stock_symbols}` | **Confirmation Message:** Historical financial statements saved directly to SQLite `stockiv.db`. | `fetch_financial_statements`, `fetch_historical_prices`, `fetch_financial_ratios` |
+| **`fetch_annual_report_task`** | `annual_report_analyst` | `{stock_symbols}` | **Confirmation Message:** PDF found, downloaded, extracted, and Markdown file path returned (e.g., `data/processed/...`). | `search_annual_report_pdf`, `download_and_convert_pdf` |
 | **`fetch_daily_market_data_task`** | `market_data_fetcher` | `{stock_symbols}` | **Confirmation Message:** Live trading values, VNINDEX, metrics (P/E, P/B), and top peers saved to `stockiv.db`. *(Depends on `fetch_financials_task`)* | `fetch_historical_prices`, `fetch_company_overview`, `fetch_ratio_summary` |
+| **`crawl_live_ratios_task`** | `market_data_fetcher` | `{stock_symbols}` | **Confirmation Message:** Live ratios (P/E, P/B, EPS, market cap) crawled from Vietstock and VNINDEX benchmark ratios saved to `stockiv.db`. | `crawl_vietstock_ratios`, `crawl_vnindex_ratios` |
 | **`fetch_macro_context_task`** | `macro_micro_scout` | None *(Focuses broadly on VN economy / Global trends)* | **Raw Markdown File:** Full un-summarized compilation of text, quotes, and URLs globally & domestically. Saved to `{market_context_path}`. | `clean_expired_cache`, `search_market_context` |
 | **`fetch_ticker_context_task`** | `macro_micro_scout` | `{stock_symbols}` *(Also reads context from macro task)* | **Raw Markdown File:** Specific news, management interviews, and events about the exact ticker. Saved to `{ticker_context_path}`. | `search_market_context` |
-| **`fetch_annual_report_task`** | `annual_report_analyst` | `{stock_symbols}` | **Confirmation Message:** PDF found, downloaded, extracted, and Markdown file path returned (e.g., `data/processed/...`). | `search_annual_report_pdf`, `download_and_convert_pdf` |
 
 ---
 

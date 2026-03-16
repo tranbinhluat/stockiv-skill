@@ -18,14 +18,17 @@ flowchart TD
     end
 
     %% Agents
-    subgraph Agents ["Synthesizer Crew (3 Agents)"]
+    subgraph Agents ["Synthesizer Crew (5 Agents)"]
         direction TB
         MGR["🧠 Chief Synthesis Orchestrator\n(Manager — delegates)"]
+        QRA["📉 Quantitative Risk Analyst\n(Worker — Numerical Anomalies)"]
         DS["📊 Data Specialist\n(Worker — Python + Charts)"]
         FA["🔍 Forensic Accountant\n(Worker — Annual Reports)"]
+        MR["🌐 Market Researcher\n(Worker — Web Search)"]
 
         MGR -- "Delegate calculations\n& chart creation" --> DS
         MGR -- "Delegate forensic\nquestions" --> FA
+        MGR -- "Delegate market\nresearch" --> MR
     end
 
     %% Inputs
@@ -46,10 +49,13 @@ flowchart TD
     end
 
     %% Data Relationships
+    BASELINE --> QRA
     BASELINE --> MGR
+    QRA -- "FileReadTool" --> BASELINE
     DS -- "execute_python_code\n(matplotlib)" --> CHARTS
     DS -- "FileReadTool" --> BASELINE
     FA -- "MDXSearchTool" --> AR
+    MR -- "search_market_context" --> MGR
     MGR -- "FileReadTool" --> SENT
     MGR -- "FileReadTool" --> FB
     KB -- "Injected into backstory" --> MGR
@@ -59,37 +65,49 @@ flowchart TD
 
 ---
 
-## 🧑‍🤝‍🧑 The Agents (3 Total)
+## 🧑‍🤝‍🧑 The Agents (5 Total)
 
 ### 1. Chief Synthesis Orchestrator (`synthesizer_manager`)
 - **Role:** Manager — reads pre-compiled data & sentiment, delegates calculations/charts/forensic work, compiles final GCCP report
-- **LLM:** `advanced_llm`
+- **LLM:** `advanced_llm` (reasoning enabled, max 3 attempts)
 - **Tools:** `FileReadTool`
 - **Key Constraint:** 🚫 STRICTLY FORBIDDEN from reading annual reports (prevents hallucination). Delegates to `forensic_accountant`
 - **Key Constraint:** Does NOT make final PASS/FAIL decisions (Director's job)
 - **Key Constraint:** Must delegate ALL arithmetic to Data Specialist (LLMs unreliable at math)
 
-### 2. Data Specialist (`data_specialist`)
+### 2. Quantitative Risk Analyst (`quantitative_risk_analyst`)
+- **Role:** Hunts for numerical anomalies in the pre-compiled financial summary (Earnings Quality, Working Capital bloat, margin trends)
+- **LLM:** `advanced_llm` (reasoning enabled)
+- **Tools:** `FileReadTool`
+- **Key Constraint:** Only reads from `{financial_summary_path}` — no annual reports, no web searches
+
+### 3. Data Specialist (`data_specialist`)
 - **Role:** Calculates derived metrics via Python, generates matplotlib charts, reads pre-compiled files
 - **LLM:** `light_llm`
 - **Tools:** `execute_python_code`, `FileReadTool`, `append_to_file`
 - **Key Constraint:** No database access. All data comes from pre-compiled `{financial_summary_path}`
 
-### 3. Forensic Accountant (`forensic_accountant`)
-- **Role:** Reads annual report Markdown files for forensic evidence via semantic search
+### 4. Forensic Accountant (`forensic_accountant`)
+- **Role:** Reads annual report Markdown files for forensic evidence via semantic search (Auditor Trust, Off-Balance-Sheet items)
 - **LLM:** `light_llm`
 - **Tools:** `DirectoryReadTool` (annual reports), `MDXSearchTool`
 - **Unavailability Protocol:** Reports `ANNUAL_REPORT_NOT_AVAILABLE` if no report found
 
+### 5. Market Researcher (`market_researcher`)
+- **Role:** Performs targeted web searches for market context when the manager needs supplementary data
+- **LLM:** `light_llm`
+- **Tools:** `search_market_context`
+
 ---
 
-## 📋 Task Breakdown (2 Tasks + Pre-compilation)
+## 📋 Task Breakdown (3 Tasks + Pre-compilation)
 
 | Phase | Task | Assigned To | Description |
 |:---|:---|:---|:---|
 | Pre-compile | `@before_kickoff` | Python (no LLM) | Deterministically fetches baseline data from SQLite → writes `{financial_summary_path}` |
-| Task 1 | `forensic_annual_report_review` | `forensic_accountant` | Check annual report availability, run 4 standard forensic checks |
-| Task 2 | `compile_evaluation_report` | `synthesizer_manager` | Read baseline + sentiment, delegate calculations/charts, compile structured GCCP report |
+| Task 1 | `detect_quantitative_anomalies` | `quantitative_risk_analyst` | Read financial summary and flag numerical red flags (earnings quality, margin shifts, working capital anomalies) |
+| Task 2 | `forensic_annual_report_review` | `forensic_accountant` | Check annual report availability, run 4 standard forensic checks |
+| Task 3 | `compile_evaluation_report` | `synthesizer_manager` | Read baseline + sentiment + anomalies + forensic findings, delegate calculations/charts, compile structured GCCP report |
 
 ---
 

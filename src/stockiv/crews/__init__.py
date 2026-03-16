@@ -5,13 +5,12 @@ This package contains all the crews for the StockIV stock analysis system.
 Each crew is responsible for a specific aspect of the analysis workflow.
 
 Crews:
-- Collector: Gathers stock data from various sources
-- QuantAnalyst: Performs quantitative analysis
-- SentimentAnalyst: Analyzes market sentiment
-- Synthesizer: Combines analysis from multiple sources
-- Reporter: Generates comprehensive reports
-- Director: Guides and validates the analysis workflow
-- Orchestrator: Coordinates all crews in the workflow
+- Collector: Gathers stock data from APIs (vnstock, Brave Search, PDF reports)
+- SentimentAnalyst: Analyzes macro and ticker-specific market sentiment
+- Synthesizer: Interprets data against GCCP framework, produces evaluation reports
+- Director: Validates analysis quality, detects anomalies, gates publication
+- Reporter: Translates, exports PDF, and publishes reports to Discord
+- Orchestrator: Classifies user requests and extracts target tickers
 """
 
 from stockiv.crews.collector.collector import CollectorCrew
