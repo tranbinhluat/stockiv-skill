@@ -90,19 +90,48 @@ Evaluate the price relative to the internal engine.
 
 ---
 
-## PART V: THE INTELLIGENT INVESTOR EXECUTION
+## PART V: HOLDING & EXIT STRATEGIES
+
+*A framework must dictate not just when to buy, but how long to hold and when to sell.*
+
+**Agent Protocol:** Based on the investor profile and company classification, recommend the following selling strategies:
+
+1. **Defensive Portfolios (Phòng thủ):**
+   - **Method:** Fixed Ratio / Dollar Cost Averaging (DCA).
+   - **Sell Trigger:** Rebalance when portfolio weight deviates significantly from the fixed ratio, or when P/E becomes excessively expensive.
+   - **Hold Time:** Long-term (Years/Decades).
+
+2. **Greenblatt Magic Formula Portfolios:**
+   - **Method:** High conviction ranking.
+   - **Sell Trigger:** Always sell and re-run the formula after exactly **1 Year** (or rebalance winners/losers for tax loss harvesting).
+   - **Hold Time:** Strictly 1 Year cycles.
+
+3. **Cyclicals (Chu kỳ - NĐT Mạnh bạo):**
+   - **Method:** Contrary investing.
+   - **Sell Trigger:** Sell when the P/E looks *low* (Earnings have peaked) and the market is highly optimistic.
+   - **Hold Time:** 2-3 years (the length of the cycle).
+
+4. **Peter Lynch Categories (Fast Growers / Stalwarts):**
+   - **Method:** Fundamental trailing.
+   - **Sell Trigger:**
+     - *Fast Growers:* Sell when growth decelerates or P/E wildly exceeds Growth Rate.
+     - *Stalwarts:* Sell if price jumps >50% ahead of earnings.
+
+---
+
+## PART VI: THE INTELLIGENT INVESTOR EXECUTION
 
 *How to synthesize the qualitative, quantitative, and valuation findings.*
 
 1. **Classify the User/Portfolio (`criteria.md`):** Are they a Defensive (Phòng thủ) or Enterprising (Mạnh bạo) investor?
 2. **Apply the Specific Filters (`criteria.md`):**
    - For Defensive: Apply the strict 9 Graham criteria (Must pass 8/9).
-   - For Enterprising: Apply Greenblatt Magic Formula or Lynch Categorical rules (e.g., hunting Turnarounds or Asset Plays).
+   - For Enterprising: Apply strict low valuation metrics (P/E < 9, P/B < 1.2), Greenblatt Magic Formula, or Lynch Categorical rules.
 3. **Verify Evidence (`evidence_standard.md`):** Ensure all numbers are sourced from Tier 1 verified financial statements (`[Data Source: Pending Specification]`), not rumors.
 
 ---
 
-## PART VI: KNOWLEDGE BASE INDEX (Cross-References)
+## PART VII: KNOWLEDGE BASE INDEX (Cross-References)
 
 When drafting a final report, the Director MUST utilize these specific files to validate its logic:
 

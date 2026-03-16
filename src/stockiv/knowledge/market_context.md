@@ -1,33 +1,15 @@
 # VN-Index Market Context Protocol
 
-> **🧠 CORE RESOURCE — For Orchestrator and Director Crews**
-> *Use this to determine the current market phase and adjust the required Margin of Safety (MoS).*
-
-## 1. Current Market Status
-**Last Updated:** 2026-03-03
-
-*Note: The Collector Crew should update this section daily.*
-
-- **VN-Index P/E:** 14.2x
-- **VN-Index P/B:** 1.7x
-- **Foreign Flow (1M):** Net Selling -2,500T
-- **Current Interest Rate (SBV Refinancing):** 4.5%
-
----
-
-## 2. Market Phase State Machine
-
-**Agent Logic (Director / Synthesizer):**
-1. Read the current `VN-Index P/E` from section 1.
+1. Read the current `VN-Index P/E`.
 2. Match it against the table below to determine the `Market Phase`.
 3. Apply the `Required Margin of Safety (MoS)` to all valuations before issuing an [APPROVED] decision.
 
-| VN-Index P/E | Market Phase | Action Rule | Required Margin of Safety (MoS) |
-|--------------|--------------|-------------|---------------------------------|
-| **< 11x** | **Crisis (Khủng hoảng)** | Aggressive Buying. Focus on surviving companies. | **15%** (Lower MoS acceptable due to systemic undervaluation) |
-| **11x - 15x** | **Fair Value (Định giá hợp lý)** | Normal Buying. Focus on stock-picking. | **20%** (Standard MoS) |
-| **15x - 20x** | **Expensive (Đắt đỏ)** | Selective Buying. Avoid cyclical peaks. | **30%** (Higher MoS required) |
-| **> 20x** | **Bubble (Bong bóng)** | DO NOT BUY. Hold cash or sell overvalued assets. | **50%** (Extreme MoS required) |
+| VN-Index P/E | Market Phase | Action Rule | Required Margin of Safety (MoS) | Qualitative Sign (Lynch's Cocktail Party) |
+|--------------|--------------|-------------|---------------------------------|-------------------------------------------|
+| **< 11x** | **Crisis (Khủng hoảng)** | Aggressive Buying. Focus on surviving companies. | **15%** (Lower MoS acceptable due to systemic undervaluation) | **Phase 1:** Market is down, nobody talks about stocks. Dentists/neighbors change the subject. |
+| **11x - 15x** | **Fair Value (Định giá hợp lý)** | Normal Buying. Focus on stock-picking. | **20%** (Standard MoS) | **Phase 2:** Market up 15%. People linger slightly before changing the subject. Risk appears. |
+| **15x - 20x** | **Expensive (Đắt đỏ)** | Selective Buying. Avoid cyclical peaks. | **30%** (Higher MoS required) | **Phase 3:** Market up 30%. People ignore the dentist and surround the fund manager for stock tips. |
+| **> 20x** | **Bubble (Bong bóng)** | DO NOT BUY. Hold cash or sell overvalued assets. | **50%** (Extreme MoS required) | **Phase 4:** Peak. People surround the fund manager to *GIVE* the manager stock tips. Everyone is buying. |
 
 **Code Representation:**
 ```python

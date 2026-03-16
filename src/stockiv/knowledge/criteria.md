@@ -36,11 +36,17 @@ Before evaluating a stock, identify the user's/portfolio's profile.
 
 Used to rank multiple companies to find "Good Companies at Cheap Prices."
 
+**Prerequisite (Good Company Filter):** Before ranking, a company MUST pass these thresholds to ensure it is not a value trap:
+1. `ROE` > 15% and `ROA` > 6%
+2. `FCF Margin` > 5%
+3. `Net Margin` > 15%
+
 **Logic Flow (For Quant Analyst/Synthesizer):**
-1. **Calculate Return:** Rank by `ROA` (Return on Assets) or `ROC` (Return on Capital). Highest = Rank 1.
+1. **Calculate Return:** Rank the filtered companies by `ROA` (Return on Assets) or `ROC` (Return on Capital). Highest = Rank 1.
 2. **Calculate Yield:** Rank by `Earnings Yield` (EBIT/Enterprise Value) or simply `P/E`. Lowest P/E = Rank 1.
 3. **Combined Score:** `ROA Rank` + `Yield Rank`.
 4. **Action:** Focus on the lowest resulting combined score (Best combination of cheap + high quality).
+5. **Holding Rule:** Hold for at least 1 year (or until the annual rebalance).
 
 ---
 
@@ -52,7 +58,7 @@ Used to rank multiple companies to find "Good Companies at Cheap Prices."
 |----------|-------------|---------------------|---------------|
 | **1. Slow Growers** | Mature companies, high dividends. | Must have high dividend yield. | Dividend is cut or fundamentals deteriorate. |
 | **2. Stalwarts** | Large companies, steady 10-12% growth. | Buy on dips (P/E near historical low). | Price gets ahead of earnings (+50% jump). |
-| **3. Fast Growers** | Small, aggressive, >20% growth. | **P/E < Growth Rate + Dividend Yield** (PEG < 1). | Growth decelerates or P/E gets extreme. |
+| **3. Fast Growers** | Small, aggressive, >20% growth. | **P/E < Growth Rate** OR **P/E < (Growth Rate + Div Yield) × 1.5**. Debt/Capital must be 25%-75%. | Growth decelerates or P/E gets extreme. |
 | **4. Cyclicals** | Sales/Profits tied to economic cycle. | Buy when earnings look terrible (P/E is high artificially). | Sell when earnings peak (P/E looks low). |
 | **5. Turnarounds** | Beaten down, potential bankruptcy. | Must have cash to survive the crisis. | Company recovers and normalizes. |
 | **6. Asset Plays** | Value of assets (real estate/cash) > Market Cap. | P/B << 1, or hidden assets unrecorded. | Wait for catalyst or buyout. |
@@ -76,3 +82,18 @@ Use these as baseline sanity checks for the `Cheap Price` evaluation.
 | **Telecommunications** | 9x - 24x | 1.5x - 3.5x | 5x - 13x |
 
 > *Note: If a stock is trading significantly above these averages, it requires a very strong fundamental justification (e.g. Fast Grower with PEG < 1).*
+
+---
+
+## 6. Benjamin Graham's Enterprising Criteria (Mạnh bạo)
+
+**Agent Logic:** Use this criteria for Enterprising investors looking for Midcap or Turnaround opportunities. The safety rules are slightly relaxed compared to Defensive investing, but valuation rules are stricter.
+
+1. **Current Ratio:** Current Assets >= 1.5x Current Liabilities.
+2. **Debt to Net Current Assets:** Total Debt <= 1.1x Net Current Assets (Current Assets - Current Liabilities).
+3. **Earnings Stability:** 5 consecutive years of positive earnings (relaxed from 10).
+4. **Dividend Record:** Must have paid *some* cash dividends in recent years.
+5. **Earnings Growth:** The most recent year's earnings must be higher than the earnings from 5 years ago.
+6. **P/E Ratio:** Strict P/E < 9x (Trailing 12 months).
+7. **P/B Ratio:** Strict P/B <= 1.2x.
+8. **Growth Valuation Limit (if applicable):** P/E <= 8.5 + (2 * Growth Rate).
