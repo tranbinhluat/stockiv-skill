@@ -1,107 +1,109 @@
-# RAW DATA COMPILATION - FPT TICKER-SPECIFIC NEWS - MARCH 12, 2026
-
-## COMPANY-SPECIFIC NEWS & MANAGEMENT STATEMENTS
-
-**Source:** https://www.vietstock.vn/fpt-gets-green-light-to-acquire-70-percent-stake-in-indian-it-company-2026-03-10
-- "FPT Corporation has received approval to acquire 70% stake in a leading Indian IT company, marking the company's largest overseas acquisition in 2026. CEO Hoang Nam Tien stated: 'This acquisition strengthens our global footprint and positions us as a leading technology partner for enterprises across Asia-Pacific markets.'"
-
-**Source:** https://www.vneconomy.vn/fpt-targets-30-percent-revenue-growth-in-2026-despite-global-headwinds-2026-03-08
-- "Despite global economic uncertainties, FPT has announced its target to achieve 30% revenue growth in 2026, building on its strong Q4 2025 performance where revenues increased by 24.8% YoY to reach VND 14,789 billion."
-
-**Source:** https://cafef.vn/fpt-announces-major-cloud-transformation-initiative-for-enterprise-clients-2026-03-05
-- "FPT Software division announced a major cloud transformation initiative targeting enterprise clients in 2026, with a planned investment of $50 million to expand its cloud infrastructure capabilities and digital transformation services."
-
-**Source:** https://www.vnreview.vn/fpt-launches-ai-research-center-in-hanoi-2026-focus-on-genai-technologies
-- "FPT has launched a new AI research center in Hanoi focusing on generative AI technologies. The center will operate with 200 researchers and engineers dedicated to developing AI solutions for both domestic and international markets."
-
-**Source:** https://www.tinnhanhchungkhoan.vn/fpt-board-approves-dividend-payout-of-3000-vnd-per-share-for-2025-results
-- "The FPT board of directors approved a dividend payout of 3,000 VND per share for 2025 results, representing a yield of approximately 7.5% based on current market prices."
+## FPT (CTCP FPT) COMPANY-SPECIFIC NEWS, PRODUCT LAUNCHES, AND MANAGEMENT STATEMENTS
+**Search Period:** Last 7 Days (March 2026)
+**Data Year:** 2026
 
 ---
 
-## FPT'S RESPONSE TO MIDDLE EAST CONFLICT & ENERGY COSTS
+### DIRECT FPT COMPANY NEWS & PRODUCT LAUNCHES
 
-**Source:** https://www.techinasia.com/fpt-adopts-blockchain-solutions-to-mitigate-supply-chain-disruptions-from-middle-east-conflict-2026
-- "To address potential supply chain disruptions resulting from Middle East tensions, FPT has implemented blockchain-based tracking solutions for its hardware imports, reducing dependency on traditional shipping routes affected by the conflict. This move is expected to reduce logistics costs by 15% in 2026."
-
-**Source:** https://enternews.vn/fpt-invests-in-domestic-data-center-infrastructure-to-reduce-energy-import-dependency-2026-03-03
-- "In response to rising energy costs linked to global conflicts, FPT announced plans to invest VND 2 trillion in domestic data center infrastructure powered by renewable energy sources. CEO Nguyen Van Quyet commented: 'Energy independence is crucial for our operational resilience amid global uncertainties.'"
-
-**Source:** https://www.itnewsafrica.com/fpt-leverages-local-partnerships-to-reduce-foreign-exchange-risk-from-energy-price-fluctuations-2026
-- "FPT has strengthened partnerships with local Vietnamese energy providers to secure fixed-rate contracts for its operations, protecting against energy price volatility caused by Middle East tensions. The company expects to save VND 500 billion in energy costs during 2026."
-
----
-
-## FPT'S POSITIONING FOR FTSE RUSSELL UPGRADE
-
-**Source:** https://www.investing.com/news/fpt-corporation-prepares-for-increased-foreign-institutional-interest-following-ftse-upgrade-expectations-2026
-- "With expectations of Vietnam's market upgrade by FTSE Russell, FPT has enhanced its investor relations capabilities and transparency measures to attract increased foreign institutional interest. The company has appointed a new investor relations officer with experience in emerging market compliance."
-
-**Source:** https://www.bloombergvn.com/fpt-implements-enhanced-disclosure-practices-ahead-of-ftse-russell-upgrade-2026
-- "FPT has implemented enhanced disclosure practices ahead of the anticipated FTSE Russell upgrade of Vietnam's market status, including monthly updates on key performance indicators and quarterly virtual investor calls in English to cater to international investors."
-
-**Source:** https://www.eastasiafinancial.com/fpt-expands-us-dollar-denominated-bonds-to-attract-foreign-investors-before-ftse-upgrade-2026
-- "To prepare for increased foreign investment following the expected FTSE upgrade, FPT has announced plans to issue $200 million in USD-denominated bonds in Q2 2026, making it easier for international investors to participate in the company's growth story."
+**Result 1:**
+- **Title:** FPT receives international AI patent, ranks among top global software providers.
+- **URL:** https://www.vietnam.vn/en/fpt-nhan-bang-sang-che-ai-quoc-te-vao-top-nha-cung-cap-phan-mem-toan-cau
+- **Snippet:** FPT Group's Akabot AI Agentic Automation platform has been patented in Taiwan.
+- **Age:** 4 days ago
+- **Direct Quote Extracted:** "FPT Group's Akabot AI Agentic Automation platform has been patented in Taiwan."
+- **Product Identified:** Akabot AI Agentic Automation platform
+- **Event Type:** Patent Approval / Product Recognition
+- **Geographic Market:** Taiwan
 
 ---
 
-## FPT'S STRATEGY FOR VIETNAM'S GDP GROWTH TARGETS
+### MANAGEMENT STATEMENTS & STRATEGIC DIRECTION
 
-**Source:** https://www.vietnaminsider.vn/fpt-to-invest-vnd-500-billion-in-government-digitalization-projects-2026
-- "FPT committed to investing VND 500 billion in government digitalization projects as part of supporting Vietnam's ambitious GDP growth targets for 2026. The company will assist in digitizing public services and implementing smart city solutions in major urban centers."
-
-**Source:** https://www.thanhnien.vn/fpt-joins-national-technology-alliance-to-support-vietnam-10-percent-gdp-growth-goal-2026
-- "FPT joined the National Technology Alliance alongside other leading Vietnamese tech firms to support the government's 10%+ GDP growth goal for 2026. The alliance will focus on accelerating technology adoption across key sectors including agriculture, manufacturing, and financial services."
-
-**Source:** https://www.vir.com.vn/fpt-announces-plan-to-create-5000-new-jobs-in-2026-to-support-national-economic-growth
-- "As part of its commitment to Vietnam's economic expansion, FPT announced plans to create 5,000 new jobs in 2026, primarily in software development, AI research, and digital transformation services, supporting the government's employment and productivity goals."
-
----
-
-## RECENT FINANCIAL PERFORMANCE & OUTLOOK
-
-**Source:** https://www.sohoa.vn/fpt-software-signs-major-outsourcing-contract-worth-vnd-2000-billion-with-japanese-client-2026
-- "FPT Software signed a major outsourcing contract worth VND 2,000 billion with a Japanese client for a five-year period, contributing to the company's 2026 revenue projections and reinforcing its position as Vietnam's leading IT services exporter."
-
-**Source:** https://www.tapchingansach.vn/fpt-education-unit-shows-strong-enrollment-growth-amid-economic-uncertainties-2026
-- "FPT's education unit reported continued strong enrollment growth of 18% in Q1 2026, defying economic uncertainties and demonstrating resilient demand for digital skills training and higher education services."
+**Result 2:**
+- **Title:** FDI attraction in 2026: Vietnam adapts to new global investment standards | Vietnam+ (VietnamPlus)
+- **URL:** https://en.vietnamplus.vn/fdi-attraction-in-2026-vietnam-adapts-to-new-global-investment-standards-post339062.vnp
+- **Snippet:** According to Dang Tran Phuong, Deputy CEO of FPT Software in charge of the European and Middle Eastern markets, FPT considers France one of its key markets in Europe. Since opening its first office there in 2008, the company has built a solid presence with offices in Paris, Lyon, Toulouse and Marseille. ... While expanding export destinations remains a priority, harnessing the domestic market is increasingly seen as a fundamental and sustainable solution to keep factories running, stabilise cash flows and support growth despite external headwinds.
+- **Age:** 5 days ago
+- **Executive Identified:** Dang Tran Phuong
+- **Title:** Deputy CEO of FPT Software (European and Middle Eastern markets)
+- **Direct Quote Extracted:** "FPT considers France one of its key markets in Europe. Since opening its first office there in 2008, the company has built a solid presence with offices in Paris, Lyon, Toulouse and Marseille."
+- **Strategic Statement Extracted:** "While expanding export destinations remains a priority, harnessing the domestic market is increasingly seen as a fundamental and sustainable solution to keep factories running, stabilise cash flows and support growth despite external headwinds."
+- **Geographic Markets Mentioned:** France, Europe, Middle East, Domestic Vietnam
+- **Offices Listed:** Paris, Lyon, Toulouse, Marseille
 
 ---
 
-## ALL URLs REFERENCED (15 SOURCES)
+### SECTOR CONTEXT RELEVANT TO FPT OPERATIONS
 
-1. https://www.vietstock.vn/fpt-gets-green-light-to-acquire-70-percent-stake-in-indian-it-company-2026-03-10
-2. https://www.vneconomy.vn/fpt-targets-30-percent-revenue-growth-in-2026-despite-global-headwinds-2026-03-08
-3. https://cafef.vn/fpt-announces-major-cloud-transformation-initiative-for-enterprise-clients-2026-03-05
-4. https://www.vnreview.vn/fpt-launches-ai-research-center-in-hanoi-2026-focus-on-genai-technologies
-5. https://www.tinnhanhchungkhoan.vn/fpt-board-approves-dividend-payout-of-3000-vnd-per-share-for-2025-results
-6. https://www.techinasia.com/fpt-adopts-blockchain-solutions-to-mitigate-supply-chain-disruptions-from-middle-east-conflict-2026
-7. https://enternews.vn/fpt-invests-in-domestic-data-center-infrastructure-to-reduce-energy-import-dependency-2026-03-03
-8. https://www.itnewsafrica.com/fpt-leverages-local-partnerships-to-reduce-foreign-exchange-risk-from-energy-price-fluctuations-2026
-9. https://www.investing.com/news/fpt-corporation-prepares-for-increased-foreign-institutional-interest-following-ftse-upgrade-expectations-2026
-10. https://www.bloombergvn.com/fpt-implements-enhanced-disclosure-practices-ahead-of-ftse-russell-upgrade-2026
-11. https://www.eastasiafinancial.com/fpt-expands-us-dollar-denominated-bonds-to-attract-foreign-investors-before-ftse-upgrade-2026
-12. https://www.vietnaminsider.vn/fpt-to-invest-vnd-500-billion-in-government-digitalization-projects-2026
-13. https://www.thanhnien.vn/fpt-joins-national-technology-alliance-to-support-vietnam-10-percent-gdp-growth-goal-2026
-14. https://www.vir.com.vn/fpt-announces-plan-to-create-5000-new-jobs-in-2026-to-support-national-economic-growth
-15. https://www.sohoa.vn/fpt-software-signs-major-outsourcing-contract-worth-vnd-2000-billion-with-japanese-client-2026
-16. https://www.tapchingansach.vn/fpt-education-unit-shows-strong-enrollment-growth-amid-economic-uncertainties-2026
+**Result 3:**
+- **Title:** FDI shaping Vietnam's labor market in 2026: expert
+- **URL:** https://theinvestor.vn/fdi-shaping-vietnams-labor-market-in-2026-expert-d18570.html
+- **Snippet:** The second group with high demand includes manufacturing and semiconductors, reflecting the trend of FDI inflows into Vietnam. If investment growth continues as forecast, about 50-60% of FDI capital will continue to concentrate in the processing and manufacturing sector. In addition, positions related to IT and data remain in high demand thanks to digital transformation trends.
+- **Age:** 5 days ago
+- **Relevance to FPT:** Labor market conditions for IT/data positions
+- **Key Data Point:** "positions related to IT and data remain in high demand thanks to digital transformation trends"
+
+**Result 4:**
+- **Title:** Vietnam: Global AI Partnerships Drive Digital Transformation - OpenGov Asia
+- **URL:** https://opengovasia.com/vietnam-global-ai-partnerships-drive-digital-transformation/?c=us
+- **Snippet:** Vietnam is strengthening international AI collaboration, with China's Guangxi and European partners, to advance research, practical applications, talent development and its position as a regional technology hub.
+- **Age:** 1 week ago
+- **Relevance to FPT:** AI partnership environment in Vietnam
+- **Partners Mentioned:** China's Guangxi, European partners
+
+**Result 5:**
+- **Title:** The Ultimate Guide to AI Outsourcing to Vietnam in 2026
+- **URL:** https://9cv9offshoring.tech/the-ultimate-guide-to-ai-outsourcing-to-vietnam-in-2026/
+- **Snippet:** This growth is anchored by a significant influx of foreign direct investment (FDI), which reached a record USD 28.5 billion in realized capital in the preceding year, with high-tech processing and manufacturing accounting for the dominant share.
+- **Age:** 4 days ago
+- **Relevance to FPT:** FDI environment for technology sector
+- **Key Data Point:** "USD 28.5 billion in realized capital in the preceding year"
+
+**Result 6:**
+- **Title:** Vietnam IT Outsourcing 2026: What Companies Should Know
+- **URL:** https://www.sourceofasia.com/vietnam-it-outsourcing/
+- **Snippet:** Software and IT services exports have grown rapidly, with Vietnam's digital technology exports reaching about $172 billion in 2025, reflecting strong global demand for electronics, software, and IT services.
+- **Age:** 1 week ago
+- **Relevance to FPT:** Export market conditions for IT services
+- **Key Data Point:** "Vietnam's digital technology exports reaching about $172 billion in 2025"
 
 ---
 
-## KEY FINDINGS ON FPT'S POSITIONING
+### NEGATIVE SEARCH RESULTS (NO EARNINGS LEAKS FOUND)
 
-### Response to Global Headwinds
-- FPT is proactively addressing supply chain risks from Middle East conflict through blockchain solutions
-- Investing in domestic renewable energy infrastructure to reduce import dependency
-- Securing fixed-rate energy contracts to mitigate price volatility
+**Note:** The search for "CTCP FPT earnings 2026 revenue profit management statement CEO announcement March" returned primarily irrelevant results due to ticker confusion with:
+- TechnipFMC (FTI)
+- TCP (energy drinks brand)
+- PagerDuty Inc (PD)
+- PTC (software company, different from FPT)
+- Asia Cement (China) Holdings Corporation
 
-### Capital Markets Strategy
-- Preparing for increased foreign investment via enhanced disclosure and investor relations
-- Planning USD-denominated bond issuance to attract international investors
-- Positioning for benefits from expected FTSE Russell market upgrade
+**No specific earnings leaks, Q1 2026 earnings announcements, or revenue/profit guidance from FPT management were found in the last 7 days of search results.**
 
-### Domestic Growth Alignment
-- Investing in government digitalization projects to support national GDP targets
-- Creating 5,000 new jobs to support employment goals
-- Participating in National Technology Alliance for economic expansion
+**Search Query Used:** "CTCP FPT earnings 2026 revenue profit management statement CEO announcement March"
+**Search Query Used:** "CTCP FPT Software contracts partnerships AI semiconductor digital transformation 2026 Japan Europe USA"
+
+---
+
+### SUMMARY OF FINDINGS (RAW DATA POINTS ONLY)
+
+**Product Launches/Patents:**
+- Akabot AI Agentic Automation platform patented in Taiwan (4 days ago)
+
+**Management Statements:**
+- Dang Tran Phuong (Deputy CEO, Europe/Middle East): France is key market; offices in Paris, Lyon, Toulouse, Marseille since 2008
+- Strategic priority: Balance export expansion with domestic market harnessing for cash flow stability
+
+**Market Conditions:**
+- IT/data positions in high demand (digital transformation trends)
+- Vietnam strengthening AI partnerships with China's Guangxi and European partners
+- Record FDI: USD 28.5 billion realized capital (preceding year)
+- Digital technology exports: $172 billion (2025)
+
+**No Found:**
+- Earnings leaks
+- Q1 2026 earnings announcement dates
+- Specific revenue/profit guidance for 2026
+- Chip shortage response statements
+- New contract announcements with specific values

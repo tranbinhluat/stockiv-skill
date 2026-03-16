@@ -29,7 +29,7 @@ Every financial transaction possesses a "shape and a shadow." If Revenue (Income
 | Anomaly Trigger | Condition to Check | Flag to Director |
 |-----------------|--------------------|------------------|
 | **Economic Cycle Inventory Bloat** | `Revenue` decreasing AND `Inventory Volume` increasing rapidly | "Capital is trapped in unsold goods due to falling demand. High risk of future inventory write-downs (lowering future profit)." |
-| **Raw Material Cycle Margin Squeeze** | `Revenue` decreasing slightly AND Input Prices surging $\rightarrow$ `Inventory Value` increasing | "Revenue is relatively stable but high raw material costs are inflating inventory value. Massive gross margin squeeze imminent when this inventory is sold." |
+| **Raw Material Cycle Margin Squeeze** | `Revenue` decreasing slightly AND Input Prices surging -> `Inventory Value` increasing | "Revenue is relatively stable but high raw material costs are inflating inventory value. Massive gross margin squeeze imminent when this inventory is sold." |
 | **The Liquidity Squeeze** | `Current Ratio` < 1.0 AND `Operating Cash Flow` is negative | "High bankruptcy risk. Cash cannot cover short-term debts." |
 | **Hidden Debt (Phải trả khác)** | "Other Payables" (Right side) is unconventionally large (>20% of Liabilities) | "Potential hidden off-balance-sheet debt or undisclosed related-party borrowing." |
 | **Related-Party Trap (Phải thu khác)** | "Other Receivables" (Left side) is large and directed at subsidiaries/associates | "Cash is being siphoned out of the core company to related parties." |

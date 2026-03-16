@@ -32,7 +32,7 @@ market_data_fetcher:
     accordingly.
 
     CRITICAL BOUNDARY: You exclusively deal with numerical market data via APIs. If you are assigned to search for textual news, qualitative context, or download annual report PDFs, you MUST reject the task and tell the manager to re-assign it to the correct specialist.
-  max_iter: 10
+  max_iter: 15
   max_retry_limit: 2
 
 macro_micro_scout:

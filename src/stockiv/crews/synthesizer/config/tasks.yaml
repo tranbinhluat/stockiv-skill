@@ -88,12 +88,6 @@ compile_evaluation_report:
     - If classified as 'Cyclical', focus on P/B ratio and historical cycle timing.
     Do not use PEG for Defensive stocks, and do not rely entirely on P/E for Cyclicals.
 
-    ⚠️ ANTI-HALLUCINATION RULE FOR PEG RATIO:
-    You MUST delegate PEG ratio calculation to the Data Specialist. The Data Specialist must use the HISTORICAL
-    growth rate (Effective CAGR, Net Profit CAGR, or EPS CAGR as instructed by the Financial Summary notes).
-    Do NOT use management's forward growth guidance or revenue growth targets.
-    LLMs cannot do math — delegate ALL ratio calculations.
-
     ⚠️ PEER COMPARISON RULE (DISABLED):
     Do NOT perform any peer comparisons or relative valuations. The peer comparison framework is currently disabled. Ignore any peer data.
 
@@ -129,18 +123,20 @@ evaluate_feedback:
     The Director has REJECTED the previous version of the GCCP report for `{stock_symbols}`.
     Your job is a TARGETED REVISION, not a full rewrite.
 
-    STEP 1: Use your `FileReadTool` to read the Director's review at: `{feedback}`
+    STEP 1: Use your `FileReadTool` to read the previous report version from `{synthesizer_output_dir}`.
     Read the full content yourself. Do NOT delegate this step.
 
-    STEP 2: Use your `FileReadTool` to read the previous report version from `{synthesizer_output_dir}`.
+    STEP 2: Use your `FileReadTool` to read the Director's review at: `{feedback}`
     Read the full content yourself. Do NOT delegate this step.
 
     STEP 3: EXTRACT the specific weaknesses and deficiencies the Director cited.
 
     STEP 4: For EACH cited weakness, decide:
-      - If it requires more DATA → delegate to `data specialist` for additional queries or charts.
       - If it requires DOCUMENT EVIDENCE → delegate to `forensic accounting and document analysis specialist`.
       - If it requires REWRITING or REANALYSIS → revise that section yourself using the existing context.
+      - If you requires more metrics or data that is not in financial summary → delegate to `data specialist` to calculate this.
+      - If it requires more DATA that is not available after running ALL other tools → use 'Brave Search for Market Context' and perform search.
+    ⚠️ CRITICAL: Only allowed 3 searches in total for each revision.
 
     STEP 5: REBUILD the full report: keep approved sections intact, fix only the weak sections.
     ⚠️ CRITICAL RETENTION RULE: You MUST retain all previously generated sections exactly as they were, especially the "Industry Risks & Potentials" subsection and the "Actionable Suggestion" format. Do not drop or summarize previously approved sections.

@@ -192,11 +192,12 @@ Error: Cannot operate on a closed database.
 ### Peer Comparison (Latest Live Ratios)
 | Ticker   |   P/E |   P/B |   EPS | ROE   |   Market Cap (B VND) | Data Source   |
 |:---------|------:|------:|------:|:------|---------------------:|:--------------|
-| FPT      | 12.91 |  3.03 | 6,017 | 28.3% |              131,170 | Live Crawl    |
+| FPT      | 12.8  |  3    | 6,017 | 28.3% |              133,385 | Live Crawl    |
 | CMG      | 15.75 |  1.95 | 1,867 | 13.1% |                2,330 | Static JSON   |
 | DIG      | 16.66 |  1.08 |   813 | 7.3%  |                7,964 | Static JSON   |
+| SSI      | 14.37 |  1.85 | 1,976 | 14.0% |               24,931 | Static JSON   |
 
-### VNINDEX: 1,689.33 (as of 2026-03-16)
+### VNINDEX: 1,683.16 (as of 2026-03-16)
 
 *Source: [SQLite Database — stockiv.db]*
 
@@ -222,19 +223,19 @@ ROE (%) | 23.58% | 23.93% | 23.39% | 22.71%
 ROA (%) | 11.71% | 11.88% | 11.55% | 10.08%
 
 ## 3. Graham Defensive Criteria (9-Point Checklist)
-1. ✅ **Large Size (>10k B VND Market Cap)**: 133,555 B VND (Pass)
+1. ✅ **Large Size (>10k B VND Market Cap)**: 133,385 B VND (Pass)
 2. ❌ **Current Ratio >= 2**: 1.40 (Fail)
 3. ✅ **Debt to Equity <= 2**: 0.48 (Pass)
 4. ❌ **10 yrs Positive Earnings**: 4/4 years positive (Fail)
 5. ✅ **10 yrs Dividends Uninterrupted**: 10/10 years paid (Pass)
 6. ❌ **EPS Growth >= 33% (10yr)**: 0.0% growth (Avg L3Y vs F3Y) (Fail)
-7,8,9. ❌ **Graham Valuation: (P/E < 15 & P/B < 1.5) OR (P/E * P/B < 22.5)**: P/E=12.9, P/B=3.0, P/ExP/B=39.1 (Fail)
+7,8,9. ❌ **Graham Valuation: (P/E < 15 & P/B < 1.5) OR (P/E * P/B < 22.5)**: P/E=12.8, P/B=3.0, P/ExP/B=38.4 (Fail)
 
 **Graham Score:** 3/7 criteria groups met (Note: Valuation counts for 3 checks). Minimum 8/9 (or ~6/7 groups) usually required for strict Defensive.
 
 ## 4. Lynch & Greenblatt Metrics
 - **ROA (Greenblatt Quality):** 11.71%
-- **Earnings Yield (Inverse P/E):** 7.75%
+- **Earnings Yield (Inverse P/E):** 7.81%
 - **EV/EBITDA:** 10.21x
 - **EPS 4-Year CAGR (2022 to 2025):** 4.64%
 - **Net Profit 4-Year CAGR (2022 to 2025):** 20.84% (Note for AI: Use this Net Profit CAGR for growth evaluation if EPS CAGR is artificially low due to unadjusted stock dividends)
@@ -243,29 +244,16 @@ ROA (%) | 11.71% | 11.88% | 11.55% | 10.08%
 
 
 
-## Additional Financial Metrics (Corrected)
 
-### Corrected EPS Values and CAGR (2021-2025)
-- 2021: 5,018 VND
-- 2022: 5,251 VND
-- 2023: 5,494 VND
-- 2024: 5,749 VND
-- 2025: 6,016 VND
+## Additional Calculations
 
-**EPS CAGR (2021-2025): 4.64%**
+### EPS Growth Analysis
+- **EPS CAGR (2022-2025)**: 10.75%
+- **Average Annual EPS Growth Rate**: 11.00%
+  - 2022-2023: 5.24%
+  - 2023-2024: 6.07%
+  - 2024-2025: 21.68%
 
-### PEG Ratio Recalculation
-Based on the corrected EPS CAGR of 4.64% (instead of the previously used Net Profit CAGR of 20.84%):
-
-**PEG Ratio = P/E Ratio / EPS Growth Rate (%)**
-
-*(Note: P/E ratio needs to be inserted based on current market data)*
-
-### Days Sales Outstanding (DSO) Analysis (2021-2025)
-DSO = (Accounts Receivable / Revenue) * 365
-
-- 2021: 66.27 days
-- 2022: 66.27 days
-- 2023: 62.83 days
-- 2024: 61.19 days
-- 2025: 66.29 days
+### Valuation Metrics
+- **PEG Ratio**: 1.04 (P/E of 12.8 ÷ (11.00% + 1.30%))
+- **Lynch Category**: Slow Grower (Growth < 15%)
