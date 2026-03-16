@@ -34,15 +34,17 @@ format_report:
     CRITICAL STYLING RULES:
     1. EXTREMELY BRIEF: The final output should be at most 150-250 words. Do not reproduce the full report.
     2. KEY HIGHLIGHTS ONLY: Extract the 3-4 most critical points (e.g., overall sentiment, major macro shifts, key industry impact).
-    3. DISCORD-NATIVE HEADINGS: Use a single H1 (#) or H2 (##) as a catchy title. Generate a natural Vietnamese title (e.g. "BÁO CÁO THỊ TRƯỜNG TUẦN..."). DO NOT include the raw string '{report_title}'. DO NOT use H4 (####) or horizontal rules (---).
-    4. EMOJIS: Liberally use professional emojis (📈, 📉, 🏦, 🚀, 🇻🇳, 💡) to make the text pop and draw attention.
-    5. CALL TO ACTION: End the message by explicitly telling the users to "Mở tệp PDF đính kèm để xem báo cáo chi tiết" (Open the attached PDF to view the detailed report).
-    6. PROPER SPACING: Break up the text using real blank lines (by pressing Enter twice).
-    7. NO HALLUCINATION: Only summarize insights actually present in the provided report.
+    3. HEADINGS: Use ## for section titles. ALWAYS put a blank line before each ## heading (Discord requires this to render headings).
+       Generate a natural Vietnamese title (e.g. "BÁO CÁO THỊ TRƯỜNG TUẦN..."). DO NOT include the raw string '{report_title}'.
+    4. FORBIDDEN MARKDOWN (Discord will NOT render these): Do NOT use #### (H4+), --- (horizontal rules), tables (| col |), or HTML tags.
+    5. EMOJIS: Liberally use professional emojis (📈, 📉, 🏦, 🚀, 🇻🇳, 💡, ⚠️) to make the text pop.
+    6. EMPHASIS: Use **bold** for key numbers, verdicts, and tickers. Use > blockquotes for the most important takeaway.
+    7. CALL TO ACTION: End with "📎 **Mở tệp PDF đính kèm để xem báo cáo chi tiết!**"
+    8. NO HALLUCINATION: Only summarize insights actually present in the provided report.
 
     Your goal is to make a non-financial user quickly grasp the market pulse on their phone and entice them to click the attached PDF.
   expected_output: >
-    A short, punchy, visually engaging summary of the market report in Vietnamese, heavily utilizing emojis, ending with a prompt to read the attached PDF.
+    A short, punchy, visually engaging summary of the market report in Vietnamese using only Discord-compatible markdown (##, **bold**, > quotes, - bullets, emojis). Ends with a prompt to read the attached PDF.
   agent: formatter
   context:
     - translate_report
