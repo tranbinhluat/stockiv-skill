@@ -44,4 +44,4 @@ dev = [
 ]
 
 [project.scripts]
-stockiv-run = "stockiv:main"
+stockiv-run = "stockiv.main:kickoff"

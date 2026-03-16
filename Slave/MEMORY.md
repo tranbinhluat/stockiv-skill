@@ -138,6 +138,7 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 ### Path & Platform Integrations
 - **Path Centralization**: All project paths are centralized in `src.stockiv.config.paths` using `pyrootutils.find_root()` and `pathlib.Path`.
 - **Discord MCP**: Use `MCPServerStdio` with `command="npx"` and `args=["-y", "discord-mcp"]`. Token must be prefixed with `Bot `. Chunk markdown payloads larger than 1900 characters due to Discord limits.
+- **Discord Channel Registry**: All Discord channel IDs centralized in `src/stockiv/config/discord.py` via env vars (`DISCORD_CHANNEL_WEEKLY`, `DISCORD_CHANNEL_TICKER`, `DISCORD_CHANNEL_DEFAULT`). Flows call `get_discord_channel("flow_name")` — resolved lazily so dotenv load order doesn't matter.
 - **Terminal Output Interception**: A global `TeeLogger` in `src/stockiv/utils/logger.py` overrides `sys.stdout` and `sys.stderr` to safely duplicate raw terminal strings to files in the `logs/` directory.
 
 ---
