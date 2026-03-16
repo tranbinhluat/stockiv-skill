@@ -49,6 +49,22 @@ def markdown_to_pdf(
         str: A success message with the file path if successful, or an error message.
     """
     try:
+        # Sanitize: strip invalid UTF-8 bytes that LLMs occasionally emit
+        if isinstance(markdown_content, bytes):
+            markdown_content = markdown_content.decode("utf-8", errors="replace")
+        else:
+            markdown_content = markdown_content.encode(
+                "utf-8", errors="replace"
+            ).decode("utf-8")
+
+        # Normalize: LLMs often pass literal 'None' string instead of empty
+        if financial_summary_path and financial_summary_path.strip().lower() in (
+            "none",
+            "null",
+            "",
+        ):
+            financial_summary_path = ""
+
         # If financial_summary_path provided, read and append as appendix
         appendix_html = ""
         if financial_summary_path and os.path.exists(financial_summary_path):
