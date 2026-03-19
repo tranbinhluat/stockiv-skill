@@ -96,7 +96,7 @@ class SynthesizerReport(BaseModel):
     )
     report_markdown: str = Field(
         ...,
-        description="The FULL detailed markdown report containing all analysis, citations, guidelines, and visuals, formatted comprehensively following the GCCP framework structure.",
+        description="The FULL detailed markdown report body. Do NOT include the '# Phân tích Cổ phiếu' title or '## Key Conclusions' block — those are auto-generated from the other fields. Start your report_markdown with the catchy italic hook line.",
     )
     revision_notes: Optional[str] = Field(
         default=None,
@@ -110,6 +110,19 @@ class SynthesizerReport(BaseModel):
         else:
             title = "# Phân tích Cổ phiếu (GCCP)"
 
+        # Strip any duplicated header the LLM may have included in report_markdown
+        body = self.report_markdown
+        import re
+
+        # Remove leading title + Key Conclusions block if duplicated
+        body = re.sub(
+            r"^#\s*Phân tích Cổ phiếu.*?\n---\s*\n*",
+            "",
+            body,
+            count=1,
+            flags=re.DOTALL,
+        ).lstrip()
+
         lines = [
             title,
             "",
@@ -121,7 +134,7 @@ class SynthesizerReport(BaseModel):
             "",
             "---",
             "",
-            self.report_markdown,
+            body,
         ]
 
         # revision_notes kept in Pydantic model for internal tracking
@@ -326,10 +339,47 @@ class SynthesizerCrew:
             config=task_config,
         )
 
-    def _build_evaluate_feedback_task(self) -> Task:
-        """Build the evaluate_feedback task (not decorated — used only in revision_crew)."""
+    def _build_evaluate_feedback_task(self, inputs: dict | None = None) -> Task:
+        """Build the evaluate_feedback task (not decorated — used only in revision_crew).
+
+        Pre-reads the previous report version and injects its full text into the
+        task description so the LLM has it in immediate prompt context rather than
+        relying on a FileReadTool call (which causes generation drift).
+        """
         task_config = self.tasks_config["evaluate_feedback"].copy()
         schema_str = SynthesizerReport.model_json_schema()
+
+        # --- Pre-read previous report and inject into prompt ---
+        previous_report_text = ""
+        if inputs:
+            try:
+                output_dir = inputs.get("synthesizer_output_dir", "")
+                ticker = inputs.get("stock_symbols", "")
+                version = inputs.get("report_version", 2)
+                prev_version = int(version) - 1
+                if output_dir and ticker and prev_version >= 1:
+                    prev_report_path = os.path.join(
+                        output_dir, f"{ticker}_GCCP_report_v{prev_version}.md"
+                    )
+                    if os.path.exists(prev_report_path):
+                        with open(prev_report_path, "r", encoding="utf-8") as f:
+                            previous_report_text = f.read()
+                        print(
+                            f"[SynthesizerCrew] Injected v{prev_version} report "
+                            f"({len(previous_report_text)} chars) into evaluate_feedback prompt."
+                        )
+            except Exception as e:
+                print(
+                    f"[SynthesizerCrew] Warning: Could not pre-read previous report: {e}"
+                )
+
+        if previous_report_text:
+            task_config["description"] += (
+                "\n\n========== PREVIOUS REPORT (YOUR BASE — COPY APPROVED SECTIONS EXACTLY) ==========\n"
+                f"{previous_report_text}\n"
+                "========== END OF PREVIOUS REPORT ==========\n"
+            )
+
         task_config["description"] += (
             f"\n\nCRITICAL: Your JSON output MUST explicitly follow this flat schema:\n{schema_str}"
         )
@@ -357,7 +407,7 @@ class SynthesizerCrew:
             tracing=True,
         )
 
-    def revision_crew(self) -> Crew:
+    def revision_crew(self, inputs: dict | None = None) -> Crew:
         """Creates a lean Synthesizer crew for REVISION (feedback loop).
 
         Tasks: evaluate_feedback ONLY — manager reads feedback + previous report himself.
@@ -371,7 +421,7 @@ class SynthesizerCrew:
                 self.forensic_accountant(),
                 self.market_researcher(),
             ],
-            tasks=[self._build_evaluate_feedback_task()],
+            tasks=[self._build_evaluate_feedback_task(inputs=inputs)],
             process=Process.sequential,
             verbose=True,
             tracing=True,
@@ -386,6 +436,7 @@ class SynthesizerCrew:
             revision: If True, uses revision_crew (evaluate_feedback only).
                       If False, uses crew (full first-pass pipeline).
         """
+        inputs_dict = inputs.model_dump()
         if revision:
-            return self.revision_crew().kickoff(inputs=inputs.model_dump())
-        return self.crew().kickoff(inputs=inputs.model_dump())
+            return self.revision_crew(inputs=inputs_dict).kickoff(inputs=inputs_dict)
+        return self.crew().kickoff(inputs=inputs_dict)

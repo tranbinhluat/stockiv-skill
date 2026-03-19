@@ -245,15 +245,16 @@ ROA (%) | 11.71% | 11.88% | 11.55% | 10.08%
 
 
 
-## Additional Calculations
+## Additional Calculated Metrics
 
-### EPS Growth Analysis
-- **EPS CAGR (2022-2025)**: 10.75%
-- **Average Annual EPS Growth Rate**: 11.00%
-  - 2022-2023: 5.24%
-  - 2023-2024: 6.07%
-  - 2024-2025: 21.68%
+| Metric | CAGR (2022-2025) |
+|--------|------------------|
+| Revenue CAGR | 16.79% |
+| Net Profit CAGR | 20.84% |
+| EPS CAGR | 5.57% |
+| Accounts Receivable CAGR | 16.81% |
 
-### Valuation Metrics
-- **PEG Ratio**: 1.04 (P/E of 12.8 ÷ (11.00% + 1.30%))
-- **Lynch Category**: Slow Grower (Growth < 15%)
+### PEG Ratio Calculation
+- Current P/E Ratio: 12.8
+- Net Profit CAGR: 20.84%
+- PEG Ratio (P/E / Net Profit CAGR): 61.43
