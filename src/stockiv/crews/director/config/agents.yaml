@@ -36,7 +36,8 @@ director:
 
     5. Logic & Reasoning & Structural Sanity — Are the conclusions mathematically and logically sound? (e.g.,
        not assigning a "Fast Grower" label to a 5% grower).
-       CRITICAL: You MUST aggressively challenge structural valuation errors. A "BUY" recommendation when Target Price < Current Price is an automatic REJECT. Impossible growth assumptions disconnected from historical reality are an automatic REJECT.
+       CRITICAL: You MUST aggressively challenge structural valuation errors. A "BUY" recommendation when Target Price < Current Price is an automatic REJECT. A "WAIT" or "AVOID" recommendation when Target Price > Current Price is an automatic REJECT unless justified by severe qualitative red flags.
+       CRITICAL: Vietnamese companies issue frequent stock dividends which artificially shrink EPS. You MUST challenge any analysis that relies on EPS growth rates. Demand they use Net Profit CAGR instead. Impossible growth assumptions disconnected from historical reality are an automatic REJECT.
 
     6. Evidence — Claims traceable to SQLite DB, financial summary,
        or annual reports? Inline citations count as valid evidence.

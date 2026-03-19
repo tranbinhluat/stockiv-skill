@@ -74,6 +74,12 @@ data_specialist:
     - You MUST NOT fabricate or invent numbers. If data is unavailable in the provided files, report it as a limitation.
     - Do NOT perform qualitative analysis or write investment summaries. Your job is ONLY computation, data reading, and visualization.
 
+    ⚠️ PEG RATIO CONVENTION (CRITICAL):
+    - The PEG ratio formula is: P/E ÷ Growth_Rate_in_PERCENTAGE (not decimal).
+    - Example: If P/E = 12.8 and CAGR = 20.84%, then PEG = 12.8 / 20.84 = 0.61.
+    - WRONG: 12.8 / 0.2084 = 61.43. This is off by 100x.
+    - When writing Python code, always ensure growth rates are in percentage form before dividing.
+
     ⚠️ PRE-COMPILED BASELINE AWARENESS:
     - The standard baseline financial summary is ALREADY pre-compiled before you started at `{financial_summary_path}`.
     - You MUST prioritize using the `FileReadTool` to read EXACT metrics from `{financial_summary_path}` to answer the manager's questions. You do not have database access.

@@ -11,21 +11,31 @@
 - ❌ Logic & Reasoning Sound
 - ✅ Evidence Traceable
 
+## 🔍 Anomalies Detected:
+
+### 1. revenue
+📊 **Data:** Revenue CAGR (2022-2025): 16.7%, Accounts Receivable CAGR (2022-2025): 16.4%
+❓ **Question:** Why is the analysis claiming a 66.6% AR growth vs 59.3% revenue growth when the actual CAGRs are nearly identical?
+📋 **Required:** Revised calculation of growth rates using correct year-over-year or CAGR figures from the Financial Ground Truth.
+
+### 2. margins
+📊 **Data:** Gross Margin: 39.01% (2022) → 36.93% (2025)
+❓ **Question:** What is the strategic reason for the consistent multi-year gross margin compression in a 'Fast Grower' tech company?
+📋 **Required:** Management commentary or strategic rationale for the declining gross margins.
+
 ## ❌ Failures:
-- EPS CAGR calculation is mathematically incorrect: Synthesizer claims 20.84% EPS CAGR but actual EPS data shows only 4.64% CAGR from 2022-2025
-- PEG ratio of 0.58 is based on false growth assumption; correct PEG using actual EPS CAGR would be approximately 2.53, indicating overvaluation not undervaluation
-- Target price calculation uses inflated growth rate disconnected from historical reality
-- Misclassification of growth profile: 4.64% EPS growth does not qualify as 'Fast Grower' under Lynch framework which typically requires 15-25%+ sustainable growth
+- Target Price calculation uses an incorrect EPS figure of 6,016 VND; the Financial Ground Truth shows Trailing EPS as 6,016 but also shows LTM Net Profit CAGR of 20.84%, not 20.03%.
+- The PEG ratio calculation is inconsistent: it uses a P/E of 12.8 and adds dividend yield to CAGR, which is not standard Lynch methodology. Standard PEG = P/E / EPS Growth Rate.
+- The logic is fundamentally flawed: The analysis calculates a Target Buy Price of 90,240 VND and states the current price is 77,000 VND, yet recommends 'BUY NOW'. This is illogical because the Target Buy Price *is* the maximum price to pay. If the market price is below this, it's a buy, but the report's own valuation math is suspect due to the incorrect growth rate and PEG formula.
 
 ## Summary
-The analysis contains fatal mathematical errors in growth rate calculation that completely invalidate the valuation conclusion. The report claims a 20.84% EPS CAGR to justify a 'Fast Grower' classification and PEG ratio of 0.58, but the actual EPS data shows only 4.64% CAGR (from 4,429 VND in 2022 to 6,016 VND in 2025). This error transforms the investment thesis from 'undervalued fast grower' to 'overvalued slow grower'. While the financial data verification and risk disclosure are adequate, the core quantitative foundation is fundamentally flawed.
+The analysis correctly identifies FPT as a Fast Grower and reviews the financial statements. However, it fails on critical accuracy and logical grounds. The reported growth rates for revenue and receivables are factually wrong compared to the ground truth data. The PEG ratio is calculated using a non-standard formula. Most critically, while the conclusion (BUY) happens to be directionally correct based on its own (flawed) numbers, the core valuation logic is presented in a confusing and methodologically unsound way. The use of an incorrect Net Profit CAGR (20.03% vs actual 20.84%) further undermines the analysis's credibility.
 
 ## Next Steps
-- Recalculate EPS CAGR using actual EPS figures: 2022=4,429, 2023=4,661, 2024=4,944, 2025=6,016
-- Reassess Lynch category based on actual 4.64% EPS growth rate - likely 'Slow Grower' not 'Fast Grower'
-- Recalculate PEG ratio using correct growth rate: P/E of 12.8 / (4.64% + 1.30%) = ~2.16, not 0.58
-- Revise target price using appropriate valuation framework for actual growth profile
-- Re-evaluate investment recommendation based on corrected valuation
+- Recalculate all growth rates (Revenue, Net Profit, EPS, Receivables) using the exact figures from the Financial Ground Truth.
+- Correct the PEG ratio calculation to use the standard formula: P/E divided by the Net Profit CAGR.
+- Clarify the valuation logic: explicitly state that the current market price (77,000 VND) is below the calculated intrinsic value (before MoS), justifying the BUY call.
+- Address the anomaly of persistent gross margin decline with a clear strategic explanation.
 
 
 ---

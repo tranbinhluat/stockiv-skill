@@ -881,7 +881,7 @@ class CalculateFrameworkMetricsTool(BaseTool):
                 res += f"- **EPS {len(eps_df)}-Year CAGR ({eps_old_period} to {eps_new_period}):** {eps_cagr:.2f}%\n"
                 res += f"- **Net Profit {len(ni_cagr_df)}-Year CAGR ({eps_old_period} to {eps_new_period}):** {ni_cagr:.2f}% (Note for AI: Use this Net Profit CAGR for growth evaluation if EPS CAGR is artificially low due to unadjusted stock dividends)\n"
                 res += f"- **Dividend Yield:** {div_yield * 100:.2f}%\n"
-                res += f"- **Lynch PEG Ratio:** {peg:.2f} (Formula: P/E / (Effective CAGR + Dividend Yield))\n"
+                res += f"- **Lynch PEG Ratio:** {peg:.2f} (Computed as: {pe:.1f} / ({effective_cagr:.2f}% + {div_yield * 100:.2f}%) = {pe:.1f} / {effective_cagr + div_yield * 100:.2f} = {peg:.2f}. ⚠️ CAGR is in PERCENTAGE form, not decimal.)\n"
 
             conn.close()
             return res
