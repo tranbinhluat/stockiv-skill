@@ -245,20 +245,8 @@ class SynthesizerCrew:
 
     @agent
     def synthesizer_manager(self) -> Agent:
-        config = self.agents_config["synthesizer_manager"].copy()
-
-        # Inject the entire GCCP Framework text into the agent's backstory
-        kb_text = (
-            f"--- FRAMEWORK ---\n{kb.framework}\n\n"
-            f"--- CRITERIA ---\n{kb.criteria}\n\n"
-            f"--- INDUSTRY GUIDES ---\n{kb.industry_guides}\n\n"
-            f"--- EVIDENCE STANDARD ---\n{kb.evidence_standard}\n\n"
-            f"--- FINANCIAL READING GUIDE ---\n{kb.financial_reading_guide}"
-        )
-        config["backstory"] = config["backstory"].replace("{gccp_knowledge}", kb_text)
-
         return Agent(
-            config=config,
+            config=self.agents_config["synthesizer_manager"],
             llm=advanced_llm,
             tools=[FileReadTool()],
             allow_delegation=True,
@@ -329,15 +317,39 @@ class SynthesizerCrew:
         )
 
     @task
-    def compile_evaluation_report(self) -> Task:
-        task_config = self.tasks_config["compile_evaluation_report"].copy()
+    def evaluate_qualitative_goodness(self) -> Task:
+        task_config = self.tasks_config["evaluate_qualitative_goodness"].copy()
+        task_config["description"] = task_config["description"].replace(
+            "{industry_guides}", kb.industry_guides
+        )
+        return Task(config=task_config)
+
+    @task
+    def evaluate_quantitative_goodness(self) -> Task:
+        task_config = self.tasks_config["evaluate_quantitative_goodness"].copy()
+        task_config["description"] = task_config["description"].replace(
+            "{financial_reading_guide}", kb.financial_reading_guide
+        )
+        return Task(config=task_config)
+
+    @task
+    def evaluate_cheap_price(self) -> Task:
+        task_config = self.tasks_config["evaluate_cheap_price"].copy()
+        task_config["description"] = (
+            task_config["description"]
+            .replace("{criteria}", kb.criteria)
+            .replace("{market_context}", kb.market_context)
+        )
+        return Task(config=task_config)
+
+    @task
+    def compile_final_report(self) -> Task:
+        task_config = self.tasks_config["compile_final_report"].copy()
         schema_str = SynthesizerReport.model_json_schema()
-        task_config["description"] += (
-            f"\n\nCRITICAL: Your JSON output MUST explicitly follow this flat schema:\n{schema_str}"
+        task_config["description"] = task_config["description"].replace(
+            "{synthesizer_report_schema}", str(schema_str)
         )
-        return Task(
-            config=task_config,
-        )
+        return Task(config=task_config)
 
     def _build_evaluate_feedback_task(self, inputs: dict | None = None) -> Task:
         """Build the evaluate_feedback task (not decorated — used only in revision_crew).
@@ -345,6 +357,8 @@ class SynthesizerCrew:
         Pre-reads the previous report version and injects its full text into the
         task description so the LLM has it in immediate prompt context rather than
         relying on a FileReadTool call (which causes generation drift).
+
+        Also injects GCCP framework knowledge since it's no longer in the agent backstory.
         """
         task_config = self.tasks_config["evaluate_feedback"].copy()
         schema_str = SynthesizerReport.model_json_schema()
@@ -380,6 +394,16 @@ class SynthesizerCrew:
                 "========== END OF PREVIOUS REPORT ==========\n"
             )
 
+        # Inject GCCP framework knowledge (no longer in agent backstory)
+        kb_context = (
+            f"\n\n========== GCCP FRAMEWORK REFERENCE ==========\n"
+            f"--- FRAMEWORK ---\n{kb.framework}\n\n"
+            f"--- CRITERIA ---\n{kb.criteria}\n\n"
+            f"--- MARKET CONTEXT ---\n{kb.market_context}\n"
+            f"========== END OF FRAMEWORK REFERENCE ==========\n"
+        )
+        task_config["description"] += kb_context
+
         task_config["description"] += (
             f"\n\nCRITICAL: Your JSON output MUST explicitly follow this flat schema:\n{schema_str}"
         )
@@ -392,7 +416,10 @@ class SynthesizerCrew:
     def crew(self) -> Crew:
         """Creates the Synthesizer crew for FIRST PASS (full pipeline).
 
-        Tasks: detect_quantitative_anomalies → forensic_annual_report_review → compile_evaluation_report
+        Tasks (7-step sequential):
+          detect_quantitative_anomalies → forensic_annual_report_review
+            → evaluate_qualitative_goodness → evaluate_quantitative_goodness
+              → evaluate_cheap_price → compile_final_report
         (Baseline metrics are pre-compiled via @before_kickoff hook)
         """
         return Crew(
@@ -400,7 +427,10 @@ class SynthesizerCrew:
             tasks=[
                 self.detect_quantitative_anomalies(),
                 self.forensic_annual_report_review(),
-                self.compile_evaluation_report(),
+                self.evaluate_qualitative_goodness(),
+                self.evaluate_quantitative_goodness(),
+                self.evaluate_cheap_price(),
+                self.compile_final_report(),
             ],
             process=Process.sequential,
             verbose=True,

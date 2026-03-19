@@ -165,3 +165,8 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 ### Separation of Forensic Concerns (Synthesizer Crew Updates - Mar 15)
 - **The Problem**: Asking a semantic search agent (`forensic_accountant`) to do mathematical trend analysis (e.g. comparing inventory growth to COGS over multi-year periods) forces it to read unstructured text for structured data, resulting in failures.
 - **Architectural Fix**: Created a dedicated `quantitative_risk_analyst` agent bound *only* to reading the pre-compiled `financial_summary_path` to hunt for numerical anomalies (Earnings Quality, Working Capital bloat). We stripped all math away from the `forensic_accountant` and restricted it entirely to narrative text search (Auditor Trust, Off-Balance-Sheet items) within the `annual_reports_dir`.
+
+### Per-Task KB Injection (Synthesizer Decomposition — Mar 19)
+- **The Problem**: Dumping the entire GCCP framework (~26K chars) into the manager agent's backstory bloated every single task prompt — even tasks that only needed a small subset of the framework. This wastes context window and increases hallucination risk.
+- **Architectural Fix**: Decomposed the monolithic `compile_evaluation_report` (7 steps) into 4 focused sequential tasks. Each task receives only the KB sections it needs via `task_config["description"].replace("{placeholder}", kb.property)` in `synthesizer.py`. The manager backstory is now lean (delegation rules + tool rules only). The `evaluate_feedback` revision task gets framework/criteria/market_context injected in `_build_evaluate_feedback_task()`.
+- **Pattern**: CrewAI sequential context passing carries upstream results downstream automatically. Each task can focus on its domain without re-reading the full framework.

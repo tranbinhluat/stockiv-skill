@@ -298,7 +298,7 @@ class ReportLoopFlow(Flow[ReportLoopState]):
             )
 
     def _run_synthesizer_full_kickoff(self):
-        """Run full Synthesizer crew kickoff (first pass — 3-task pipeline)."""
+        """Run full Synthesizer crew kickoff (first pass — 7-task pipeline)."""
         ticker = self.state.target_ticker
         version = self.state.report_version
         print(
