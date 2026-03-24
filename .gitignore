@@ -30,7 +30,7 @@ Thumbs.db
 *.log
 logs/
 
-data/raw
+data/raw/
 
 *.pdf
 

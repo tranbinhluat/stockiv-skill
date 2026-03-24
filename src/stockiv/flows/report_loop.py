@@ -23,6 +23,7 @@ Retry Strategy:
 """
 
 from crewai.flow.flow import Flow, listen, start, router, or_
+from datetime import datetime
 import json
 import os
 from pathlib import Path
@@ -141,7 +142,9 @@ class ReportLoopFlow(Flow[ReportLoopState]):
         version = self.state.report_version
         inputs_obj = SynthesizerCrewInputs(
             stock_symbols=ticker,
-            date=self.state.shared_data.get("current_date", "2026-03-11"),
+            date=self.state.shared_data.get(
+                "current_date", datetime.now().strftime("%Y-%m-%d")
+            ),
             financial_summary_path=self.state.shared_data.get("financial_summary_path")
             or None,
             annual_reports_dir=self.state.shared_data.get("annual_reports_dir") or None,
