@@ -34,6 +34,7 @@ packages = ["src/stockiv"]
 dev = [
     "detect-secrets>=1.5.0",
     "pre-commit>=4.5.1",
+    "pytest>=9.0.3",
 ]
 
 [project.scripts]
@@ -47,3 +48,7 @@ exclude = [
     ".agents/",
     "scripts/",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_cli.py"]
