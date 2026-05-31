@@ -1,6 +1,6 @@
 ---
 name: analyze-valuation
-description: Analyze whether a Vietnamese stock is cheap using GCCP Parts IV and V (valuation methodology, Graham checklist, target price). Use this skill when the user types /valuation <TICKER>, asks "is this cheap?", or when called internally after analyze-fundamentals in a /deepdive flow.
+description: Analyze whether a Vietnamese stock is cheap using GCCP Parts IV and V (valuation methodology, Graham checklist, target price). Use this skill when the user types /valuation <TICKER>, asks "is this cheap?", asks for a target price or buy/wait verdict on a specific stock. Do NOT use for full analysis flows — the deepdive skill handles those automatically.
 ---
 
 # analyze-valuation

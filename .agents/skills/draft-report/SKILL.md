@@ -1,6 +1,6 @@
 ---
 name: draft-report
-description: Compile a complete GCCP investment report in Vietnamese from analysis files, then export to PDF. Use this skill when the user types /report [TICKER], asks to generate or export a report, or when called internally after gatekeeper APPROVED in a /deepdive flow.
+description: Compile a complete GCCP investment report in Vietnamese from existing analysis files and export to PDF. Use this skill when the user types /report [TICKER], asks to generate or export a report, or wants to convert completed analysis into a formatted document. Requires fundamentals + valuation + sentiment files to already exist. Do NOT use if analysis hasn't been run yet — use the deepdive skill for that.
 ---
 
 # draft-report

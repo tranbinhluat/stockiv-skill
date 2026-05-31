@@ -1,6 +1,6 @@
 ---
 name: analyze-sentiment
-description: Analyze macro market sentiment and ticker-specific sentiment from news. Use this skill when the user types /sentiment [TICKER], asks about market mood, news analysis, macro outlook, or when called internally before fundamentals analysis in a /deepdive flow.
+description: Analyze macro market sentiment and ticker-specific sentiment from news for Vietnamese stocks. Use this skill when the user types /sentiment [TICKER], asks about market mood, Vietnam macro outlook, or news analysis for a specific stock. Do NOT use for full analysis flows — the deepdive skill handles those automatically.
 ---
 
 # analyze-sentiment

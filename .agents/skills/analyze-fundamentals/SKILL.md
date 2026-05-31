@@ -1,6 +1,6 @@
 ---
 name: analyze-fundamentals
-description: Analyze the fundamental quality of a Vietnamese stock using GCCP Parts II and III. Use this skill when the user types /fundamentals <TICKER>, asks "is this a good company?", or when called internally after analyze-sentiment in a /deepdive flow.
+description: Analyze the fundamental quality of a Vietnamese stock using GCCP Parts II and III. Use this skill when the user types /fundamentals <TICKER>, asks "is this a good company?", asks about ROE/ROA/margins/moat for a specific stock, or wants a standalone qualitative + quantitative quality assessment. Do NOT use for full analysis flows — the deepdive skill handles those automatically.
 ---
 
 # analyze-fundamentals

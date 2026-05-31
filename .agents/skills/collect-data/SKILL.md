@@ -1,6 +1,6 @@
 ---
 name: collect-data
-description: Fetch financial data and news context for a Vietnamese stock ticker or macro market. Use this skill when the user types /collect <TICKER>, asks to fetch or refresh stock data, or when data files are missing or stale before analysis.
+description: Fetch financial data and news context for a Vietnamese stock ticker or the macro market. Use this skill when the user types /collect <TICKER>, asks to fetch or refresh stock data for a specific ticker, or needs to collect macro market data before a weekly report. Do NOT use for full analysis flows — use the deepdive skill for that.
 ---
 
 # collect-data
