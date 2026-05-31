@@ -32,6 +32,7 @@ If output files already exist and are fresh (< 7 days), the CLI will skip re-fet
 **Wait for completion.** Confirm:
 - `data/processed/synthesizer/{TICKER}/financial_summary.md` exists
 - `data/raw/context/{TICKER}_ticker_context.md` exists
+- `data/processed/annual_reports/{TICKER}/` — note whether annual report was found or `ANNUAL_REPORT_NOT_AVAILABLE`
 
 ---
 
@@ -84,15 +85,20 @@ Performs GCCP Parts IV + V. Saves:
 
 Apply the `.agents/agents/gatekeeper.md` agent persona.
 
-Submit all three analysis files for the 5-check validation:
-1. `financial_data_verified`
-2. `numbers_accurate`
-3. `logic_and_reasoning_sound`
-4. `no_hallucinated_prices`
-5. `buy_sell_logic`
+Submit all analysis files for the 8-check validation. Track the attempt count — **maximum 5 revision attempts** before escalating to the user.
+
+**Versioned files:** Each attempt writes versioned output:
+- `{TICKER}_GCCP_report_v{N}.md` (draft)
+- `{TICKER}_director_review_v{N}.md` (gatekeeper feedback)
 
 **If APPROVED**: proceed to Step 6.
-**If REJECTED**: fix the reported issues (usually recalculate or re-read source files) and re-submit.
+
+**If REJECTED**: read the gatekeeper's feedback carefully.
+- Fix **only the failed checks** — do not rewrite sections that passed (preserve them verbatim)
+- Increment version: `v1` → `v2` → etc.
+- Re-run gatekeeper on the revised report
+- After 5 failed attempts, stop and surface all failures to the user for manual review
+
 **If MORE_INFO_NEEDED**: run the suggested `stockiv-collect` command and retry from Step 1.
 
 ---

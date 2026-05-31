@@ -77,14 +77,46 @@ print(f'Min ROE: {min(roe_values):.1%}')
 
 ## Forensic Checks
 
-Read annual report markdown files in `data/processed/annual_reports/{TICKER}/`.
+Read annual report markdown at `data/processed/annual_reports/{TICKER}/`. If the file is absent, mark all narrative checks as `ANNUAL_REPORT_NOT_AVAILABLE` and continue.
 
-- **Earnings quality**: Large OCF vs NI divergence? Recurring "non-cash" adjustments?
-- **Working capital bloat**: Receivables or inventory growing faster than revenue?
-- **Margin compression**: Gross margin shrinking over 3+ years?
-- **Debt risk**: Short-term debt covering long-term obligations?
-- **Auditor trust**: Qualified opinion? Related-party notes?
-- **Off-balance-sheet**: Commitments, contingent liabilities, lease obligations?
+### A. Quantitative Anomaly Pre-Scan
+
+Run these checks against `financial_summary.md` first — flag anything that requires deeper investigation:
+
+- **Earnings Quality**: Is OCF significantly below Net Income? Recurring "non-cash" adjustments that inflate profit?
+- **Working Capital Bloat**: Are receivables or inventory growing faster than revenue? (If receivables CAGR > revenue CAGR, flag.)
+- **Margin Compression**: Is gross margin declining consistently over 3+ years?
+- **Debt Risk**: Short-term debt covering long-term obligations? Interest coverage below 3x?
+
+For any suspected anomaly, verify with CLI:
+```
+uv run python -c "
+receivables = [...]  # from financial_summary.md
+revenue = [...]
+for i in range(1, len(revenue)):
+    ratio = (receivables[i]/receivables[i-1]) / (revenue[i]/revenue[i-1])
+    print(f'Year {i}: receivables/revenue growth ratio = {ratio:.2f}')
+"
+```
+
+### B. Annual Report Narrative Checks (5 qualitative forensic checks)
+
+Search the annual report markdown for each of the following using semantic / keyword search:
+
+| # | Check | What to look for | Status |
+|---|---|---|---|
+| 1 | **Auditor Trust** | Qualified opinion, emphasis-of-matter paragraph, auditor change | PASS / FLAG |
+| 2 | **Related Party Transactions** | Loans to affiliates, sales to parent/subsidiary at non-arm's-length | PASS / FLAG |
+| 3 | **Off-Balance-Sheet Risks** | Contingent liabilities, lease commitments, guarantees not on balance sheet | PASS / FLAG |
+| 4 | **Management Remuneration** | Excessive compensation, undisclosed benefits, stock option schemes | PASS / FLAG |
+| 5 | **Revenue Recognition Gimmicks** | Bill-and-hold, channel stuffing, percentage-of-completion abuse, one-time gains recategorized as recurring | PASS / FLAG |
+
+For each check, report:
+- **Status**: PASS / FLAG
+- **Key Quote**: exact short excerpt from the annual report (copy verbatim)
+- **Summary**: one-sentence interpretation
+
+> **Boundary rule**: These are qualitative/legal forensic checks. Do not calculate ratios here — that belongs to the Quantitative Anomaly Pre-Scan above.
 
 ## Output File
 
@@ -113,6 +145,14 @@ _Generated: {date}_
   FCF margin: {value}%
 
 ## Forensic Summary — {CLEAN/CAUTION/RED_FLAG}
+
+### Quantitative Anomalies: {none / list}
+### Annual Report Narrative Checks:
+  1. Auditor Trust — {PASS/FLAG}: {key quote}
+  2. Related Party — {PASS/FLAG}: {key quote}
+  3. Off-Balance-Sheet — {PASS/FLAG}: {key quote}
+  4. Management Remuneration — {PASS/FLAG}: {key quote}
+  5. Revenue Recognition — {PASS/FLAG}: {key quote}
 
 ## Overall Quality Verdict: {GOOD_COMPANY / BORDERLINE / AVOID}
 Evidence: {2-3 sentence rationale}

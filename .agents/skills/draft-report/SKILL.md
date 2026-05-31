@@ -54,19 +54,30 @@ From `{TICKER}_valuation.md`:
 
 ## Language Style
 
-Write in **Vietnamese** as a native equity research analyst would write — not as a translation of English text.
+Write in **Vietnamese** as a native equity research analyst would write — not as a translation of English text. The audience includes non-professional investors who do not have a finance degree: write clearly, keep sentences short, and add a brief plain-Vietnamese inline explanation when you use a complex term for the first time.
 
-**Guiding principles:**
-- Choose terms based on how Vietnamese investment professionals use them in practice. If a term has an accepted Vietnamese form (e.g., "biên lợi nhuận gộp" for gross margin), use it. If a term is universally kept in English in Vietnamese finance (e.g., ROE, P/E, FCF), keep it as-is.
-- Use hedged but confident analyst language: "chúng tôi đánh giá rằng", "phản ánh xu hướng", "cho thấy tín hiệu tích cực". Avoid mechanical phrase-by-phrase translation.
-- Adapt idioms and metaphors contextually — the sentence should sound natural to a Vietnamese reader, not like translated text.
-- Preserve all risk language with full force — do not soften or hedge warnings that are explicit in the source analysis.
-- Keep all numbers, ratios, and units exactly as-is: VND, %, x (multiples), dates.
+**Core principle — PHÓNG TÁC (meaning-based adaptation):** Capture the underlying financial meaning and rewrite it naturally. Never produce word-for-word translations that sound mechanical (e.g., "tăng trưởng ấm áp" for "warm growth" is wrong).
 
-**Decision outputs are fixed Vietnamese uppercase (non-negotiable):**
-- BUY NOW → **MUA NGAY**
-- WAIT → **CHỜ**
-- AVOID → **TRÁNH**
+**Specific term anchors (use these, do not improvise):**
+
+| English | Vietnamese |
+|---|---|
+| Goldilocks Growth / Economy | "Tăng trưởng cân bằng" or "Nền kinh tế lý tưởng (Goldilocks)" |
+| Disrupt / Disruption (business) | "Đột phá", "Định hình lại", or "Thay đổi cấu trúc" |
+| Disconnect / Painful disconnect | "Sự phân kỳ" / "Sự phân kỳ rủi ro cao" |
+| Consensus Fallacy | "Góc nhìn trái chiều về sự đồng thuận" |
+| What makes it worse / better | "Rủi ro suy yếu" / "Động lực thúc đẩy" |
+| Bull Case / Bear Case / Base Case | "Kịch bản Tích cực / Tiêu cực / Cơ sở" |
+| Overweight / Underweight | "Khuyến nghị Tăng tỷ trọng / Giảm tỷ trọng" |
+| Hawkish / Dovish | "Thắt chặt (Hawkish) / Nới lỏng (Dovish)" |
+| Headwinds / Tailwinds | "Rào cản / Động lực hỗ trợ" |
+| BUY NOW / WAIT / AVOID | **MUA NGAY / CHỜ / TRÁNH** (uppercase, non-negotiable) |
+
+**English retention:** Keep globally recognized terms in English (or add Vietnamese in parentheses): AI, FDI, IT Outsourcing, Fed, FTSE Russell, MSCI, ROE, P/E, FCF.
+
+**Preserve exactly as-is:** All numbers, ratios, VND amounts, dates, percentages, and every URL / inline citation `[[n]](URL)` character-for-character.
+
+**Risk language:** Preserve warnings at full force — do not soften or hedge risks that are explicit in the analysis.
 
 ## PDF Export
 

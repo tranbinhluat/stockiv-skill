@@ -16,38 +16,50 @@ If the user asks to publish without approval, respond:
 
 ## What This Skill Does
 
-Compose a short, catchy summary post first, then call the CLI to send it with the PDF attached. The channel receives one clean post — not a wall of chunked markdown.
+Compose a short, punchy Vietnamese summary post first, then call the CLI to send it with the PDF attached. The channel receives one clean post — not a wall of chunked markdown.
 
 ## Step 1 — Compose the Summary Post
+
+Write **150–250 words maximum**. The full PDF is attached — this post is only a hook.
+
+**Discord formatting rules (strictly enforced):**
+- ✅ Allowed: `##` headings (blank line before each `##`), `**bold**`, `> blockquote`, `- bullets`, emojis
+- ❌ Forbidden: `####` (H4+), `---` (horizontal rules), `| tables |`, HTML tags — Discord will not render these
+- Use emojis liberally: 📈 📉 🏦 🚀 🇻🇳 💡 ⚠️
+- `**bold**` for key numbers, verdicts, tickers
+- `> blockquote` for the single most important takeaway
+- End with: `📎 **Mở tệp PDF đính kèm để xem báo cáo chi tiết!**`
+- **No hallucination** — only summarize what is in the actual report
 
 ### Ticker Report (deepdive)
 
 ```
-📊 **{TICKER} — {MUA NGAY / CHỜ / TRÁNH}**
+## 📊 {TICKER} — {MUA NGAY / CHỜ / TRÁNH}
 
-_{Hook line from the report — one sentence investment thesis}_
+> _{Hook line — one sentence investment thesis}_
 
-📌 **Điểm nổi bật:**
-• Giá mục tiêu: **{value} VND** | Giá hiện tại: {value} VND ({upside}%)
-• {1-line qualitative verdict — Lynch category + moat}
-• {1-line key risk}
+**Điểm nổi bật:**
+- Giá mục tiêu: **{value} VND** | Giá hiện tại: {value} VND ({upside}%)
+- {1-line qualitative verdict — Lynch category + moat}
+- {1-line key risk}
 
-📎 Báo cáo đầy đủ đính kèm ↑
+📎 **Mở tệp PDF đính kèm để xem báo cáo chi tiết!**
 ```
 
 ### Weekly Market Report
 
 ```
-📈 **Thị trường Tuần {WW}/{YEAR} — {Tăng giá / Trung lập / Giảm giá}**
+## 📈 Thị trường Tuần {WW}/{YEAR} — {Tăng giá / Trung lập / Giảm giá}
 
-_{Key regime driver in one sentence}_
+> _{Key regime driver in one sentence}_
 
-🔍 **3 điểm theo dõi tuần tới:**
-1. {catalyst 1}
-2. {catalyst 2}
-3. {catalyst 3}
+**3 điểm theo dõi tuần tới:**
+- {catalyst 1}
+- {catalyst 2}
+- {catalyst 3}
 
-📎 Báo cáo đầy đủ đính kèm ↑
+📎 **Mở tệp PDF đính kèm để xem báo cáo chi tiết!**
+```
 ```
 
 ## Step 2 — Publish via CLI

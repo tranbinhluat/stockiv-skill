@@ -13,7 +13,7 @@ Runs CLI tools to populate the data files that all downstream analysis skills re
 
 ### For a Ticker (`/collect <TICKER>` or before any analysis)
 
-**Financials** — calls `uv run stockiv-collect --ticker <TICKER> --type financials`:
+**Step 1 — Financials** — calls `uv run stockiv-collect --ticker <TICKER> --type financials`:
 - Income statement, balance sheet, cash flow (5 years)
 - Financial ratios (ROE, ROA, margins, debt ratios)
 - Ratio summary (GCCP metrics pre-computed)
@@ -21,19 +21,28 @@ Runs CLI tools to populate the data files that all downstream analysis skills re
 - Dividend history
 - Vietstock ratios (crawler)
 - Current market snapshot: live price, P/E, P/B, VNINDEX P/E + P/B
+- **Peer ratios** — identify 1-2 top domestic competitors in the same industry and pre-load their ratio summaries for downstream peer comparisons
 
-**Context (news)** — calls `uv run stockiv-collect --ticker <TICKER> --type context`:
+**Step 2 — Context (news)** — calls `uv run stockiv-collect --ticker <TICKER> --type context`:
 - Brave Search: recent earnings news, management statements, industry developments
+- Run `uv run python -c "from tools.brave_tools import clean_expired_cache; clean_expired_cache()"` first to purge stale cache (> 14 days) before new searches
+
+**Step 3 — Annual Reports** — calls `uv run stockiv-collect --ticker <TICKER> --type annual-report`:
+- Search for and download the most recent annual report PDF for `<TICKER>`
+- Convert to markdown: `data/processed/annual_reports/{TICKER}/{TICKER}_annual_report_{YEAR}.md`
+- If no PDF is found, log `ANNUAL_REPORT_NOT_AVAILABLE` and continue — downstream forensic checks will skip gracefully
 
 **Output files**:
 - `data/processed/synthesizer/{TICKER}/financial_summary.md` — ground truth for all analysis
 - `data/raw/context/{TICKER}_ticker_context.md` — news for sentiment analysis
+- `data/processed/annual_reports/{TICKER}/{TICKER}_annual_report_{YEAR}.md` — for forensic review
 
 ### For Macro Market (`/collect --macro` or before `/weekly`)
 
 Calls `uv run stockiv-collect --macro`:
+- Run `clean_expired_cache` first (see above)
 - VNINDEX snapshot (P/E, P/B, market cap)
-- Brave Search: Vietnam macro news, GDP, inflation, Fed impact, investor flows
+- Brave Search: Vietnam macro news, GDP, inflation, Fed impact, investor flows (2 targeted searches — broad then focused on top 1-2 storylines)
 
 **Output file**:
 - `data/raw/context/market_context.md` — used by analyze-sentiment for macro analysis
@@ -62,5 +71,6 @@ After running, report to the user:
 ✅ Data collected for {TICKER}:
 - financial_summary.md: {size} — covers {date_range}
 - {TICKER}_ticker_context.md: {size} — {n} news articles
+- {TICKER}_annual_report_{YEAR}.md: {found / ANNUAL_REPORT_NOT_AVAILABLE}
 Data is fresh. Proceed to analyze-sentiment.
 ```
