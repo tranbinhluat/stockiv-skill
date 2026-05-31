@@ -39,12 +39,15 @@ If output files already exist and are fresh (< 7 days), the CLI will skip re-fet
 
 Use the `analyze-sentiment` skill.
 
-Read:
+The skill will first check if `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md` already exists this week. If it does, it skips macro collection and proceeds directly to ticker sentiment (Step 3 of that skill).
+
+Required files:
 - `data/raw/context/market_context.md` (run `uv run stockiv-collect --macro` first if missing)
 - `data/raw/context/{TICKER}_ticker_context.md`
 
-Write the 5-section macro report + ticker sentiment report:
+Outputs:
 - `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md`
+- `data/processed/sentiment/market/{YEAR}_overall_macro_sentiment.md`
 - `data/processed/sentiment/ticker/{TICKER}/{YEAR}_W{WW}_sentiment.md`
 
 **Wait for completion.** Sentiment output is required by Step 3.

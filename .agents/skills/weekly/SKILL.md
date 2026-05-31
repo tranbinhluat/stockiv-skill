@@ -37,16 +37,24 @@ If the file is fresh (< 7 days), the CLI skips automatically. Add `--force` for 
 
 Use the `analyze-sentiment` skill — macro mode (no ticker).
 
-Reads `data/raw/context/market_context.md` and produces a **5-section macro report**:
-1. Executive Summary — one-paragraph regime snapshot with key driver
-2. Market Dashboard — VNINDEX level, P/E, P/B, YTD, foreign flow
-3. Key Indicators — GDP, inflation, interest rate, credit growth, VND/USD
-4. Structural Shifts — sector rotation, thematic tailwinds
-5. Upcoming Catalysts — Fed decisions, earnings season, regulatory events
+The skill will first check if `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md` already exists this week. **If it does, skip to Step 3** — no need to re-run sentiment analysis.
 
-Also synthesizes the previous 3–4 weekly reports for regime trend analysis.
+If it does not exist, the skill reads `data/raw/context/market_context.md` and produces:
 
-Output: `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md`
+1. **5-section macro report** (`{YEAR}_W{WW}_macro_sentiment.md`):
+   - Executive Summary — regime snapshot with key driver
+   - Market Dashboard — VNINDEX level, P/E, P/B, YTD, foreign flow
+   - Key Macro Indicators — GDP, inflation, interest rate, credit growth, VND/USD
+   - Structural Shifts — sector rotation, thematic tailwinds
+   - Upcoming Catalysts — Fed decisions, earnings season, regulatory events
+
+2. **Recent trends synthesis** (`{YEAR}_overall_macro_sentiment.md`):
+   - Reads the last 3–4 weekly macro files from `data/processed/sentiment/market/`
+   - Regime shift analysis, ongoing situations, 3-scenario forward outlook (base/bull/bear), contrarian view, allocation playbook
+
+Outputs:
+- `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md`
+- `data/processed/sentiment/market/{YEAR}_overall_macro_sentiment.md`
 
 ---
 
