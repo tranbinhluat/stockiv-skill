@@ -13,6 +13,8 @@ Runs the weekly Vietnam market sentiment pipeline: macro data collection → sen
 
 Execute in order. Do not skip steps.
 
+> **Review gate (default ON):** After Step 3, present the report summary to the user and wait for approval before publishing to Discord. Skip the review gate only if the user explicitly said "no review", "skip review", "auto publish", or equivalent in their original message.
+
 ---
 
 ## Step 1 — Collect Macro Data
@@ -67,6 +69,31 @@ uv run stockiv-report --input reports/market/{YEAR}_W{WW}_weekly_report.md --for
 
 ---
 
+## Step 3.5 — Human Review Gate
+
+**Skip this step only if the user explicitly said "no review", "skip review", "auto publish", or equivalent.**
+
+Otherwise, show a preview of the report to the user:
+
+```
+📋 Weekly Report Preview — Tuần {WW}/{YEAR}
+
+Regime: {Bullish / Neutral / Bearish}
+Key driver: {one sentence}
+Top catalysts next week:
+1. {catalyst 1}
+2. {catalyst 2}
+3. {catalyst 3}
+
+Full report: reports/market/{YEAR}_W{WW}_weekly_report.md
+
+Publish to Discord? Reply "yes" / "publish" to confirm, or give feedback to revise.
+```
+
+**Wait for explicit approval before proceeding to Step 4.** If the user requests changes, revise the report (re-run Step 3) and show the preview again.
+
+---
+
 ## Step 4 — Publish to Discord
 
 ```
@@ -83,5 +110,6 @@ Routes to `DISCORD_CHANNEL_WEEKLY` env var.
 [1/4] ✅ Macro data collected
 [2/4] ✅ Macro sentiment analyzed — regime: {regime}
 [3/4] ✅ Weekly report drafted + exported to PDF
+[3.5] ⏸ Awaiting review... (or ✅ Review skipped — auto publish)
 [4/4] ✅ Published to Discord (weekly channel)
 ```
