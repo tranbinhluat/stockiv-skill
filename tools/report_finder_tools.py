@@ -2,10 +2,8 @@ import os
 import json
 import requests
 import pymupdf4llm
-from crewai.tools import tool
 
 
-@tool("Search Annual Report PDF")
 def search_annual_report_pdf(ticker: str, year: str) -> str:
     """
     Searches the web for the Annual Report (Báo cáo thường niên) PDF of a specific stock ticker and year.
@@ -100,7 +98,6 @@ def search_annual_report_pdf(ticker: str, year: str) -> str:
         return f"Error executing Brave Search for Annual Report: {str(e)}"
 
 
-@tool("Download and Convert PDF to Markdown")
 def download_and_convert_pdf(url: str, ticker: str, md_path: str, pdf_dir: str) -> str:
     """
     Downloads a PDF file from a given URL and converts it to Markdown using pymupdf4llm.

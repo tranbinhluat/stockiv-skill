@@ -1,12 +1,10 @@
 import os
 import requests
-from crewai.tools import tool
 
 
 import time
 
 
-@tool("send_discord_message")
 def send_discord_message(channel_id: str, content: str, file_path: str = None) -> str:
     """
     Sends a message to a Discord channel using the bot token.

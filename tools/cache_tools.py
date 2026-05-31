@@ -1,10 +1,8 @@
 import os
 import time
-from crewai.tools import tool
 from stockiv.config.paths import RAW_CACHE_DIR
 
 
-@tool("Clean Expired Cache")
 def clean_expired_cache(days: int = 14) -> str:
     """
     Scans the local JSON cache directory and deletes files older than the specified number of days.

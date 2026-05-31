@@ -2,11 +2,9 @@ import os
 import json
 import re
 from datetime import datetime
-from crewai.tools import tool
 import requests
 
 
-@tool("Brave Search for Market Context")
 def search_market_context(query: str, days_back: int = 7) -> str:
     """
     Searches the web using Brave Search API to find recent news, macro-economic events,

@@ -4,7 +4,6 @@ import base64
 import mimetypes
 import markdown
 from weasyprint import HTML, CSS
-from crewai.tools import tool
 
 
 def _embed_images_in_html(html_text: str) -> str:
@@ -29,7 +28,6 @@ def _embed_images_in_html(html_text: str) -> str:
     )
 
 
-@tool("markdown_to_pdf")
 def markdown_to_pdf(
     markdown_content: str,
     output_file_path: str,

@@ -1,6 +1,5 @@
 import sqlite3
 import pandas as pd
-from crewai.tools import tool
 from vnstock import Finance, Quote, Company
 from datetime import datetime, timedelta
 import os
@@ -122,7 +121,6 @@ def _ensure_db_exists():
     conn.close()
 
 
-@tool("Fetch Historical Prices")
 def fetch_historical_prices(ticker: str, days_back: int = 30) -> str:
     """
     Fetches daily opening, closing, high, low prices and volume for a specific stock ticker.
@@ -215,7 +213,6 @@ def fetch_historical_prices(ticker: str, days_back: int = 30) -> str:
         return f"Error fetching price data for {ticker}: {str(e)}"
 
 
-@tool("Fetch Financial Statements")
 def fetch_financial_statements(ticker: str) -> str:
     """
     Fetches the 10-year quarterly financial statements (Income, Balance, Cash Flow) for a specific stock ticker.
@@ -314,7 +311,6 @@ def fetch_financial_statements(ticker: str) -> str:
         return f"Error fetching financial statements for {ticker}: {str(e)}"
 
 
-@tool("Fetch Financial Ratios")
 def fetch_financial_ratios(ticker: str) -> str:
     """
     Fetches the historical financial ratios (ROE, ROA, Margins) for a specific stock ticker.
@@ -402,7 +398,6 @@ def fetch_financial_ratios(ticker: str) -> str:
         return f"Error fetching financial ratios for {ticker}: {str(e)}"
 
 
-@tool("Fetch Company Overview")
 def fetch_company_overview(ticker: str) -> str:
     """
     Fetches the company profile and overview (industry, shares, capital) for a specific stock ticker.
@@ -463,7 +458,6 @@ def fetch_company_overview(ticker: str) -> str:
         return f"Error fetching company overview for {ticker}: {str(e)}"
 
 
-@tool("Fetch Ratio Summary")
 def fetch_ratio_summary(ticker: str) -> str:
     """
     Fetches the comprehensive 46-metric ratio summary (PE, PB, ROE, margins, etc) for a stock.
@@ -520,7 +514,6 @@ def fetch_ratio_summary(ticker: str) -> str:
         return f"Error fetching ratio summary for {ticker}: {str(e)}"
 
 
-@tool("Fetch Dividend History")
 def fetch_dividend_history(ticker: str) -> str:
     """
     Fetches the historical cash dividend payout history for a specific stock ticker.
@@ -611,7 +604,6 @@ def fetch_dividend_history(ticker: str) -> str:
         return f"Error fetching dividend history for {ticker}: {str(e)}"
 
 
-@tool("Crawl Vietstock Ratios")
 def crawl_vietstock_ratios(ticker: str) -> str:
     """
     Crawls the live overview and real-time financial ratios for a stock directly from Vietstock Finance.
@@ -710,7 +702,6 @@ def crawl_vietstock_ratios(ticker: str) -> str:
         return f"Error crawling Vietstock for {ticker}: {str(e)}"
 
 
-@tool("Crawl VNINDEX Ratios")
 def crawl_vnindex_ratios() -> str:
     """
     Crawls the live VNINDEX P/E, P/B, and Market Cap from Simplize.vn.
