@@ -170,3 +170,40 @@ result = crew.crew().kickoff(inputs={"key": "value"})
 - **The Problem**: Dumping the entire GCCP framework (~26K chars) into the manager agent's backstory bloated every single task prompt — even tasks that only needed a small subset of the framework. This wastes context window and increases hallucination risk.
 - **Architectural Fix**: Decomposed the monolithic `compile_evaluation_report` (7 steps) into 4 focused sequential tasks. Each task receives only the KB sections it needs via `task_config["description"].replace("{placeholder}", kb.property)` in `synthesizer.py`. The manager backstory is now lean (delegation rules + tool rules only). The `evaluate_feedback` revision task gets framework/criteria/market_context injected in `_build_evaluate_feedback_task()`.
 - **Pattern**: CrewAI sequential context passing carries upstream results downstream automatically. Each task can focus on its domain without re-reading the full framework.
+
+---
+
+## Migration: CrewAI → Copilot Skills (May 2026)
+
+### Decision: Full Rewrite, Not Incremental
+- Migrated from CrewAI + paid Qwen/DashScope API to GitHub Copilot/Gemini subscription
+- Full rewrite on `feat/skills-migration` branch (not incremental migration)
+- LLM brain = Copilot chat; Python = pure tool executor (no LLM orchestration code)
+
+### Architecture Pattern: Skills + CLI
+- 2 agents (stock-analyst, gatekeeper) + 6 atomic skills in `.agents/skills/`
+- Slash commands = workflow orchestration inside gatekeeper SKILL.md routing table
+- State = files on disk (no PipelineState / CrewAI Flow state)
+- All `@tool` decorators stripped from tools/ → plain Python functions
+- `src/stockiv/cli.py` provides `stockiv-collect`, `stockiv-report`, `stockiv-publish`
+
+### GCCP Rules Preserved in Skills
+All critical rules from director/synthesizer crews are now embedded in SKILL.md files:
+- Net Profit CAGR (not EPS CAGR) for Lynch PEG → in analyze-valuation SKILL.md
+- Graham checklist copied verbatim, never recalculated → in analyze-valuation SKILL.md
+- All arithmetic via `uv run python -c` → in stock-analyst + analyze-valuation SKILL.md
+- `Current Price < Target Buy Price` = BUY NOW (hard rule) → in gatekeeper + analyze-valuation
+- VNINDEX P/E/P/B copied verbatim → in analyze-valuation + gatekeeper SKILL.md
+
+### Dependency Reduction
+- Removed: crewai, crewai-tools, litellm, sentence-transformers, langtrace, langchain-core
+- 170 packages uninstalled from venv
+- Kept: vnstock, pandas, weasyprint, pymupdf4llm, fastapi, pydantic, requests
+
+### sentiment → fundamentals Dependency (Critical)
+- analyze-sentiment MUST run before analyze-fundamentals
+- Sentiment output feeds GCCP Part II qualitative layer:
+  - Lynch category cross-check vs macro regime
+  - Management flags from news as governance evidence
+  - Tailwinds/headwinds lifted directly from sentiment output
+  - Thesis invalidation signals from sentiment → red flags in fundamentals
