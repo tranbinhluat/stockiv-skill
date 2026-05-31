@@ -15,7 +15,8 @@ cp .env.example .env
 # Set BRAVE_API_KEY, DISCORD_TOKEN, DISCORD_CHANNEL_TICKER, DISCORD_CHANNEL_WEEKLY
 
 # 3. Open Copilot chat and run
-/deepdive FPT
+/deepdive-flow FPT
+/weely-flow
 ```
 
 ---
@@ -26,12 +27,6 @@ cp .env.example .env
 |---|---|
 | `/deepdive-flow FPT` | Full GCCP analysis: collect → sentiment → fundamentals → valuation → report → publish |
 | `/weekly-flow` | Weekly macro market sentiment report + Discord publish |
-| `/collect FPT` | Fetch/refresh financial data for a ticker |
-| `/sentiment FPT` | Ticker + macro sentiment analysis |
-| `/fundamentals FPT` | GCCP qualitative + quantitative analysis |
-| `/valuation FPT` | Target price and valuation verdict |
-| `/report FPT` | Compile and export report to PDF |
-| `/publish --file path.pdf --channel ticker` | Publish summary + PDF to Discord |
 
 ---
 
