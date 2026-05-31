@@ -302,7 +302,13 @@ def publish(args: list[str] | None = None) -> None:
         "--file",
         type=str,
         required=True,
-        help="Path to the markdown (or PDF) report file",
+        help="Path to the PDF report file to attach",
+    )
+    parser.add_argument(
+        "--message",
+        type=str,
+        default="",
+        help="Short summary post text to send to Discord (replaces sending the full file as text)",
     )
     parser.add_argument(
         "--channel",
@@ -313,7 +319,7 @@ def publish(args: list[str] | None = None) -> None:
     parser.add_argument(
         "--attach-pdf",
         action="store_true",
-        help="Also attach the PDF file (must exist alongside the markdown)",
+        help="(Deprecated) PDF is now always attached when --file points to a .pdf",
     )
 
     parsed = parser.parse_args(args)
@@ -333,19 +339,23 @@ def publish(args: list[str] | None = None) -> None:
         print(f"[publish] ❌ {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Read content
-    if file_path.suffix == ".md":
+    # Determine post content — prefer explicit --message, fall back to file text
+    if parsed.message:
+        content = parsed.message
+    elif file_path.suffix == ".md":
         content = file_path.read_text(encoding="utf-8")
     else:
         content = f"📎 Attached: `{file_path.name}`"
 
-    # Optional PDF attachment
+    # PDF attachment — use the file directly if it's a PDF, else look for a sibling
     pdf_path = None
-    if parsed.attach_pdf:
+    if file_path.suffix == ".pdf":
+        pdf_path = str(file_path)
+    else:
         candidate = file_path.with_suffix(".pdf")
         if candidate.exists():
             pdf_path = str(candidate)
-        else:
+        elif parsed.attach_pdf:
             print(f"[publish] ⚠️  PDF not found at {candidate}, sending text only.")
 
     sys.path.insert(0, str(ROOT / "tools"))
@@ -353,4 +363,5 @@ def publish(args: list[str] | None = None) -> None:
 
     print(f"[publish] Sending to Discord channel {channel_id} ({parsed.channel})...")
     result = send_discord_message(channel_id, content, pdf_path)
-    print(f"[publish] {result}")
+    attached = f"+ PDF attached: {Path(pdf_path).name}" if pdf_path else "(no PDF)"
+    print(f"[publish] {result} {attached}")

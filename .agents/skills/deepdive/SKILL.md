@@ -114,11 +114,16 @@ Output files:
 
 Use the `publish-discord` skill.
 
+Compose a short summary post (see `publish-discord` skill for format), then run:
+
 ```
-uv run stockiv-publish --file reports/ticker/{TICKER}_GCCP_report.md --channel ticker --attach-pdf
+uv run stockiv-publish \
+  --file reports/ticker/{TICKER}_GCCP_report.pdf \
+  --message "{composed summary}" \
+  --channel ticker
 ```
 
-Confirm: "✅ Published to Discord."
+Confirm: "✅ Published to Discord — summary post sent + PDF attached."
 
 ---
 

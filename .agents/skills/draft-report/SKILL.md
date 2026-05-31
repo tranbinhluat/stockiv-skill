@@ -52,16 +52,21 @@ From `{TICKER}_valuation.md`:
 - Phương pháp Định giá + Bảng Tính Giá Mục tiêu
 - **Khuyến nghị: MUA NGAY / CHỜ / TRÁNH** (bold, prominent)
 
-## Language Rules
+## Language Style
 
-- Write in **Vietnamese** (investment narrative tone — not literal translation)
-- Use natural Vietnamese investment vocabulary:
-  - ROE → "tỷ suất sinh lời trên vốn chủ sở hữu"
-  - Lynch PEG → "hệ số PEG theo lợi nhuận ròng"
-  - Target Buy Price → "giá mua mục tiêu"
-  - BUY NOW → "MUA NGAY"
-  - WAIT → "CHỜ"
-- Keep numbers in original format (VND, %, ratios)
+Write in **Vietnamese** as a native equity research analyst would write — not as a translation of English text.
+
+**Guiding principles:**
+- Choose terms based on how Vietnamese investment professionals use them in practice. If a term has an accepted Vietnamese form (e.g., "biên lợi nhuận gộp" for gross margin), use it. If a term is universally kept in English in Vietnamese finance (e.g., ROE, P/E, FCF), keep it as-is.
+- Use hedged but confident analyst language: "chúng tôi đánh giá rằng", "phản ánh xu hướng", "cho thấy tín hiệu tích cực". Avoid mechanical phrase-by-phrase translation.
+- Adapt idioms and metaphors contextually — the sentence should sound natural to a Vietnamese reader, not like translated text.
+- Preserve all risk language with full force — do not soften or hedge warnings that are explicit in the source analysis.
+- Keep all numbers, ratios, and units exactly as-is: VND, %, x (multiples), dates.
+
+**Decision outputs are fixed Vietnamese uppercase (non-negotiable):**
+- BUY NOW → **MUA NGAY**
+- WAIT → **CHỜ**
+- AVOID → **TRÁNH**
 
 ## PDF Export
 

@@ -5,53 +5,84 @@ description: Publish a GCCP report or weekly analysis to Discord. Use this skill
 
 # publish-discord
 
-Sends a completed report to the correct Discord channel.
+Sends a short, catchy summary post to the Discord channel and attaches the full PDF report.
 
 ## Guard: Never Publish Without Approval
 
-**Only run this skill when gatekeeper has returned APPROVED.**
+**Only run this skill when gatekeeper has returned APPROVED (deepdive) or the user has confirmed at the review gate (weekly).**
 
-If the user asks to publish without gatekeeper approval, respond:
-> "The gatekeeper must validate this report before it can be published. Run the gatekeeper validation first."
+If the user asks to publish without approval, respond:
+> "The report must be validated before publishing. Complete the gatekeeper check (deepdive) or confirm at the review gate (weekly) first."
 
 ## What This Skill Does
 
-Calls the publish CLI tool which:
-1. Reads the report markdown file
-2. Chunks the content into ≤ 1,900-character segments (Discord limit)
-3. Sends each chunk to the correct channel with a 0.5s delay between chunks
-4. Optionally attaches the PDF on the last chunk
+Compose a short, catchy summary post first, then call the CLI to send it with the PDF attached. The channel receives one clean post — not a wall of chunked markdown.
 
-## Usage
+## Step 1 — Compose the Summary Post
 
-### Ticker Report (deep dive)
+### Ticker Report (deepdive)
+
 ```
-uv run stockiv-publish --file reports/ticker/{TICKER}_GCCP_report.md --channel ticker --attach-pdf
+📊 **{TICKER} — {MUA NGAY / CHỜ / TRÁNH}**
+
+_{Hook line from the report — one sentence investment thesis}_
+
+📌 **Điểm nổi bật:**
+• Giá mục tiêu: **{value} VND** | Giá hiện tại: {value} VND ({upside}%)
+• {1-line qualitative verdict — Lynch category + moat}
+• {1-line key risk}
+
+📎 Báo cáo đầy đủ đính kèm ↑
 ```
-Routes to `DISCORD_CHANNEL_TICKER` env var.
+
+### Weekly Market Report
+
+```
+📈 **Thị trường Tuần {WW}/{YEAR} — {Tăng giá / Trung lập / Giảm giá}**
+
+_{Key regime driver in one sentence}_
+
+🔍 **3 điểm theo dõi tuần tới:**
+1. {catalyst 1}
+2. {catalyst 2}
+3. {catalyst 3}
+
+📎 Báo cáo đầy đủ đính kèm ↑
+```
+
+## Step 2 — Publish via CLI
+
+Pass the composed summary as `--message` and attach the PDF:
+
+### Ticker Report
+```
+uv run stockiv-publish \
+  --file reports/ticker/{TICKER}_GCCP_report.pdf \
+  --message "{composed summary}" \
+  --channel ticker
+```
 
 ### Weekly Market Report
 ```
-uv run stockiv-publish --file reports/market/{YEAR}_W{WW}_weekly_report.md --channel weekly
+uv run stockiv-publish \
+  --file data/reports/market/{YEAR}_W{WW}_weekly_report.pdf \
+  --message "{composed summary}" \
+  --channel weekly
 ```
-Routes to `DISCORD_CHANNEL_WEEKLY` env var.
+
+The CLI sends the `--message` text as the Discord post body and attaches the PDF file.
 
 ## Environment Variables Required
 
-- `DISCORD_TOKEN` — bot token for the Discord bot
+- `DISCORD_TOKEN` — bot token
 - `DISCORD_CHANNEL_TICKER` — channel ID for ticker reports
-- `DISCORD_CHANNEL_WEEKLY` — channel ID for weekly market reports
+- `DISCORD_CHANNEL_WEEKLY` — channel ID for weekly reports
 - `DISCORD_CHANNEL_DEFAULT` — fallback channel
-
-If any of these are missing, the CLI will report the error clearly. Do not attempt to infer channel IDs.
 
 ## Output to User
 
 ```
-✅ Report published to Discord:
-Channel: {channel_type} ({channel_id})
-Chunks sent: {n}
-PDF attached: {yes/no}
+✅ Published to Discord:
+Channel: {channel_type}
+Summary post sent + PDF attached: {filename}
 ```
-
-If an error occurs, the CLI will report which chunks failed and retry instructions.

@@ -60,11 +60,11 @@ Compile the macro sentiment into a formatted weekly report:
 - Regime verdict: Bullish / Neutral / Bearish + rationale
 - Top 3 catalysts to watch next week
 
-Write to: `reports/market/{YEAR}_W{WW}_weekly_report.md`
+Write to: `data/reports/market/{YEAR}_W{WW}_weekly_report.md`
 
 Then export to PDF:
 ```
-uv run stockiv-report --input reports/market/{YEAR}_W{WW}_weekly_report.md --format pdf
+uv run stockiv-report --input data/reports/market/{YEAR}_W{WW}_weekly_report.md --format pdf
 ```
 
 ---
@@ -85,7 +85,7 @@ Top catalysts next week:
 2. {catalyst 2}
 3. {catalyst 3}
 
-Full report: reports/market/{YEAR}_W{WW}_weekly_report.md
+Full report: data/reports/market/{YEAR}_W{WW}_weekly_report.md
 
 Publish to Discord? Reply "yes" / "publish" to confirm, or give feedback to revise.
 ```
@@ -96,11 +96,16 @@ Publish to Discord? Reply "yes" / "publish" to confirm, or give feedback to revi
 
 ## Step 4 — Publish to Discord
 
-```
-uv run stockiv-publish --file reports/market/{YEAR}_W{WW}_weekly_report.md --channel weekly
-```
+Use the `publish-discord` skill.
 
-Routes to `DISCORD_CHANNEL_WEEKLY` env var.
+Compose a short summary post (see `publish-discord` skill for format), then run:
+
+```
+uv run stockiv-publish \
+  --file data/reports/market/{YEAR}_W{WW}_weekly_report.pdf \
+  --message "{composed summary}" \
+  --channel weekly
+```
 
 ---
 
