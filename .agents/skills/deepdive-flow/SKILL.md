@@ -1,5 +1,5 @@
 ---
-name: deepdive
+name: deepdive-flow
 description: Run a full GCCP deep-dive stock analysis for a Vietnamese ticker. Use this skill whenever the user types /deepdive, /deepdive <TICKER>, "phân tích sâu", "deep dive", "analyze stock", or asks for a complete stock analysis report on any Vietnamese ticker symbol (e.g. FPT, MWG, VCB, HPG).
 ---
 

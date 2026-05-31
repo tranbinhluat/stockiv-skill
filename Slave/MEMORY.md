@@ -15,16 +15,15 @@
 
 **Current Project: StockIV**
 - Location: `~/Documents/projects/stock-agent`
-- Framework: CrewAI 1.9.3 for AI agent orchestration
-- LLM: Qwen models via DashScope (qwen3.5-plus, qwen3-coder-plus, qwen3-max, qwen2.5-vl-72b-instruct)
-- Structure: Proper Python package under `src/stockiv/`
-- Entry point: `uv run stockiv-run` or `python -m stockiv`
+- Framework: GitHub Copilot Skills (migrated from CrewAI May 2026)
+- LLM: GitHub Copilot / Gemini subscription (zero extra API cost)
+- Structure: Python package under `src/stockiv/` + AI agents/skills under `.agents/`
+- Entry points: `stockiv-collect`, `stockiv-report`, `stockiv-publish` (via `uv run`)
 
 **Key Commands (use uv always):**
 ```bash
 uv sync              # Install dependencies
 uv add <pkg>         # Add dependency
-uv run stockiv-run   # Run the crew
 uv run pre-commit run --all-files  # Run security hooks
 ```
 
@@ -32,40 +31,28 @@ uv run pre-commit run --all-files  # Run security hooks
 
 ## Project Structure & Architecture
 
-**6 StockIV Crews:**
-- collector - Data gathering from APIs (vnstock, Brave Search, PDF reports)
-- sentiment_analyst - Macro and ticker-specific sentiment analysis
-- synthesizer - GCCP framework evaluation engine
-- director - Quality control & anomaly detection
-- reporter - Translation, PDF export, Discord publishing
-- orchestrator - User request classification & routing
+**2 Agents (`.agents/agents/`):**
+- `stock-analyst.md` — GCCP analysis specialist
+- `gatekeeper.md` — Quality validator (8-check gate, max 5 revision loop)
+
+**8 Skills (`.agents/skills/`):**
+- `deepdive-flow` — `/deepdive-flow <TICKER>` full pipeline orchestration
+- `weekly-flow` — `/weekly-flow` macro report pipeline
+- `collect-data` — financials, annual report, macro context
+- `analyze-sentiment` — macro sentiment + synthesize-recent-trends + ticker sentiment
+- `analyze-fundamentals` — GCCP Parts II + III + forensic checks
+- `analyze-valuation` — GCCP Parts IV + V + target price
+- `draft-report` — compile + PDF export (PHÓNG TÁC translation)
+- `publish-discord` — summary post + PDF attachment
 
 **Directory Roles:**
-- `src/stockiv/crews/` - Location for individual crews.
-- `tools/` strictly reserved for custom CrewAI `@tool` methods (e.g., `vnstock_tools.py`).
-- `tests/` strictly reserved for validation scripts (e.g., `test_collector.py`). Tests should implement and demonstrate CrewAI `Flow` constructs.
-- `scripts/` strictly reserved for developer utilities (e.g., `view_logs.py`).
-- `logs/` directory stores execution logs in JSONL format.
-- `src/stockiv/knowledge/` contains markdown files summarizing our strategies (framework, criteria, market context, evidence standard).
-
-**Crew Architecture Pattern:**
-```python
-# Each crew follows this structure:
-src/stockiv/crews/<crew_name>/
-├── <crew_name>.py        # @CrewBase class
-├── README.md             # Visual doc with Mermaid diagrams of data flow
-├── config/
-│   ├── agents.yaml       # role/goal/backstory
-│   └── tasks.yaml        # description/expected_output
-
-# Usage:
-from stockiv.crews import CollectorCrew
-crew = CollectorCrew()
-result = crew.crew().kickoff(inputs={"key": "value"})
-
-# Critical Rule: All Crews MUST explicitly enable `tracing=True`
-# in the @crew initialization so the user knows what's happening.
-```
+- `.agents/agents/` — plain markdown agent personas, NO YAML frontmatter
+- `.agents/skills/` — SKILL.md files with YAML frontmatter (`name:`, `description:`)
+- `tools/` — pure Python helpers (no LLM orchestration, no `@tool` decorators)
+- `src/stockiv/cli.py` — CLI entry points: `stockiv-collect`, `stockiv-report`, `stockiv-publish`
+- `src/stockiv/knowledge/` — GCCP framework docs read by AI skills
+- `logs/` — execution logs in JSONL format
+- `memory/` — daily progress logs
 
 ## Security & Workflow
 

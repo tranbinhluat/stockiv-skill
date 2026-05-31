@@ -1,5 +1,5 @@
 ---
-name: weekly
+name: weekly-flow
 description: Run a weekly macro market sentiment report for Vietnam and publish to Discord. Use this skill whenever the user types /weekly, "weekly report", "báo cáo tuần", "macro weekly", "thị trường tuần này", or asks for a weekly market summary or sentiment update.
 ---
 
