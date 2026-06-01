@@ -6,10 +6,16 @@ description: Run a full GCCP deep-dive stock analysis for a Vietnamese ticker. U
 # /deepdive — Full GCCP Analysis Pipeline
 
 > **Agents active during this workflow:**
-> - `.agents/agents/stock-analyst.md` — GCCP analyst persona (Steps 1–4, 6)
-> - `.agents/agents/gatekeeper.md` — quality validator (Step 5)
+> - `Stock Analyst` — runs all analysis and reporting tasks (Steps 1–4, 6, 7)
+> - `Gatekeeper Reviewer` — validates reports before draft compilation (Step 5)
 
 Runs the complete Good Company, Cheap Price (GCCP) analysis for a single Vietnamese stock ticker, from raw data collection through to a published Discord report.
+
+## Agent Roles
+
+Use this skill through custom agents:
+- **Stock Analyst**: Executes steps 1–4 sequentially inline, then calls the **Gatekeeper Reviewer** for Step 5 validation. Once approved, it proceeds to compile the report (Step 6) and publish to Discord (Step 7).
+- **Gatekeeper Reviewer**: Triggered as a subagent by the Stock Analyst in Step 5 to review outputs against the 8-point quality checklist.
 
 ## Extract the Ticker
 
@@ -21,7 +27,7 @@ Once you have `{TICKER}` (uppercase), proceed through steps 1–7 in order. **Do
 
 ## Step 1 — Collect Data
 
-Use the `collect-data` skill.
+Run the collection step inline (refer to the `collect-data` skill).
 
 ```
 uv run stockiv-collect --ticker {TICKER} --type all
@@ -38,7 +44,7 @@ If output files already exist and are fresh (< 7 days), the CLI will skip re-fet
 
 ## Step 2 — Analyze Sentiment
 
-Use the `analyze-sentiment` skill.
+Run the sentiment analysis inline (refer to the `analyze-sentiment` skill).
 
 The skill will first check if `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md` already exists this week. If it does, it skips macro collection and proceeds directly to ticker sentiment (Step 3 of that skill).
 
@@ -57,7 +63,7 @@ Outputs:
 
 ## Step 3 — Analyze Fundamentals
 
-Use the `analyze-fundamentals` skill.
+Run the fundamentals analysis inline (refer to the `analyze-fundamentals` skill).
 
 **This step requires both Step 1 and Step 2 to be complete.** It reads:
 - `data/processed/synthesizer/{TICKER}/financial_summary.md`
@@ -70,7 +76,7 @@ Performs GCCP Parts II + III. Saves:
 
 ## Step 4 — Analyze Valuation
 
-Use the `analyze-valuation` skill.
+Run the valuation analysis inline (refer to the `analyze-valuation` skill).
 
 Reads:
 - `data/processed/synthesizer/{TICKER}/financial_summary.md`
@@ -83,7 +89,7 @@ Performs GCCP Parts IV + V. Saves:
 
 ## Step 5 — Gatekeeper Validation
 
-Apply the `.agents/agents/gatekeeper.md` agent persona.
+Invoke the `Gatekeeper Reviewer` subagent (the custom agent in `.github/agents/gatekeeper-reviewer.agent.md`).
 
 Submit all analysis files for the 8-check validation. Track the attempt count — **maximum 5 revision attempts** before escalating to the user.
 
@@ -105,7 +111,7 @@ Submit all analysis files for the 8-check validation. Track the attempt count �
 
 ## Step 6 — Draft Report
 
-Use the `draft-report` skill.
+Run report drafting inline (refer to the `draft-report` skill).
 
 Compiles all analysis into a Vietnamese GCCP report, then exports PDF:
 
@@ -121,7 +127,7 @@ Output files:
 
 ## Step 7 — Publish to Discord
 
-Use the `publish-discord` skill.
+Run Discord publishing inline (refer to the `publish-discord` skill).
 
 Compose a short summary post (see `publish-discord` skill for format), then run:
 

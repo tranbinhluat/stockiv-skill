@@ -5,9 +5,14 @@ description: Run a weekly macro market sentiment report for Vietnam and publish 
 
 # /weekly — Weekly Macro Market Sentiment Report
 
-> **Agent active during this workflow:** `.agents/agents/stock-analyst.md`
+> **Agent active during this workflow:** `Stock Analyst`
 
 Runs the weekly Vietnam market sentiment pipeline: macro data collection → sentiment analysis → report → Discord publish.
+
+## Agent Roles
+
+Use this skill through custom agents:
+- **Stock Analyst**: Executes all steps sequentially inline (macro data collection, sentiment analysis, report drafting, human review, and Discord publishing).
 
 ## Steps
 
@@ -18,6 +23,8 @@ Execute in order. Do not skip steps.
 ---
 
 ## Step 1 — Collect Macro Data
+
+Run macro data collection inline (refer to the `collect-data` skill).
 
 ```
 uv run stockiv-collect --macro
@@ -35,7 +42,7 @@ If the file is fresh (< 7 days), the CLI skips automatically. Add `--force` for 
 
 ## Step 2 — Analyze Sentiment (Macro Only)
 
-Use the `analyze-sentiment` skill — macro mode (no ticker).
+Run sentiment analysis inline in macro mode (refer to the `analyze-sentiment` skill).
 
 The skill will first check if `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md` already exists this week. **If it does, skip to Step 3** — no need to re-run sentiment analysis.
 
@@ -60,7 +67,7 @@ Outputs:
 
 ## Step 3 — Draft Weekly Report
 
-Use the `draft-report` skill — macro/weekly mode.
+Run report drafting inline in macro/weekly mode (refer to the `draft-report` skill).
 
 Compile the macro sentiment into a formatted weekly report:
 - Header: `Báo cáo Thị trường Tuần {WW}/{YEAR}`
@@ -104,7 +111,7 @@ Publish to Discord? Reply "yes" / "publish" to confirm, or give feedback to revi
 
 ## Step 4 — Publish to Discord
 
-Use the `publish-discord` skill.
+Run Discord publishing inline (refer to the `publish-discord` skill).
 
 Compose a short summary post (see `publish-discord` skill for format), then run:
 

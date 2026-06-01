@@ -56,7 +56,20 @@ uv run pre-commit run --all-files
 
 Two agents + eight skills. No orchestration framework, no paid API.
 
+Custom subagent orchestration is now configured via workspace custom agents in `.github/agents`.
+
 ```
+.github/agents/
+├── deepdive-coordinator.agent.md   # Orchestrates deep-dive via worker subagents
+├── weekly-coordinator.agent.md     # Orchestrates weekly macro flow
+├── data-collector.agent.md
+├── sentiment-analyst.agent.md
+├── fundamentals-analyst.agent.md
+├── valuation-analyst.agent.md
+├── gatekeeper-reviewer.agent.md
+├── report-drafter.agent.md
+└── discord-publisher.agent.md
+
 .agents/agents/stock-analyst.md   — GCCP analysis specialist
 .agents/agents/gatekeeper.md      — quality validator (8-check gate)
 ```
@@ -78,6 +91,13 @@ collect-data → analyze-sentiment → analyze-fundamentals → analyze-valuatio
                                          ↑ (sentiment feeds fundamentals)
 → gatekeeper (8-check gate, max 5 revisions) → draft-report → publish-discord
 ```
+
+### Subagent controls
+
+- Coordinators use explicit worker allowlists (`agents` frontmatter)
+- Internal workers set `user-invocable: false`
+- Sensitive workers (`Gatekeeper Reviewer`, `Discord Publisher`) set `disable-model-invocation: true`
+- Nested subagents are disabled via workspace setting (`chat.subagents.allowInvocationsFromSubagents: false`)
 
 ---
 

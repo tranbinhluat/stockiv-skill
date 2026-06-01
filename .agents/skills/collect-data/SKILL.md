@@ -23,9 +23,9 @@ Runs CLI tools to populate the data files that all downstream analysis skills re
 - Current market snapshot: live price, P/E, P/B, VNINDEX P/E + P/B
 - **Peer ratios** — identify 1-2 top domestic competitors in the same industry and pre-load their ratio summaries for downstream peer comparisons
 
-**Step 2 — Context (news)** — calls `uv run stockiv-collect --ticker <TICKER> --type context`:
-- Brave Search: recent earnings news, management statements, industry developments
-- Run `uv run python -c "from tools.brave_tools import clean_expired_cache; clean_expired_cache()"` first to purge stale cache (> 14 days) before new searches
+**Step 2 — Context (news)** — Delegate to the `Market Scout` subagent:
+- Prompt the `Market Scout` subagent to dynamically query, scan, and investigate news for `<TICKER>`, then save the results to `data/raw/context/{TICKER}_ticker_context.md`.
+- Market Scout will clean the search cache, run broad searches, analyze the results, and run follow-up investigations on management shifts, margin pressures, related-party dealings, or regulatory risks.
 
 **Step 3 — Annual Reports** — calls `uv run stockiv-collect --ticker <TICKER> --type annual-report`:
 - Search for and download the most recent annual report PDF for `<TICKER>`
@@ -39,13 +39,13 @@ Runs CLI tools to populate the data files that all downstream analysis skills re
 
 ### For Macro Market (`/collect --macro` or before `/weekly`)
 
-Calls `uv run stockiv-collect --macro`:
-- Run `clean_expired_cache` first (see above)
-- VNINDEX snapshot (P/E, P/B, market cap)
-- Brave Search: Vietnam macro news, GDP, inflation, Fed impact, investor flows (2 targeted searches — broad then focused on top 1-2 storylines)
+Delegate to the `Market Scout` subagent:
+- Prompt the `Market Scout` subagent to collect broad market news and VNINDEX context and save to `data/raw/context/market_context.md`.
+- (The scout can run `uv run stockiv-collect --macro` to populate the basic VNINDEX snapshot and combine it with dynamic macro storylines).
 
 **Output file**:
 - `data/raw/context/market_context.md` — used by analyze-sentiment for macro analysis
+
 
 ## Freshness Check
 

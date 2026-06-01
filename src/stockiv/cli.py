@@ -47,6 +47,56 @@ def _ensure_dirs(*dirs: Path) -> None:
         d.mkdir(parents=True, exist_ok=True)
 
 
+def _get_peers_for_ticker(ticker: str) -> list[str]:
+    """Determine 1-2 top competitors for a given ticker."""
+    peer_map = {
+        "FPT": ["CMG", "CTR"],
+        "MWG": ["FRT", "DGW"],
+        "PNJ": ["MWG"],
+        "HPG": ["HSG", "NKG"],
+        "VHM": ["NLG", "KDH"],
+        "NLG": ["KDH", "VHM"],
+        "KDH": ["NLG", "VHM"],
+        "VCB": ["BID", "CTG"],
+        "TCB": ["MBB", "ACB"],
+        "ACB": ["MBB", "TCB"],
+        "MBB": ["TCB", "ACB"],
+        "CTG": ["BID", "VCB"],
+        "BID": ["CTG", "VCB"],
+        "MSN": ["SAB"],
+        "GAS": ["PLX"],
+        "GMD": ["HAH"],
+        "HAH": ["GMD"],
+    }
+    
+    ticker_upper = ticker.upper()
+    if ticker_upper in peer_map:
+        return peer_map[ticker_upper]
+        
+    import sqlite3
+    db_path = ROOT / "data" / "stockiv.db"
+    if db_path.exists():
+        try:
+            conn = sqlite3.connect(str(db_path))
+            cursor = conn.cursor()
+            cursor.execute("SELECT industry FROM company_overview WHERE ticker = ?", (ticker_upper,))
+            row = cursor.fetchone()
+            if row and row[0]:
+                industry = row[0]
+                cursor.execute(
+                    "SELECT ticker FROM company_overview WHERE industry = ? AND ticker != ? LIMIT 2",
+                    (industry, ticker_upper)
+                )
+                peers = [r[0] for r in cursor.fetchall() if r[0]]
+                conn.close()
+                return peers
+            conn.close()
+        except Exception:
+            pass
+            
+    return []
+
+
 # ─── collect ─────────────────────────────────────────────────────────────────
 
 
@@ -109,6 +159,17 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
             summary_path.write_text("\n---\n\n".join(sections), encoding="utf-8")
             print(f"[collect] ✅ Saved: {summary_path}")
 
+            # ── Auto-Fetch Peer Financials ────────────────────────────────────
+            peers = _get_peers_for_ticker(ticker)
+            if peers:
+                print(f"[collect] Auto-fetching financials for peers: {', '.join(peers)}")
+                for peer in peers:
+                    try:
+                        # Fetch peer financials in background/sub-call (non-force to avoid rate limits)
+                        _collect_ticker(peer, data_type="financials", force=False)
+                    except Exception as e:
+                        print(f"[collect] ⚠️ Failed to auto-fetch peer {peer}: {e}")
+
     # ── Context (news) ────────────────────────────────────────────────────────
     if data_type in ("context", "all"):
         if not force and _is_fresh(context_path):
@@ -136,6 +197,56 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
 
             context_path.write_text("\n---\n\n".join(context_parts), encoding="utf-8")
             print(f"[collect] ✅ Saved: {context_path}")
+
+    # ── Annual Report ─────────────────────────────────────────────────────────
+    if data_type in ("annual-report", "all"):
+        print(f"[collect] Checking annual report for {ticker}...")
+        sys.path.insert(0, str(ROOT / "tools"))
+        from report_finder_tools import search_annual_report_pdf, download_and_convert_pdf
+        import json
+
+        current_year = str(datetime.now().year)
+        try:
+            search_res = search_annual_report_pdf(ticker, current_year)
+            urls = json.loads(search_res)
+            if urls and len(urls) > 0:
+                # Find first pdf/zip URL
+                target_url = None
+                for item in urls:
+                    url = item.get("url", "")
+                    if any(url.lower().endswith(ext) for ext in [".pdf", ".zip"]) or "Baocaothuongnien" in url:
+                        target_url = url
+                        break
+                if not target_url:
+                    target_url = urls[0].get("url", "")
+
+                # Determine the target year from URL or fallback
+                import re
+                year_match = re.search(r"(20\d{2})", target_url)
+                year = year_match.group(1) if year_match else str(int(current_year) - 1)
+
+                md_dir = DATA_DIR / "processed" / "annual_reports" / ticker
+                _ensure_dirs(md_dir)
+                md_path = md_dir / f"{ticker}_annual_report_{year}.md"
+                pdf_dir = DATA_DIR / "raw" / "annual_reports"
+
+                if not force and md_path.exists():
+                    print(f"[collect] Annual report markdown is fresh: {md_path}. Skipping.")
+                else:
+                    print(f"[collect] Downloading & converting annual report from {target_url}...")
+                    res_dl = download_and_convert_pdf(target_url, ticker, str(md_path), str(pdf_dir))
+                    print(f"[collect] {res_dl}")
+            else:
+                print(f"[collect] No annual report URLs found for {ticker}.")
+                md_dir = DATA_DIR / "processed" / "annual_reports" / ticker
+                _ensure_dirs(md_dir)
+                (md_dir / "ANNUAL_REPORT_NOT_AVAILABLE").write_text("No annual report URL could be found.")
+                print(f"[collect] Logged ANNUAL_REPORT_NOT_AVAILABLE for {ticker}")
+        except Exception as e:
+            print(f"[collect] ⚠️ Error collecting annual report: {e}")
+            md_dir = DATA_DIR / "processed" / "annual_reports" / ticker
+            _ensure_dirs(md_dir)
+            (md_dir / "ANNUAL_REPORT_NOT_AVAILABLE").write_text(f"Error fetching annual report: {e}")
 
 
 def _collect_macro(force: bool) -> None:
@@ -194,7 +305,7 @@ def collect(args: list[str] | None = None) -> None:
     parser.add_argument(
         "--type",
         dest="data_type",
-        choices=["financials", "context", "all"],
+        choices=["financials", "context", "annual-report", "all"],
         default="all",
         help="Type of data to collect (default: all)",
     )
