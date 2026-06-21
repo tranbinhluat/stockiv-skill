@@ -15,10 +15,10 @@
 | 2 | Blue/green: copy + validate `collect-data` | ✅ Done | diff confirmed IDENTICAL |
 | 3 | Bulk migrate remaining 7 skills | ✅ Done | All 7 diff-confirmed IDENTICAL |
 | 4 | Migrate agent definitions | ✅ Done | Copied (not moved) all 3 agents; originals intact in .github/agents/ |
-| 5 | Create `references/skill-routing.md` | ⬜ Not started | |
-| 6 | Create `references/knowledge-map.md` | ⬜ Not started | |
-| 7 | Create `skills/_template/SKILL.md` | ⬜ Not started | |
-| 8 | Update `AGENTS.md` routing table | ⬜ Not started | |
+| 5 | Create `references/skill-routing.md` | ✅ Done | 8 skills + compare-flow [planned] entry |
+| 6 | Create `references/knowledge-map.md` | ✅ Done | Dependency table + Sprint 2 parallelism note |
+| 7 | Create `skills/_template/SKILL.md` | ✅ Done | All standard sections with {PLACEHOLDER} comments |
+| 8 | Update `AGENTS.md` routing table | ✅ Done | Replaced prose with structured routing table |
 | 9 | Write compare-flow design note | ⬜ Not started | |
 | 10 | Archive flat `.agents/skills/` | ⬜ Not started | |
 | 11 | Write `docs/sprint-1/done.md` | ⬜ Not started | |
