@@ -9,13 +9,41 @@ Answers the question: **"Is this a good company?"** using GCCP Parts II (qualita
 
 ## Depends On
 
+**Quant phase (Part III only):**
 - `collect-data` — must have run (`financial_summary.md` required)
+- No sentiment dependency — can run immediately after collect-data
+
+**Qual phase (Part II — default when running standalone):**
+- `collect-data` — must have run
 - `analyze-sentiment` — must have run (`{TICKER}_sentiment.md` required)
 
 ## Input Files
 
+**Always required:**
 - `data/processed/synthesizer/{TICKER}/financial_summary.md` — quantitative baseline
+
+**Required for Full or Qual-only mode:**
 - `data/processed/sentiment/ticker/{TICKER}/{YEAR}_W{WW}_sentiment.md` — qualitative context
+  (Use most recent weekly file — check `data/processed/sentiment/ticker/{TICKER}/` for latest `_W{WW}_` file)
+
+**Intermediate file (Quant-only output, Qual-only input):**
+- `data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals_quant.md`
+
+## Execution Mode
+
+This skill can be called in two modes:
+
+### Mode A — Full (default for standalone `/fundamentals <TICKER>`)
+Runs Part III first, then Part II. Requires both `financial_summary.md` and `{TICKER}_sentiment.md`.
+
+### Mode B — Quant-only (called by `deepdive-flow` in parallel with sentiment)
+Runs Part III ONLY. Requires only `financial_summary.md`. Does NOT output `{TICKER}_fundamentals.md` — outputs `{TICKER}_fundamentals_quant.md` as intermediate file.
+Triggered when: deepdive-flow detects macro sentiment cache exists and calls with `[quant-only]` flag.
+
+### Mode C — Qual-only (called by `deepdive-flow` after quant + sentiment both complete)
+Runs Part II ONLY, reading `{TICKER}_fundamentals_quant.md` + `{TICKER}_sentiment.md`.
+Merges outputs into final `{TICKER}_fundamentals.md`.
+Triggered when: deepdive-flow has both `{TICKER}_fundamentals_quant.md` and `{TICKER}_sentiment.md`.
 
 ## GCCP Part II — Qualitative Analysis (sentiment-informed)
 
@@ -120,7 +148,11 @@ For each check, report:
 
 ## Output File
 
-Save to: `data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals.md`
+**Full mode / Qual-only mode (final output):**
+`data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals.md`
+
+**Quant-only mode (intermediate output):**
+`data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals_quant.md`
 
 Structure:
 ```markdown

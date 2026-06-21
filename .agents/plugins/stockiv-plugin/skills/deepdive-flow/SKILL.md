@@ -43,22 +43,52 @@ Wait for the subagent to finish. Confirm these outputs exist before proceeding t
 
 ---
 
-## Step 2 — Analyze Sentiment
+## Step 2 — Parallel Analysis (Sentiment + Quant Fundamentals)
 
-Run the sentiment analysis inline (refer to the `analyze-sentiment` skill).
+Check if this week's macro sentiment cache exists:
+```bash
+ls data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md 2>/dev/null
+```
 
-The skill will first check if `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md` already exists this week. If it does, it skips macro collection and proceeds directly to ticker sentiment (Step 3 of that skill).
+**If macro cache EXISTS (common case — weekly-flow ran this week):**
 
-Required files:
-- `data/raw/context/market_context.md` (run `uv run stockiv-collect --macro` first if missing)
-- `data/raw/context/{TICKER}_ticker_context.md`
+Run Step 2A and Step 2B in parallel — spawn both as concurrent subagents:
 
-Outputs:
-- `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md`
-- `data/processed/sentiment/market/{YEAR}_overall_macro_sentiment.md`
+**Step 2A (parallel) — Ticker Sentiment:**
+Run `analyze-sentiment` in ticker-only mode (skip macro collection since cache exists).
+Output: `data/processed/sentiment/ticker/{TICKER}/{YEAR}_W{WW}_sentiment.md`
+
+**Step 2B (parallel) — Quant Fundamentals (Part III only):**
+Run `analyze-fundamentals` in `[quant-only]` mode.
+Reads only: `financial_summary.md`
+Output: `data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals_quant.md`
+
+**Wait for BOTH 2A and 2B to complete.**
+
+Then run Step 2C (sequential — requires both 2A and 2B):
+
+**Step 2C — Qual Fundamentals (Part II only):**
+Run `analyze-fundamentals` in `[qual-only]` mode.
+Reads: `{TICKER}_fundamentals_quant.md` + `{TICKER}_sentiment.md`
+Output: `data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals.md`
+
+---
+
+**If macro cache DOES NOT EXIST (first run of the week):**
+
+Run sequentially:
+1. `analyze-sentiment` (full — collects macro + ticker sentiment)
+2. `analyze-fundamentals` (full mode — both Part III and Part II)
+
+This path is slower but produces identical output to the parallel path.
+
+---
+
+After Step 2 completes (either path), confirm both outputs exist:
 - `data/processed/sentiment/ticker/{TICKER}/{YEAR}_W{WW}_sentiment.md`
+- `data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals.md`
 
-**Wait for completion.** Sentiment output is required by Step 3.
+Then proceed to Step 3 (Analyze Valuation — previously Step 4).
 
 ---
 
@@ -148,7 +178,7 @@ Confirm: "✅ Published to Discord — summary post sent + PDF attached."
 After each step, show a brief status line:
 ```
 [1/7] ✅ Data collected for {TICKER}
-[2/7] ✅ Sentiment analyzed — macro: {regime}, ticker: {sentiment}
+[2/7] ✅ Sentiment + Fundamentals complete (parallel) — macro: {regime}, quality: {verdict}
 [3/7] ✅ Fundamentals complete — {quality verdict}
 [4/7] ✅ Valuation complete — {BUY NOW / WAIT / AVOID}
 [5/7] ✅ Gatekeeper: APPROVED
