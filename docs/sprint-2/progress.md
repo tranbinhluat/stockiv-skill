@@ -16,7 +16,7 @@
 | 5 | Fix sentiment path in `skill-routing.md` + `knowledge-map.md` | ✅ Done | Updated to versioned `{TICKER}/{YEAR}_W{WW}_sentiment.md` path |
 | 6 | Register `compare-flow` in `skill-routing.md` | ✅ Done | Moved from Planned to Registered with full fields |
 | 7 | Update `AGENTS.md` routing table | ✅ Done | Added `/compare TICKER1 TICKER2` row |
-| 8 | Write `docs/sprint-2/done.md` | ⬜ Not started | |
+| 8 | Write `docs/sprint-2/done.md` | ✅ Done | |
 
 ---
 
