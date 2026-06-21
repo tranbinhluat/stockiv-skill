@@ -14,7 +14,7 @@
 | 1 | Create `stockiv-plugin/plugin.json` | ✅ Done | `{ "name": "stockiv-plugin", "version": "1.0.0" }` |
 | 2 | Blue/green: copy + validate `collect-data` | ✅ Done | diff confirmed IDENTICAL |
 | 3 | Bulk migrate remaining 7 skills | ✅ Done | All 7 diff-confirmed IDENTICAL |
-| 4 | Migrate agent definitions | ⬜ Not started | |
+| 4 | Migrate agent definitions | ✅ Done | Copied (not moved) all 3 agents; originals intact in .github/agents/ |
 | 5 | Create `references/skill-routing.md` | ⬜ Not started | |
 | 6 | Create `references/knowledge-map.md` | ⬜ Not started | |
 | 7 | Create `skills/_template/SKILL.md` | ⬜ Not started | |
