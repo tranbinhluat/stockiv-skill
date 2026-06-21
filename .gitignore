@@ -36,3 +36,5 @@ data/raw/
 
 *.png
 data/stockiv.db
+
+.antigravitycli

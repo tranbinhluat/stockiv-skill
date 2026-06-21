@@ -27,18 +27,19 @@ Once you have `{TICKER}` (uppercase), proceed through steps 1–7 in order. **Do
 
 ## Step 1 — Collect Data
 
-Run the collection step inline (refer to the `collect-data` skill).
+Perform the collection in two parts:
+1. **Quantitative & Annual Reports**: Run these commands inline to fetch financials (which automatically fetches peers) and reports:
+   ```bash
+   uv run stockiv-collect --ticker {TICKER} --type financials
+   uv run stockiv-collect --ticker {TICKER} --type annual-report
+   ```
+2. **Dynamic News Context**: Invoke the `Market Scout` subagent using the `agent` tool to gather the news context. Provide this prompt:
+   "Perform dynamic news context scouting for {TICKER}. Clean the cache, run broad searches (earnings, management, industry), scan results for key developments (CEO resignations, margins, related-party transactions, debt), and execute 1-2 targeted follow-up queries to deep-dive. Synthesize your findings and save the output directly to data/raw/context/{TICKER}_ticker_context.md."
 
-```
-uv run stockiv-collect --ticker {TICKER} --type all
-```
-
-If output files already exist and are fresh (< 7 days), the CLI will skip re-fetching automatically. If you suspect stale data, add `--force`.
-
-**Wait for completion.** Confirm:
-- `data/processed/synthesizer/{TICKER}/financial_summary.md` exists
-- `data/raw/context/{TICKER}_ticker_context.md` exists
-- `data/processed/annual_reports/{TICKER}/` — note whether annual report was found or `ANNUAL_REPORT_NOT_AVAILABLE`
+Wait for the subagent to finish. Confirm these outputs exist before proceeding to Step 2:
+- `data/processed/synthesizer/{TICKER}/financial_summary.md`
+- `data/raw/context/{TICKER}_ticker_context.md`
+- `data/processed/annual_reports/{TICKER}/` — check if annual report was saved or `ANNUAL_REPORT_NOT_AVAILABLE` is written.
 
 ---
 

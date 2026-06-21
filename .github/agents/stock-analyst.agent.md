@@ -5,10 +5,9 @@ tools: ["execute", "read", "search", "agent"]
 agents: ["Gatekeeper Reviewer", "Market Scout"]
 model:
   [
-    "GPT-5 (copilot)",
-    "Claude Sonnet 4.5 (copilot)",
-    "Gemini 2.5 Pro (copilot)",
-    "Gemini 3.5 Flash (Medium)"
+    "Claude Sonnet 4.6 (copilot)",
+    "Gemini 3.1 Pro (Preview) (copilot)",
+    "GPT-5.5 (copilot)"
   ]
 ---
 

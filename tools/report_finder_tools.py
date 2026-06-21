@@ -2,6 +2,10 @@ import os
 import json
 import requests
 import pymupdf4llm
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 def search_annual_report_pdf(ticker: str, year: str) -> str:

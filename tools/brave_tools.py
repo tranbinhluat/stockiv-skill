@@ -3,6 +3,10 @@ import json
 import re
 from datetime import datetime
 import requests
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 def search_market_context(query: str, days_back: int = 7) -> str:

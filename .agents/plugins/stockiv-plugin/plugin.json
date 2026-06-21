@@ -1,0 +1,5 @@
+{
+  "name": "stockiv-plugin",
+  "description": "GCCP stock analysis toolkit for Vietnamese market: deep-dive analysis, weekly macro reports, sentiment analysis, valuation, and Discord publishing.",
+  "version": "1.0.0"
+}

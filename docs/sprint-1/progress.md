@@ -11,9 +11,9 @@
 |---|------|--------|-------|
 | P1 | Path Audit (I2) | ✅ Done | All data/ paths independent of .agents/. Discrepancy found in sentiment path (simplified vs versioned) — Sprint 2 item |
 | P2 | Agent Location Audit (I3) | ✅ Done | All 3 agents confirmed in .github/agents/ only. .agents/agents/ does not exist |
-| 1 | Create `stockiv-plugin/plugin.json` | ⬜ Not started | |
-| 2 | Blue/green: copy + validate `collect-data` | ⬜ Not started | |
-| 3 | Bulk migrate remaining 7 skills | ⬜ Not started | |
+| 1 | Create `stockiv-plugin/plugin.json` | ✅ Done | `{ "name": "stockiv-plugin", "version": "1.0.0" }` |
+| 2 | Blue/green: copy + validate `collect-data` | ✅ Done | diff confirmed IDENTICAL |
+| 3 | Bulk migrate remaining 7 skills | ✅ Done | All 7 diff-confirmed IDENTICAL |
 | 4 | Migrate agent definitions | ⬜ Not started | |
 | 5 | Create `references/skill-routing.md` | ⬜ Not started | |
 | 6 | Create `references/knowledge-map.md` | ⬜ Not started | |
