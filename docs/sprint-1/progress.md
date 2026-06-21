@@ -19,9 +19,9 @@
 | 6 | Create `references/knowledge-map.md` | ✅ Done | Dependency table + Sprint 2 parallelism note |
 | 7 | Create `skills/_template/SKILL.md` | ✅ Done | All standard sections with {PLACEHOLDER} comments |
 | 8 | Update `AGENTS.md` routing table | ✅ Done | Replaced prose with structured routing table |
-| 9 | Write compare-flow design note | ⬜ Not started | |
-| 10 | Archive flat `.agents/skills/` | ⬜ Not started | |
-| 11 | Write `docs/sprint-1/done.md` | ⬜ Not started | |
+| 9 | Write compare-flow design note | ✅ Done | docs/sprint-1/compare-flow-design.md |
+| 10 | Archive flat `.agents/skills/` | ✅ Done | → .agents/skills-archived/; skill-creator preserved in .agents/skills/ |
+| 11 | Write `docs/sprint-1/done.md` | ✅ Done | Includes verification checklist + known issues |
 
 ---
 
