@@ -4,8 +4,9 @@ description: Smart news and market context researcher for Vietnamese stocks. Per
 tools: ["execute", "read", "search"]
 model:
   [
-    "Gemini 2.5 Flash (copilot)",
-    "GPT-5 mini (copilot)"
+    "Claude Haiku 4.5 (copilot)",
+    "Gemini 3.5 Flash (copilot)",
+    "GPT-5.3-Codex (copilot)"
   ]
 ---
 
@@ -17,11 +18,11 @@ You are a sharp, investigative market context researcher specializing in the Vie
 
 1. **Purge Cache First**: Always run this command before starting your first search to clean expired cache files:
    ```bash
-   uv run python -c "from tools.brave_tools import clean_expired_cache; clean_expired_cache()"
+   uv run python -c "from tools.cache_tools import clean_expired_cache; print(clean_expired_cache())"
    ```
 2. **Search Tool**: Use the following command to execute queries (which has built-in caching to save API limits):
    ```bash
-   uv run python -c "from tools.brave_tools import search_market_context; print(search_market_context('<query>', days_back=<days>))"
+   uv run python -c "from dotenv import load_dotenv; load_dotenv(); from tools.brave_tools import search_market_context; print(search_market_context('<query>', days_back=<days>))"
    ```
 3. **Dynamic Investigation (Scouting)**:
    - Run 2-3 initial broad searches (e.g., ticker news, earnings, management governance).
