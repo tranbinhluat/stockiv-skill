@@ -7,12 +7,12 @@
 | analyze-sentiment | `data/raw/context/{TICKER}_ticker_context.md` | collect-data |
 | analyze-sentiment | `data/raw/context/market_context.md` | collect-data |
 | analyze-fundamentals | `data/processed/synthesizer/{TICKER}/financial_summary.md` | collect-data |
-| analyze-fundamentals | `data/processed/sentiment/ticker/{TICKER}_sentiment.md` | analyze-sentiment |
+| analyze-fundamentals | `data/processed/sentiment/ticker/{TICKER}/{YEAR}_W{WW}_sentiment.md` | analyze-sentiment |
 | analyze-valuation | `data/processed/synthesizer/{TICKER}/financial_summary.md` | collect-data |
 | analyze-valuation | `data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals.md` | analyze-fundamentals |
 | draft-report | `data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals.md` | analyze-fundamentals |
 | draft-report | `data/processed/synthesizer/{TICKER}/{TICKER}_valuation.md` | analyze-valuation |
-| draft-report | `data/processed/sentiment/ticker/{TICKER}_sentiment.md` | analyze-sentiment |
+| draft-report | `data/processed/sentiment/ticker/{TICKER}/{YEAR}_W{WW}_sentiment.md` | analyze-sentiment |
 | publish-discord | `reports/ticker/{TICKER}_GCCP_report.md` OR `.pdf` | draft-report |
 
 ---

@@ -12,10 +12,10 @@
 | 1 | Write `compare-flow/SKILL.md` | ✅ Done | Created with full 6-step pipeline, parallel collection, gatekeeper-once |
 | 2 | Fix `analyze-fundamentals` dependency contract | ✅ Done | Added Mode A/B/C Execution Mode section, conditional Depends On, updated Input Files and Output File |
 | 3 | Rewrite `deepdive-flow` Step 2 for parallelism | ✅ Done | Conditional parallel branch with macro cache check; Step 2A/2B/2C pattern |
-| 4 | Fix `weekly-flow` agent path typos | ⬜ Not started | `.agents.md` → `.agent.md` |
-| 5 | Fix sentiment path in `skill-routing.md` + `knowledge-map.md` | ⬜ Not started | Use versioned path |
-| 6 | Register `compare-flow` in `skill-routing.md` | ⬜ Not started | Move from planned to registered |
-| 7 | Update `AGENTS.md` routing table | ⬜ Not started | Add `/compare` row |
+| 4 | Fix `weekly-flow` agent path typos | ✅ Done | `.agents.md` → `.agent.md` on lines 8 and 32 |
+| 5 | Fix sentiment path in `skill-routing.md` + `knowledge-map.md` | ✅ Done | Updated to versioned `{TICKER}/{YEAR}_W{WW}_sentiment.md` path |
+| 6 | Register `compare-flow` in `skill-routing.md` | ✅ Done | Moved from Planned to Registered with full fields |
+| 7 | Update `AGENTS.md` routing table | ✅ Done | Added `/compare TICKER1 TICKER2` row |
 | 8 | Write `docs/sprint-2/done.md` | ⬜ Not started | |
 
 ---

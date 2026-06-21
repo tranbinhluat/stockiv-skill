@@ -16,13 +16,13 @@
 - **Trigger:** `/sentiment [TICKER]`, "market mood", "macro outlook"
 - **Type:** atomic
 - **Inputs:** `data/raw/context/{TICKER}_ticker_context.md`, `data/raw/context/market_context.md`
-- **Outputs:** `data/processed/sentiment/ticker/{TICKER}_sentiment.md`, `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md`
+- **Outputs:** `data/processed/sentiment/ticker/{TICKER}/{YEAR}_W{WW}_sentiment.md`, `data/processed/sentiment/market/{YEAR}_W{WW}_macro_sentiment.md`
 - **Depends on:** collect-data
 
 ### analyze-fundamentals
 - **Trigger:** `/fundamentals <TICKER>`, "is this good company"
 - **Type:** atomic
-- **Inputs:** `data/processed/synthesizer/{TICKER}/financial_summary.md`, `data/processed/sentiment/ticker/{TICKER}_sentiment.md`
+- **Inputs:** `data/processed/synthesizer/{TICKER}/financial_summary.md`, `data/processed/sentiment/ticker/{TICKER}/{YEAR}_W{WW}_sentiment.md`
 - **Outputs:** `data/processed/synthesizer/{TICKER}/{TICKER}_fundamentals.md`
 - **Depends on:** collect-data, analyze-sentiment
 
@@ -59,12 +59,16 @@
 - **Pipeline:** collect-data (macro) → analyze-sentiment → draft-report → publish-discord
 - **Depends on:** collect-data, analyze-sentiment, draft-report, publish-discord
 
+### compare-flow
+- **Trigger:** `/compare TICKER1 TICKER2`, "compare {T1} vs {T2}", "which is better"
+- **Type:** orchestrator
+- **Inputs:** (freshness-checked per ticker) `data/processed/synthesizer/{TICKER}/financial_summary.md`
+- **Outputs:** `reports/compare/{T1}_vs_{T2}_{DATE}_comparison.md`, `reports/compare/{T1}_vs_{T2}_{DATE}_comparison.pdf`
+- **Pipeline:** collect-data T1 ‖ collect-data T2 → [sentiment T1 ‖ quant-fundamentals T1] → qual-fundamentals T1 → valuation T1 → [same for T2] → gatekeeper (once) → comparison report → publish-discord
+- **Depends on:** all atomic skills
+
 ---
 
-## Planned Skills (Sprint 2+)
+## Planned Skills (Sprint 3+)
 
-### compare-flow [planned — Sprint 2]
-- **Trigger:** `/compare TICKER1 TICKER2`
-- **Type:** orchestrator
-- **Pipeline:** deepdive TICKER1 ‖ deepdive TICKER2 → gatekeeper (once) → comparison report → publish-discord
-- **Output:** `reports/compare/{T1}_vs_{T2}_comparison.md`
+_(no planned skills remaining from Sprint 2)_

@@ -5,7 +5,7 @@ description: Run a weekly macro market sentiment report for Vietnam and publish 
 
 # /weekly — Weekly Macro Market Sentiment Report
 
-> **Agent active during this workflow:** `Stock Analyst` (../.github/agents/stock-analyst.agents.md)
+> **Agent active during this workflow:** `Stock Analyst` (../.github/agents/stock-analyst.agent.md)
 
 Runs the weekly Vietnam market sentiment pipeline: macro data collection → sentiment analysis → report → Discord publish.
 
@@ -29,7 +29,7 @@ Perform the collection in two parts:
    ```bash
    uv run stockiv-collect --macro
    ```
-2. **Dynamic Macro News scouting**: Invoke the `Market Scout` subagent (../.github/agents/market-scout.agents.md) using the `agent` tool to gather the macro news context. Provide this prompt:
+2. **Dynamic Macro News scouting**: Invoke the `Market Scout` subagent (../.github/agents/market-scout.agent.md) using the `agent` tool to gather the macro news context. Provide this prompt:
    "Perform dynamic macroeconomic and market context scouting. Clean the cache, run broad queries (Vietnam GDP growth, inflation, SBV interest rate policies, FDI, and credit growth), scan results for key developments, and run 1-2 targeted follow-up queries to drill down into key catalysts or risks. Synthesize your findings and save the output directly to data/raw/context/market_context.md."
 
 Wait for the subagent to finish. Confirm that `data/raw/context/market_context.md` has been updated before proceeding to Step 2.
