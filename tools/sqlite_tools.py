@@ -235,6 +235,27 @@ def fetch_current_market_snapshot(ticker: str) -> str:
             conn,
         )
 
+        # VNINDEX Ratios (P/E, P/B) from Simplize crawler
+        vnindex_ratios_df = pd.read_sql_query(
+            "SELECT metrics_json FROM live_vietstock_ratios "
+            "WHERE ticker='VNINDEX' ORDER BY date DESC LIMIT 1",
+            conn,
+        )
+        if not vnindex_ratios_df.empty:
+            try:
+                vnindex_metrics = json.loads(vnindex_ratios_df.iloc[0]["metrics_json"])
+                vnindex_pe = vnindex_metrics.get("PE", "N/A")
+                vnindex_pb = vnindex_metrics.get("PB", "N/A")
+                vnindex_mcap = vnindex_metrics.get("MarketCapital", "N/A")
+            except (json.JSONDecodeError, KeyError):
+                vnindex_pe = "N/A"
+                vnindex_pb = "N/A"
+                vnindex_mcap = "N/A"
+        else:
+            vnindex_pe = "N/A"
+            vnindex_pb = "N/A"
+            vnindex_mcap = "N/A"
+
         conn.close()
 
         # Build output
@@ -311,23 +332,10 @@ def fetch_current_market_snapshot(ticker: str) -> str:
             res += "| Index | Value | Date |\n|-------|-------|------|\n"
             res += f"| VNINDEX | {row['close']:,.2f} | {row['date']} |\n"
 
-        # VNINDEX Ratios (P/E, P/B) from Simplize crawler
-        vnindex_ratios_df = pd.read_sql_query(
-            "SELECT metrics_json FROM live_vietstock_ratios "
-            "WHERE ticker='VNINDEX' ORDER BY date DESC LIMIT 1",
-            conn,
-        )
-        if not vnindex_ratios_df.empty:
-            try:
-                vnindex_metrics = json.loads(vnindex_ratios_df.iloc[0]["metrics_json"])
-                vnindex_pe = vnindex_metrics.get("PE", "N/A")
-                vnindex_pb = vnindex_metrics.get("PB", "N/A")
-                vnindex_mcap = vnindex_metrics.get("MarketCapital", "N/A")
-                res += f"| VNINDEX P/E | {vnindex_pe} | - |\n"
-                res += f"| VNINDEX P/B | {vnindex_pb} | - |\n"
-                res += f"| VNINDEX Market Cap | {vnindex_mcap} VND | - |\n"
-            except (json.JSONDecodeError, KeyError):
-                pass
+        # VNINDEX Ratios (P/E, P/B) — pre-fetched above
+        res += f"| VNINDEX P/E | {vnindex_pe} | - |\n"
+        res += f"| VNINDEX P/B | {vnindex_pb} | - |\n"
+        res += f"| VNINDEX Market Cap | {vnindex_mcap} VND | - |\n"
 
         res += "\n*Source: [SQLite Database — stockiv.db]*\n"
         return res

@@ -39,6 +39,7 @@ def _ensure_db_exists():
         item_id TEXT,
         item_name TEXT,
         value REAL,
+        sort_order INTEGER DEFAULT 999,
         source TEXT,
         confidence REAL,
         citation TEXT,
@@ -54,6 +55,7 @@ def _ensure_db_exists():
         item_id TEXT,
         item_name TEXT,
         value REAL,
+        sort_order INTEGER DEFAULT 999,
         source TEXT,
         confidence REAL,
         citation TEXT,
@@ -239,7 +241,7 @@ def fetch_financial_statements(ticker: str) -> str:
         return f"Cache hit: Financial statements for {ticker} are already up to date (latest: {latest_period})."
 
     try:
-        finance = Finance(symbol=ticker, source="KBS")
+        finance = Finance(symbol=ticker, source="VCI")
 
         # We fetch BOTH yearly and quarterly data to allow flexible "mix" analysis
         periods_to_fetch = ["year", "quarter"]
@@ -260,9 +262,9 @@ def fetch_financial_statements(ticker: str) -> str:
                 # The API returns items in Vietnam standard format order
                 sort_order_map = {row["item_id"]: idx for idx, row in df.iterrows()}
 
-                # Melt the KBS dataframe structure: [item, item_id, 2025-Q4, 2025-Q3, ...]
+                # Melt the VCI dataframe structure: [item, item_en, item_id, 2025, 2024, ...]
                 id_vars = ["item", "item_id"]
-                # Only keep quarter columns, sometimes there are extraneous columns
+                # Only keep period columns, filter out item_en and other metadata
                 val_vars = [
                     col
                     for col in df.columns
@@ -294,7 +296,7 @@ def fetch_financial_statements(ticker: str) -> str:
                             row["item"],
                             row["value"],
                             sort_idx,
-                            "vnstock-KBS",
+                            "vnstock-VCI",
                             1.0,
                             "",
                         ),
@@ -337,7 +339,7 @@ def fetch_financial_ratios(ticker: str) -> str:
         return f"Cache hit: Financial ratios for {ticker} are already up to date (latest: {latest_period})."
 
     try:
-        finance = Finance(symbol=ticker, source="KBS")
+        finance = Finance(symbol=ticker, source="VCI")
 
         # We fetch BOTH yearly and quarterly data
         periods_to_fetch = ["year", "quarter"]
@@ -352,7 +354,7 @@ def fetch_financial_ratios(ticker: str) -> str:
             # Build sort_order map from the API's original row index
             sort_order_map = {row["item_id"]: idx for idx, row in df.iterrows()}
 
-            # Melt the KBS dataframe structure
+            # Melt the VCI dataframe structure
             id_vars = ["item", "item_id"]
             val_vars = [
                 col
@@ -382,7 +384,7 @@ def fetch_financial_ratios(ticker: str) -> str:
                         row["item"],
                         row["value"],
                         sort_idx,
-                        "vnstock-KBS",
+                        "vnstock-VCI",
                         1.0,
                         "",
                     ),
@@ -537,22 +539,22 @@ def fetch_dividend_history(ticker: str) -> str:
             conn.close()
             return f"Error: No events found for {ticker}."
 
-        df_div = df[df["event_list_code"] == "DIV"].copy()
+        df_div = df[df["event_code"] == "DIV"].copy()
 
         if df_div.empty:
             conn.close()
             return f"No dividend events found for {ticker}."
 
+        # VCI vnstock 4.x provides value_per_share directly
+        # Fallback to parsing title if value_per_share is NaN
         def extract_dividend(row):
-            # Returns a tuple of (amount, source, confidence, citation)
             citation = str(row.get("source_url", ""))
-
-            # Try raw value column first
-            if pd.notna(row.get("value")) and row["value"] > 0:
-                return pd.Series([float(row["value"]), "vnstock-VCI", 1.0, citation])
-
-            # Fallback to parsing the Vietnamese title text
-            title = str(row.get("event_title", ""))
+            # Try value_per_share first (vnstock 4.x VCI format)
+            val = row.get("value_per_share")
+            if pd.notna(val) and float(val) > 0:
+                return pd.Series([float(val), "vnstock-VCI", 1.0, citation])
+            # Fallback: parse from event title
+            title = str(row.get("event_title_vi", row.get("event_title", "")))
             match = re.search(r"([\d\.,]+)\s*VND?/?C[P]?", title, re.IGNORECASE)
             if match:
                 val_str = match.group(1).replace(".", "").replace(",", ".")
@@ -585,7 +587,7 @@ def fetch_dividend_history(ticker: str) -> str:
                     row["exright_date"],
                     row["record_date"],
                     row["issue_date"],
-                    row["event_title"],
+                    row["event_title_vi"],
                     row["amount"],
                     row["source"],
                     row["confidence"],
@@ -651,18 +653,38 @@ def crawl_vietstock_ratios(ticker: str) -> str:
                 f"Error crawling {ticker} from Vietstock: HTTP {response.status_code}"
             )
 
-        # Regular expression to securely extract the `_stockTrade` javascript object
-        # The object looks like: const _stockTrade={"StockStatus":"","StatusName":...}
-        match = re.search(r"const _stockTrade=({.*?})\|\|{}", response.text)
-        if not match:
-            # Fallback for alternative structure
-            match = re.search(r"const _stockTrade=({.*?});", response.text)
-
-        if not match:
+        # Extract the `_stockTrade` JavaScript object using brace counting
+        # (simple regex fails because the object contains nested JSON structures)
+        # The object looks like: _stockTrade={"StockStatus":"","StatusName":...}||{};
+        stock_trade_idx = response.text.find("_stockTrade")
+        if stock_trade_idx < 0:
             conn.close()
             return f"Error crawling {ticker}: Could not locate `_stockTrade` variable in HTML."
 
-        json_str = match.group(1)
+        brace_start = response.text.find("{", stock_trade_idx)
+        if brace_start < 0:
+            conn.close()
+            return (
+                f"Error crawling {ticker}: No opening brace after `_stockTrade`."
+            )
+
+        # Count braces to find the matching closing brace
+        depth = 0
+        json_str = None
+        for i in range(brace_start, len(response.text)):
+            if response.text[i] == "{":
+                depth += 1
+            elif response.text[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    json_str = response.text[brace_start : i + 1]
+                    break
+
+        if json_str is None:
+            conn.close()
+            return (
+                f"Error crawling {ticker}: Could not extract complete JSON object from `_stockTrade`."
+            )
 
         # Verify it parses as valid JSON
         try:

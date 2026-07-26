@@ -6,11 +6,11 @@ requires-python = ">=3.12"
 dependencies = [
     "python-dotenv>=1.0.0",
     "pytz>=2026.1.post1",
-    "vnstock==3.4.2",
+    "vnstock>=4.0.5",
     "plotly>=6.6.0",
     "fastapi>=0.135.1",
     "uvicorn>=0.41.0",
-    "pandas>=3.0.1",
+    "pandas>=1.4.0",
     "openpyxl>=3.1.5",
     "matplotlib>=3.10.8",
     "pymupdf4llm>=0.2.9",
@@ -51,4 +51,4 @@ exclude = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = ["test_cli.py"]
+python_files = ["test_*.py"]
