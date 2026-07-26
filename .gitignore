@@ -30,7 +30,7 @@ Thumbs.db
 *.log
 logs/
 
-data/raw/
+data/
 
 *.pdf
 
@@ -38,3 +38,5 @@ data/raw/
 data/stockiv.db
 
 .antigravitycli
+
+.omo
