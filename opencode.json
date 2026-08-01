@@ -2,11 +2,19 @@
   "$schema": "https://opencode.ai/config.json",
   "permission": {
     "bash": {
-      "*": "ask",
+      "*": "allow",
       "git *": "allow",
       "npm *": "allow",
       "rm *": "deny",
-      "grep *": "allow"
+      "grep *": "allow",
+      "uv run stockiv-scout *": "allow",
+      "uv run": "allow"
+    },
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
     }
   }
 }

@@ -1,6 +1,8 @@
 ---
-description: Senior GCCP equity analyst for the Vietnamese stock market. Orchestrates and performs analysis workflows.
+model: opencode-go/deepseek-v4-pro
+description: Senior GCCP equity analyst for the Vietnamese stock market. Performs analysis tasks delegated by the coordinator.
 mode: primary
+agents: [market-scout, gatekeeper-reviewer]
 ---
 
 # Stock Analyst Agent

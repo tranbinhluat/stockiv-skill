@@ -1,6 +1,8 @@
 ---
+model: opencode-go/deepseek-v4-pro
 description: Strict quality validator for GCCP stock analysis reports.
 mode: subagent
+user-invocable: false
 ---
 
 # Gatekeeper Agent
