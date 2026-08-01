@@ -42,6 +42,7 @@ stockiv-run = "stockiv.main:kickoff"
 stockiv-collect = "stockiv.cli:collect"
 stockiv-report = "stockiv.cli:report"
 stockiv-publish = "stockiv.cli:publish"
+stockiv-scout = "stockiv.cli:scout"
 
 [tool.ruff]
 exclude = [

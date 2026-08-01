@@ -25,7 +25,7 @@ Runs CLI tools to populate the data files that all downstream analysis skills re
 
 **Step 2 — Context (news)** — Invoke the `market-scout` subagent via the `task` tool with this prompt:
 
-> "Perform dynamic news context scouting for {TICKER}. Clean the cache, run broad searches (earnings, management, industry), scan results for key developments (CEO resignations, margins, related-party transactions, debt), and execute 1-2 targeted follow-up queries to deep-dive. Synthesize your findings and save the output directly to data/raw/context/{TICKER}_ticker_context.md."
+> "Perform news context scouting for {TICKER}. Follow your scouting protocol (reset Brave budget, plan up to 3 Brave queries broad→deep-dive, then max 2 websearch/webfetch for critical under-detailed storylines). Save to data/raw/context/{TICKER}_ticker_context.md."
 
 The scout saves results to `data/raw/context/{TICKER}_ticker_context.md`.
 
@@ -41,10 +41,10 @@ The scout saves results to `data/raw/context/{TICKER}_ticker_context.md`.
 
 ### For Macro Market (`/collect --macro` or before `/weekly`)
 
-1. Run inline: `uv run stockiv-collect --macro` — populates the basic VNINDEX + macro indicator snapshot.
+1. Run inline: `uv run stockiv-collect --macro` — populates the VNINDEX snapshot only (news comes from the scout).
 2. Invoke the `market-scout` subagent via the `task` tool with this prompt:
 
-> "Perform dynamic macroeconomic and market context scouting. Clean the cache, run broad queries (Vietnam GDP growth, inflation, SBV interest rate policies, FDI, and credit growth), scan results for key developments, and run 1-2 targeted follow-up queries to drill down into key catalysts or risks. Synthesize your findings and save the output directly to data/raw/context/market_context.md."
+> "Perform macroeconomic and market context scouting (via the `stockiv-scout` CLI). Follow your scouting protocol (reset Brave budget for scope macro, plan up to 3 Brave queries broad→deep-dive, then max 2 websearch/webfetch for critical under-detailed storylines). Preserve the VNINDEX snapshot block through the END_SNAPSHOT marker in market_context.md and append your findings below."
 
 **Output file**:
 - `data/raw/context/market_context.md` — used by analyze-sentiment for macro analysis

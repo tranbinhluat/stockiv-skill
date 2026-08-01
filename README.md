@@ -36,7 +36,10 @@ cp .env.example .env
 # Collect financial data for a ticker (auto-skips if < 7 days old)
 uv run stockiv-collect --ticker FPT --type all
 uv run stockiv-collect --ticker FPT --force     # bypass freshness cache
-uv run stockiv-collect --macro                  # macro market context
+uv run stockiv-collect --macro                  # macro market context (VNINDEX snapshot only — news is gathered by market-scout via stockiv-scout)
+
+# News context — gathered by the market-scout subagent, not stockiv-collect
+uv run stockiv-scout --scope FPT --query "FPT earnings 2026" --days-back 14
 
 # Export markdown report to PDF
 uv run stockiv-report --ticker FPT --format pdf
@@ -47,7 +50,7 @@ uv run stockiv-publish --file reports/ticker/FPT_GCCP_report.pdf \
 
 # Dev
 uv run pre-commit run --all-files
-.venv/bin/python -m pytest tests/test_cli.py -v
+uv run pytest tests/ -v
 ```
 
 ---
@@ -132,7 +135,7 @@ stock-agent/
 │   ├── discord_publisher_tool.py   # Discord message + file publishing
 │   └── cache_tools.py              # Cache cleanup
 ├── tests/
-│   └── test_cli.py                 # CLI unit tests (14 tests)
+│   └── test_*.py                   # CLI + tool unit tests
 ├── data/                           # Runtime data (gitignored)
 ├── reports/                        # Generated reports
 ├── Slave/                          # AI identity + long-term memory

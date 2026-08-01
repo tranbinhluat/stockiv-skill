@@ -3,6 +3,7 @@ StockIV CLI — entry points for AI skills to call via `uv run`.
 
 Commands:
     stockiv-collect   Fetch financial + context data for a ticker or macro
+    stockiv-scout     Budget-aware Brave search / budget reset / cache clean
     stockiv-report    Convert a markdown report to PDF
     stockiv-publish   Publish a report to Discord
 """
@@ -68,24 +69,28 @@ def _get_peers_for_ticker(ticker: str) -> list[str]:
         "GMD": ["HAH"],
         "HAH": ["GMD"],
     }
-    
+
     ticker_upper = ticker.upper()
     if ticker_upper in peer_map:
         return peer_map[ticker_upper]
-        
+
     import sqlite3
+
     db_path = ROOT / "data" / "stockiv.db"
     if db_path.exists():
         try:
             conn = sqlite3.connect(str(db_path))
             cursor = conn.cursor()
-            cursor.execute("SELECT industry FROM company_overview WHERE ticker = ?", (ticker_upper,))
+            cursor.execute(
+                "SELECT industry FROM company_overview WHERE ticker = ?",
+                (ticker_upper,),
+            )
             row = cursor.fetchone()
             if row and row[0]:
                 industry = row[0]
                 cursor.execute(
                     "SELECT ticker FROM company_overview WHERE industry = ? AND ticker != ? LIMIT 2",
-                    (industry, ticker_upper)
+                    (industry, ticker_upper),
                 )
                 peers = [r[0] for r in cursor.fetchall() if r[0]]
                 conn.close()
@@ -93,7 +98,7 @@ def _get_peers_for_ticker(ticker: str) -> list[str]:
             conn.close()
         except Exception:
             pass
-            
+
     return []
 
 
@@ -107,7 +112,6 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
     _ensure_dirs(ticker_dir, RAW_CONTEXT_DIR)
 
     summary_path = ticker_dir / "financial_summary.md"
-    context_path = RAW_CONTEXT_DIR / f"{ticker}_ticker_context.md"
 
     # ── Financials ────────────────────────────────────────────────────────────
     if data_type in ("financials", "all"):
@@ -162,7 +166,9 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
             # ── Auto-Fetch Peer Financials ────────────────────────────────────
             peers = _get_peers_for_ticker(ticker)
             if peers:
-                print(f"[collect] Auto-fetching financials for peers: {', '.join(peers)}")
+                print(
+                    f"[collect] Auto-fetching financials for peers: {', '.join(peers)}"
+                )
                 for peer in peers:
                     try:
                         # Fetch peer financials in background/sub-call (non-force to avoid rate limits)
@@ -170,39 +176,14 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
                     except Exception as e:
                         print(f"[collect] ⚠️ Failed to auto-fetch peer {peer}: {e}")
 
-    # ── Context (news) ────────────────────────────────────────────────────────
-    if data_type in ("context", "all"):
-        if not force and _is_fresh(context_path):
-            print(f"[collect] {ticker}_ticker_context.md is fresh. Skipping.")
-        else:
-            print(f"[collect] Fetching news context for {ticker}...")
-            sys.path.insert(0, str(ROOT / "tools"))
-            from brave_tools import search_market_context
-
-            queries = [
-                f"{ticker} Vietnam stock earnings revenue profit 2025",
-                f"{ticker} Vietnam management governance news 2025",
-                f"{ticker} Vietnam industry outlook macro 2025",
-            ]
-            context_parts = [
-                f"# Ticker Context: {ticker}\n_Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}_\n"
-            ]
-            for q in queries:
-                print(f"  → Searching: {q[:60]}...")
-                try:
-                    result = search_market_context(q, days_back=14)
-                    context_parts.append(f"## Query: {q}\n\n{result}\n")
-                except Exception as e:
-                    context_parts.append(f"## Query: {q}\n\n⚠️ Error: {e}\n")
-
-            context_path.write_text("\n---\n\n".join(context_parts), encoding="utf-8")
-            print(f"[collect] ✅ Saved: {context_path}")
-
     # ── Annual Report ─────────────────────────────────────────────────────────
     if data_type in ("annual-report", "all"):
         print(f"[collect] Checking annual report for {ticker}...")
         sys.path.insert(0, str(ROOT / "tools"))
-        from report_finder_tools import search_annual_report_pdf, download_and_convert_pdf
+        from report_finder_tools import (
+            search_annual_report_pdf,
+            download_and_convert_pdf,
+        )
         import json
 
         current_year = str(datetime.now().year)
@@ -214,7 +195,10 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
                 target_url = None
                 for item in urls:
                     url = item.get("url", "")
-                    if any(url.lower().endswith(ext) for ext in [".pdf", ".zip"]) or "Baocaothuongnien" in url:
+                    if (
+                        any(url.lower().endswith(ext) for ext in [".pdf", ".zip"])
+                        or "Baocaothuongnien" in url
+                    ):
                         target_url = url
                         break
                 if not target_url:
@@ -222,6 +206,7 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
 
                 # Determine the target year from URL or fallback
                 import re
+
                 year_match = re.search(r"(20\d{2})", target_url)
                 year = year_match.group(1) if year_match else str(int(current_year) - 1)
 
@@ -231,26 +216,36 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
                 pdf_dir = DATA_DIR / "raw" / "annual_reports"
 
                 if not force and md_path.exists():
-                    print(f"[collect] Annual report markdown is fresh: {md_path}. Skipping.")
+                    print(
+                        f"[collect] Annual report markdown is fresh: {md_path}. Skipping."
+                    )
                 else:
-                    print(f"[collect] Downloading & converting annual report from {target_url}...")
-                    res_dl = download_and_convert_pdf(target_url, ticker, str(md_path), str(pdf_dir))
+                    print(
+                        f"[collect] Downloading & converting annual report from {target_url}..."
+                    )
+                    res_dl = download_and_convert_pdf(
+                        target_url, ticker, str(md_path), str(pdf_dir)
+                    )
                     print(f"[collect] {res_dl}")
             else:
                 print(f"[collect] No annual report URLs found for {ticker}.")
                 md_dir = DATA_DIR / "processed" / "annual_reports" / ticker
                 _ensure_dirs(md_dir)
-                (md_dir / "ANNUAL_REPORT_NOT_AVAILABLE").write_text("No annual report URL could be found.")
+                (md_dir / "ANNUAL_REPORT_NOT_AVAILABLE").write_text(
+                    "No annual report URL could be found."
+                )
                 print(f"[collect] Logged ANNUAL_REPORT_NOT_AVAILABLE for {ticker}")
         except Exception as e:
             print(f"[collect] ⚠️ Error collecting annual report: {e}")
             md_dir = DATA_DIR / "processed" / "annual_reports" / ticker
             _ensure_dirs(md_dir)
-            (md_dir / "ANNUAL_REPORT_NOT_AVAILABLE").write_text(f"Error fetching annual report: {e}")
+            (md_dir / "ANNUAL_REPORT_NOT_AVAILABLE").write_text(
+                f"Error fetching annual report: {e}"
+            )
 
 
 def _collect_macro(force: bool) -> None:
-    """Fetch macro market context (VNINDEX + broad market news)."""
+    """Fetch deterministic macro snapshot (VNINDEX ratios) — news context is gathered by the market-scout agent."""
     _ensure_dirs(RAW_CONTEXT_DIR)
     macro_path = RAW_CONTEXT_DIR / "market_context.md"
 
@@ -262,7 +257,6 @@ def _collect_macro(force: bool) -> None:
 
     print("[collect] Fetching macro market context...")
     sys.path.insert(0, str(ROOT / "tools"))
-    from brave_tools import search_market_context
     from vnstock_tools import crawl_vnindex_ratios
 
     parts = [
@@ -277,19 +271,7 @@ def _collect_macro(force: bool) -> None:
     except Exception as e:
         parts.append(f"## VNINDEX Snapshot\n\n⚠️ Error: {e}\n")
 
-    # Macro news
-    macro_queries = [
-        "Vietnam stock market VNINDEX macro economic outlook 2025",
-        "Vietnam GDP inflation interest rate Fed policy impact 2025",
-        "Vietnam market sentiment investor foreign flow 2025",
-    ]
-    for q in macro_queries:
-        print(f"  → Searching: {q[:60]}...")
-        try:
-            result = search_market_context(q, days_back=7)
-            parts.append(f"## Query: {q}\n\n{result}\n")
-        except Exception as e:
-            parts.append(f"## Query: {q}\n\n⚠️ Error: {e}\n")
+    parts.append("<!-- END_SNAPSHOT -->")
 
     macro_path.write_text("\n---\n\n".join(parts), encoding="utf-8")
     print(f"[collect] ✅ Saved: {macro_path}")
@@ -305,9 +287,12 @@ def collect(args: list[str] | None = None) -> None:
     parser.add_argument(
         "--type",
         dest="data_type",
-        choices=["financials", "context", "annual-report", "all"],
+        choices=["financials", "annual-report", "all"],
         default="all",
-        help="Type of data to collect (default: all)",
+        help=(
+            "Type of data to collect (default: all = financials + annual-report; "
+            "news context is gathered by the market-scout agent)"
+        ),
     )
     parser.add_argument(
         "--macro",
@@ -328,6 +313,97 @@ def collect(args: list[str] | None = None) -> None:
         _collect_ticker(parsed.ticker, parsed.data_type, force=parsed.force)
     else:
         parser.error("Provide --ticker TICKER or --macro")
+
+
+# ─── scout ───────────────────────────────────────────────────────────────────
+
+
+def scout(args: list[str] | None = None) -> None:
+    """Entry point for `stockiv-scout`. Budget-aware Brave search + budget/cache controls."""
+    import json as _json
+    import re as _re
+
+    parser = argparse.ArgumentParser(
+        prog="stockiv-scout",
+        description="Budget-aware Brave search with per-scope quota and cache cleanup.",
+    )
+    parser.add_argument(
+        "--scope",
+        type=str,
+        default=None,
+        help="Budget scope (e.g. QA_TEST, MACRO). Required for --query/--reset-budget/--budget-status.",
+    )
+    action_group = parser.add_mutually_exclusive_group(required=True)
+    action_group.add_argument("--query", type=str, help="Brave search query")
+    action_group.add_argument(
+        "--reset-budget",
+        action="store_true",
+        help="Reset the scope's budget to 3 remaining",
+    )
+    action_group.add_argument(
+        "--budget-status", action="store_true", help="Print the scope's budget status"
+    )
+    action_group.add_argument(
+        "--clean-cache",
+        action="store_true",
+        help="Delete expired Brave cache files (scope-free)",
+    )
+    parser.add_argument(
+        "--days-back", type=int, default=7, help="Days back for --query (default: 7)"
+    )
+
+    parsed = parser.parse_args(args)
+
+    if parsed.clean_cache:
+        sys.path.insert(0, str(ROOT / "tools"))
+        from cache_tools import clean_expired_cache
+
+        print(clean_expired_cache())
+        return
+
+    if not parsed.scope:
+        parser.error("--scope is required for this action")
+
+    scope = parsed.scope.strip().upper()
+    if not scope or not _re.fullmatch(r"[A-Z0-9_-]+", scope):
+        parser.error("--scope must be non-empty and match [A-Z0-9_-]+")
+
+    sys.path.insert(0, str(ROOT / "tools"))
+    from brave_tools import scout_search, reset_budget, budget_status
+
+    if parsed.reset_budget:
+        record = reset_budget(scope)
+        payload = {
+            "status": "reset",
+            "scope": scope,
+            "used": record.get("used", 0),
+            "remaining": 3,
+        }
+        print(f"BUDGET: {_json.dumps(payload)}")
+        return
+
+    if parsed.budget_status:
+        status = budget_status(scope)
+        status["status"] = "ok"
+        print(f"BUDGET: {_json.dumps(status)}")
+        return
+
+    markdown, status = scout_search(parsed.query, scope, days_back=parsed.days_back)
+    if status["status"] == "exhausted":
+        print(f"BUDGET: {_json.dumps(status)}")
+        sys.exit(0)
+
+    if markdown.startswith("Error: BRAVE_API_KEY"):
+        payload = {
+            "status": "error",
+            "reason": "missing_api_key",
+            "scope": scope,
+        }
+        print(f"BUDGET: {_json.dumps(payload)}")
+        sys.exit(1)
+
+    print(markdown)
+    print(f"BUDGET: {_json.dumps(status)}")
 
 
 # ─── report ──────────────────────────────────────────────────────────────────

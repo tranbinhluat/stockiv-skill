@@ -16,6 +16,8 @@ TEST_TICKER = "FPT"
 @pytest.fixture(autouse=True)
 def _clear_cache():
     """Clear today's cache for the test ticker so the crawler actually hits the web."""
+    from tools.vnstock_tools import _ensure_db_exists
+    _ensure_db_exists()
     conn = sqlite3.connect(DB_PATH)
     conn.execute(
         "DELETE FROM live_vietstock_ratios WHERE ticker = ?",
