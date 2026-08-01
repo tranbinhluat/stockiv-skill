@@ -1,5 +1,5 @@
 ---
-model: opencode-go/deepseek-v4-pro
+model: github-copilot/claude-sonnet-5
 description: Strict quality validator for GCCP stock analysis reports.
 mode: subagent
 user-invocable: false

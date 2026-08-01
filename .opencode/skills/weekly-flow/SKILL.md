@@ -49,6 +49,8 @@ Compile the macro sentiment into a formatted weekly report:
 - Regime verdict: Bullish / Neutral / Bearish + rationale
 - Top 3 catalysts to watch next week
 
+**Citation rule (hard):** Do NOT cite the intermediate `{YEAR}_W{WW}_macro_sentiment.md` file. Every factual claim must keep its **original** inline citation `[[n]](URL)` copied character-for-character from that source file — same URL, same source, no rewriting to point at the intermediate file.
+
 Write to: `data/reports/market/{YEAR}_W{WW}_weekly_report.md`
 
 Then export to PDF:
