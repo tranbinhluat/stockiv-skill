@@ -1,116 +1,47 @@
-# Overall Macro Sentiment — Multi-Week Synthesis
-_Generated: 2026-08-01 | Weeks covered: W28–W31 (Jul 13 – Aug 01, 2026)_
-_Note: This is the inaugural overall sentiment file. Prior weekly sentiment files do not exist. Synthesis derived from 3 weeks of underlying data in market_context.md._
+# Overall Macro Sentiment Synthesis — 2026
 
----
+_Updated: 2026-08-09 | Source weeks: W22, W23, W31, W32_
 
 ## I. Regime Shift Analysis
 
-**Current Phase: Correction → Pre-Catalyst Accumulation Transition**
-
-Trong 3 tuần qua (W28–W31), VNINDEX trải qua giai đoạn điều chỉnh mạnh từ 1,787 → 1,669 (-6.6%) với 4 tuần giảm liên tiếp, sau đó phục hồi kỹ thuật về 1,730–1,745 vào cuối tuần 31. Đây là pha điều chỉnh trong xu hướng tích lũy dài hạn, không phải đảo chiều xu hướng.
-
-**Bằng chứng regime shift đang diễn ra:**
-
-1. **Từ "bán tháo hoảng loạn" → "phân hóa chọn lọc":** Tuần 28-29 chứng kiến bán ròng toàn diện (-3,804 tỷ tuần 29, 13/18 ngành giảm). Đến tuần 31, ngoại bắt đầu mua ròng chọn lọc: VCB +270 tỷ, FPT +119 tỷ, VIC +81 tỷ, trong khi tiếp tục xả VHM, ngân hàng nhỏ. Đây là dấu hiệu của "smart money" đang định vị trước FTSE upgrade.
-
-2. **Từ "risk-off toàn thị trường" → "bottom-fishing có chọn lọc":** Sau cú sập PNJ (-28.5% tuần 29), thị trường không lan tỏa panic sang các bluechip khác. Ngược lại, VNINDEX phục hồi 76 điểm từ đáy 1,669 lên 1,745 chỉ trong 3 phiên — tốc độ phục hồi nhanh cho thấy lực cầu bắt đáy mạnh ở vùng định giá P/E 12.18x.
-
-3. **Sự kiện cấu trúc chưa được định giá đầy đủ:** FTSE EM upgrade 21/09/2026 chỉ còn 51 ngày. Thị trường đang giao dịch với P/E 12.18x — dưới target 13–13.5x của MBS và VCBS. Đây là "window of opportunity" cho nhà đầu tư dài hạn trước khi dòng vốn $5–10B đổ vào.
-
-**Kết luận:** Chúng ta đang ở giai đoạn cuối của pha điều chỉnh và bắt đầu bước vào pha tích lũy pre-catalyst. Không có dấu hiệu suy thoái kinh tế (GDP +8.18%, FDI kỷ lục $13B). Định giá đã về vùng hấp dẫn. Tín hiệu kỹ thuật cần xác nhận thêm: volume phải tăng bền vững >15,000 tỷ/phiên và ngoại phải có thêm phiên mua ròng >500 tỷ.
-
----
+Vietnam's macro regime has progressed through a consistent arc over 2026: **Cautious/Constructive (W22-W23)** → **Cautiously Bullish (W31)** → **Reflation with fragile foreign re-entry (W32)** [[1]](2026_W23_macro_sentiment.md) [[2]](2026_W31_macro_sentiment.md) [[3]](2026_W32_macro_sentiment.md). This is a **continuation, not a reversal** — the structural growth story (record FDI, GDP acceleration to 8.18% H1, best since 2011) has held steady since Q2, while the market-facing narrative has shifted from "tactical caution amid foreign selling" (W23) to "cautiously bullish on FTSE positioning" (W31) to this week's confirmation that foreign buying has begun, concentrated in blue-chips, but still fragile and stock-selective (W32) [[3]](2026_W32_macro_sentiment.md). The dominant through-line across all four weeks is the **FTSE Frontier→Emerging Market upgrade (effective Sept 21, 2026)**, which has graduated from "distant catalyst" to "imminent event" to "active re-positioning driver."
 
 ## II. Critical Ongoing Situations & News
 
-### A. FTSE EM Upgrade — The Everything Catalyst
+### FTSE Emerging Market Upgrade (effective Sept 21, 2026)
+- *The Situation:* Confirmed April 2026; inclusion list review published (per W31, ~Aug 21); brokerages (ACBS, SSI) have mapped 19-25 candidate stocks with $128M-$6B passive inflow estimates. W32 confirms foreign buying is already concentrated in large caps ahead of the effective date [[2]](2026_W31_macro_sentiment.md) [[3]](2026_W32_macro_sentiment.md).
+- *What makes it worse:* A narrower-than-expected inclusion list, or a repeat of net-selling weeks (as seen just days before the W32 reversal), would puncture the pre-positioning thesis.
+- *What makes it better:* Sustained net foreign buying through Aug 21 inclusion-list publication would confirm the reversal as structural rather than a head-fake.
 
-- **Tình hình:** Nâng hạng đã được xác nhận, tất cả tiêu chí kỹ thuật đã đáp ứng (Circular 08/2026, non-prefunding, global broker model). March 2026 interim review: PASS. Hiệu lực 21/09/2026. FTSE GEIS Review công bố 21/08/2026.
-- **Điều gì khiến nó tốt hơn:** (1) Dòng vốn passive $5–6B bắt đầu giải ngân từ 21/09. (2) Các quỹ EM active $3–5B follow theo. (3) CCP hoạt động → mở đường MSCI upgrade → thêm $5–10B nữa đến 2030.
-- **Điều gì khiến nó xấu đi:** (1) Trì hoãn inclusion do vấn đề kỹ thuật phút chót. (2) Dòng vốn thực tế thấp hơn dự báo (chỉ $2–3B). (3) Fed thắt chặt mạnh làm rút vốn khỏi EM toàn cầu, lấn át hiệu ứng FTSE.
+### Growth-vs-FX-vs-Liquidity Balancing Act (SBV)
+- *The Situation:* SBV avoiding rate hikes despite VND pressure from a strong USD, instead using OMO, new State Treasury liquidity regs (eff. Aug 1), and an $8.4B SME credit package to sustain growth without spiking rates [[3]](2026_W32_macro_sentiment.md).
+- *What makes it worse:* Inflation overshoot (above ~4.5-5%) would force SBV toward hikes, compressing VNINDEX multiples; capital-source gap (bank-dependent credit) remains unresolved for the medium term.
+- *What makes it better:* Continued tame inflation (currently 4.39%) preserves policy headroom; new capital-market deepening initiatives (targeting 15% foreign GDP holding by 2030) could reduce bank-credit dependency over time.
 
-### B. Khối Ngoại Bán Ròng 3 Năm — Điểm Uốn?
+## III. Forward Market Scenarios (3-6 Months)
 
-- **Tình hình:** 2024: -$2.6B, YTD 2026: -$1.2B. Tuy nhiên, tuần cuối tháng 7 xuất hiện tín hiệu đảo chiều với phiên mua ròng +668 tỷ (30/07). FPT, VCB, VIC, VNM được mua ròng trở lại.
-- **Điều gì khiến nó tốt hơn:** FTSE EM upgrade buộc các quỹ passive phải mua bất kể giá. Active funds front-run bằng cách mua trước.
-- **Điều gì khiến nó xấu đi:** Nếu VND mất giá mạnh hoặc bất ổn địa chính trị toàn cầu, dòng vốn tiếp tục rút khỏi EM.
+- **Base Case (60%):** Foreign flows stabilize into modest net buying as FTSE inclusion list (per prior weeks, expected ~Aug 21) confirms broad participation; VNINDEX grinds toward the 1,770-1,850 analyst target range on the back of GDP momentum and passive inflow positioning, with blue-chip concentration (FPT, HPG, VCB, MBB) persisting.
+- **Bull Case (20%):** FTSE inclusion list is broader than expected, triggering an acceleration of passive + active inflows beyond current estimates ($6B+), compounding with GDP growth surprising further to the upside (StanChart's 9.5% forecast proving conservative).
+- **Bear Case (20%):** The current 3-session buying streak proves a head-fake (echoing the false start seen in W31's Jul 30 data point) — foreign investors resume net selling ahead of Sept 21, VND pressure forces SBV into defensive rate action, and inflation ticks above comfort levels, reversing the multiple re-rating thesis.
 
-### C. Lạm Phát & Chính Sách Tiền Tệ SBV
+## IV. The Consensus Fallacy (Contrarian View)
 
-- **Tình hình:** Lạm phát 4.38% — neo cao, hạn chế dư địa nới lỏng. SBV giữ lãi suất ổn định nhưng đối mặt sức ép từ nhu cầu tín dụng tăng và tỷ giá.
-- **Điều gì khiến nó tốt hơn:** Lạm phát hạ nhiệt trong H2 nhờ giá dầu giảm và nhu cầu toàn cầu chậm lại → SBV có thể cắt giảm lãi suất → boost định giá.
-- **Điều gì khiến nó xấu đi:** Lạm phát vượt 5% → SBV buộc phải tăng lãi suất → chi phí vốn tăng, định giá thị trường giảm thêm.
-
----
-
-## III. Forward Market Scenarios (3–6 Months)
-
-### Base Case (60%): FTSE-Led Recovery — VNINDEX 1,770–1,850
-- FTSE EM upgrade diễn ra đúng kế hoạch 21/09/2026
-- Dòng vốn passive $3–5B đổ vào đợt 1 (09/2026–03/2027)
-- KQKD Q2/2026 xác nhận tăng trưởng lợi nhuận 10–15% YoY
-- VNINDEX giao dịch tại P/E 13–13.5x, tương đương 1,770–1,850
-- Ngoại chuyển từ bán ròng sang mua ròng bền vững từ tháng 9
-
-### Bull Case (20%): Perfect Storm — VNINDEX >1,900
-- FTSE inclusion + MSCI watchlist announcement cùng lúc
-- Lạm phát hạ nhiệt → SBV cắt giảm lãi suất 50bps
-- GDP cả năm đạt 8.5–9%
-- Dòng vốn FDI tiếp tục kỷ lục, VND mạnh lên
-- Thanh khoản bùng nổ >25,000 tỷ/phiên
-
-### Bear Case (20%): External Shock — VNINDEX 1,500–1,600
-- Fed tăng lãi suất bất ngờ → EM sell-off toàn cầu
-- Căng thẳng thương mại Mỹ-Trung leo thang → thuế quan mới
-- Lạm phát Việt Nam vượt 5.5% → SBV thắt chặt khẩn cấp
-- FTSE upgrade bị trì hoãn do vấn đề kỹ thuật
-- VNINDEX thủng hỗ trợ 1,670 → panic selling về 1,500
-
----
-
-## IV. The Consensus Fallacy — Contrarian View
-
-**Consensus hiện tại:** "Mua trước FTSE upgrade, VNINDEX sẽ tăng mạnh từ tháng 9."
-
-**Rủi ro consensus đám đông:**
-1. **Định giá đã phản ánh một phần kỳ vọng:** Cổ phiếu trong rổ FTSE (VCB, FPT, VNM) có thể đã được mua trước bởi smart money. Khi tin chính thức ra 21/08, có thể là "sell the news" với những cổ phiếu đã tăng mạnh.
-2. **Dòng vốn thực tế thấp hơn kỳ vọng:** Các ước tính $5–10B có thể là quá lạc quan. Kinh nghiệm từ Qatar, UAE — dòng vốn EM upgrade thường mất 2-3 năm để đạt full impact, không phải 2-3 tháng.
-3. **FTSE upgrade không giải quyết được vấn đề cơ cấu:** Thanh khoản thấp, tỷ lệ free-float hạn chế, room ngoại đầy ở nhiều cổ phiếu tốt — đây là những rào cản thực sự cho dòng vốn lớn.
-4. **Ngược dòng GCCP:** Trong khi đám đông đổ xô vào cổ phiếu FTSE inclusion với P/E cao, nhà đầu tư GCCP nên tìm kiếm cổ phiếu tốt, giá rẻ ở những ngành ít được chú ý nhưng hưởng lợi gián tiếp từ dòng vốn (bất động sản khu công nghiệp, logistics, tiêu dùng).
-
----
+Consensus is now crowded around "FTSE upgrade = guaranteed re-rating," with brokerages publishing granular stock-level inflow estimates and analysts framing Sept 21 as a near-certain positive catalyst. The contrarian risk: passive index inclusion flows are mechanical and one-time — once the phased inflows complete, the market must stand on fundamentals alone. If Q3/Q4 earnings fail to sustain the H1 momentum (GDP growth requires an ambitious H2 acceleration to hit full-year targets), the "FTSE floor" narrative could prove temporary, leaving late entrants exposed to a post-event air pocket similar to other frontier-to-emerging reclassification cases.
 
 ## V. Strategic Allocation Playbook
 
-### Overweight (Tích lũy mạnh)
+**Overweight:**
+- State-owned banks (VCB, CTG, BID, MBB) — direct beneficiaries of SBV liquidity easing + FTSE inclusion weight + foreign buying concentration [[3]](2026_W32_macro_sentiment.md)
+- FTSE inclusion candidates with high foreign-ownership headroom (FPT, HPG) — already showing foreign accumulation
+- Export-oriented manufacturers — benefit from VND depreciation bias without FX-driven margin compression
 
-| Ngành/Lĩnh vực | Luận điểm |
-|---|---|
-| **Ngân hàng TMCP lớn (VCB, CTG, MBB, ACB)** | Hưởng lợi trực tiếp từ FTSE inclusion, định giá P/B 1.5–2.5x, tăng trưởng tín dụng 12-15% |
-| **Công nghệ (FPT)** | Được FTSE inclusion, tăng trưởng EPS 20%+, P/E forward hợp lý |
-| **Tiêu dùng thiết yếu (VNM, MSN)** | Phòng thủ, dòng tiền ổn định, được ngoại mua ròng nhất quán |
-| **Bất động sản KCN (BCM, IDC, SIP)** | Hưởng lợi gián tiếp từ FDI kỷ lục và dòng vốn FTSE |
-| **Chứng khoán (SSI, VND, HCM)** | Hưởng lợi trực tiếp từ thanh khoản tăng khi dòng vốn FTSE vào |
-
-### Underweight (Hạn chế/Giảm tỷ trọng)
-
-| Ngành/Lĩnh vực | Lý do |
-|---|---|
-| **Bất động sản dân dụng (VHM, NVL, PDR)** | Định giá cao, room ngoại đầy, không nằm trong rổ FTSE chính |
-| **Ngân hàng nhỏ (SHB, LPB, VPB)** | Bị ngoại bán ròng liên tục, rủi ro tín dụng cao hơn |
-| **Bán lẻ xa xỉ (PNJ)** | Rủi ro quản trị sau scandal LAB, dòng tiền ngoại rút mạnh |
-| **Năng lượng tái tạo** | Định giá cao, phụ thuộc chính sách, chưa có lợi nhuận ổn định |
-
----
+**Underweight:**
+- Import-heavy / raw-material-dependent businesses — face margin pressure from VND weakness
+- Small/mid-caps excluded from FTSE inclusion mapping — risk of being left behind in the passive-flow re-rating, and vulnerable if broad "risk-on" fails to materialize beyond blue-chips
+- Names still seeing persistent net-selling (VIC, GEX, VIX, MCH per W32) until selling pressure clearly abates
 
 ## References
 
-1. [2026_W31_macro_sentiment.md](2026_W31_macro_sentiment.md) — Tuần 31 phân tích chi tiết
-2. [BSC Daily Review Jul 27](https://www.bsc.com.vn/en/Report/ReportFile/15687)
-3. [BSC Daily Review Jul 28](https://www.bsc.com.vn/en/Report/ReportFile/15705)
-4. [Xe.today — Foreign flows](https://xe.today/2026/07/30/foreign-investors-net-buy-nearly-vnd-700-billion-in-vietnamese-stocks-as-vn-index-surges-40-points/)
-5. [DNSE — Jul 31 flows](https://www.dnse.com.vn/senses/tin-tuc/khoi-ngoai-ban-rong-phien-cuoi-thang-7-nhung-chi-gan-300-ty-dong-vao-co-phieu-vcb-35255754)
-6. [Reuters — FTSE upgrade](https://www.reuters.com/world/asia-pacific/vietnam-says-ftse-russells-emerging-market-status-confirmation-is-significant-2026-04-08/)
-7. [LSEG — FTSE FAQ](https://www.lseg.com/content/dam/ftse-russell/en_us/documents/policy-documents/ftse-faq-document-vietnam-reclassification.pdf)
-8. [World Bank — Vietnam capital markets](https://www.worldbank.org/en/news/feature/2026/04/22/a-turning-point-for-viet-nam-s-capital-markets)
+[[1]](2026_W23_macro_sentiment.md) 2026_W23_macro_sentiment.md — Regime: Cautious/Constructive
+[[2]](2026_W31_macro_sentiment.md) 2026_W31_macro_sentiment.md — Regime: Cautiously Bullish
+[[3]](2026_W32_macro_sentiment.md) 2026_W32_macro_sentiment.md — Regime: Reflation, fragile foreign re-entry

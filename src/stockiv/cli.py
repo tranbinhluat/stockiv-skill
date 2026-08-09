@@ -132,7 +132,15 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
                 crawl_vietstock_ratios,
                 crawl_vnindex_ratios,
             )
-            from sqlite_tools import fetch_current_market_snapshot
+            from sqlite_tools import (
+                fetch_current_market_snapshot,
+                fetch_company_overview_md,
+                fetch_recent_financials,
+                fetch_ratio_summary_md,
+                fetch_dividend_history_md,
+                fetch_live_vietstock_ratios_md,
+                fetch_vnindex_snapshot_md,
+            )
 
             sections: list[str] = []
 
@@ -140,26 +148,92 @@ def _collect_ticker(ticker: str, data_type: str, force: bool) -> None:
                 f"# Financial Summary: {ticker}\n_Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}_\n"
             )
 
-            for label, fn, args in [
-                ("## Company Overview", fetch_company_overview, (ticker,)),
-                ("## Financial Statements (5Y)", fetch_financial_statements, (ticker,)),
-                ("## Financial Ratios", fetch_financial_ratios, (ticker,)),
-                ("## Ratio Summary (GCCP Metrics)", fetch_ratio_summary, (ticker,)),
-                ("## Dividend History", fetch_dividend_history, (ticker,)),
-                ("## Vietstock Ratios", crawl_vietstock_ratios, (ticker,)),
-                ("## Current Market Snapshot (VNINDEX)", crawl_vnindex_ratios, ()),
+            # Each entry: (label, fetch_fn+args to populate/refresh SQLite,
+            # reader_fn+args to render the section body straight from SQLite).
+            # The fetch status (incl. "Cache hit: ...") is only printed to the
+            # console for the agent — the document body always comes from the
+            # reader, which is a free local SQLite read, never a placeholder.
+            plan = [
                 (
-                    "## Current Market Snapshot (Ticker)",
-                    fetch_current_market_snapshot,
+                    "## Company Overview",
+                    fetch_company_overview,
+                    (ticker,),
+                    fetch_company_overview_md,
                     (ticker,),
                 ),
-            ]:
+                (
+                    "## Ratio Summary (GCCP Metrics)",
+                    fetch_ratio_summary,
+                    (ticker,),
+                    fetch_ratio_summary_md,
+                    (ticker,),
+                ),
+                (
+                    "## Dividend History",
+                    fetch_dividend_history,
+                    (ticker,),
+                    fetch_dividend_history_md,
+                    (ticker,),
+                ),
+                (
+                    "## Vietstock Ratios",
+                    crawl_vietstock_ratios,
+                    (ticker,),
+                    fetch_live_vietstock_ratios_md,
+                    (ticker,),
+                ),
+                (
+                    "## Current Market Snapshot (VNINDEX)",
+                    crawl_vnindex_ratios,
+                    (),
+                    fetch_vnindex_snapshot_md,
+                    (),
+                ),
+            ]
+
+            for label, fetch_fn, fetch_args, reader_fn, reader_args in plan:
                 print(f"  → {label.strip('# ')}")
                 try:
-                    result = fn(*args)
-                    sections.append(f"{label}\n\n{result}\n")
+                    status = fetch_fn(*fetch_args)
+                    print(f"    [collect] {status}")
+                    body = reader_fn(*reader_args)
+                    sections.append(f"{label}\n\n{body}\n")
                 except Exception as e:
                     sections.append(f"{label}\n\n⚠️ Error: {e}\n")
+
+            # Financial Statements + Financial Ratios share one vnstock fetch
+            # each, but the doc body is a single free SQLite pivot read split
+            # across the two sections.
+            print("  → Financial Statements (5Y)")
+            print("  → Financial Ratios")
+            try:
+                stmt_status = fetch_financial_statements(ticker)
+                print(f"    [collect] {stmt_status}")
+                ratio_status = fetch_financial_ratios(ticker)
+                print(f"    [collect] {ratio_status}")
+
+                combined = fetch_recent_financials(ticker)
+                marker = "### Key Ratios"
+                if marker in combined:
+                    stmt_body, ratio_body = combined.split(marker, 1)
+                    ratio_body = marker + ratio_body
+                else:
+                    stmt_body, ratio_body = combined, "No ratio data available.\n"
+
+                sections.append(f"## Financial Statements (5Y)\n\n{stmt_body}\n")
+                sections.append(f"## Financial Ratios\n\n{ratio_body}\n")
+            except Exception as e:
+                sections.append(f"## Financial Statements (5Y)\n\n⚠️ Error: {e}\n")
+                sections.append(f"## Financial Ratios\n\n⚠️ Error: {e}\n")
+
+            print("  → Current Market Snapshot (Ticker)")
+            try:
+                snapshot = fetch_current_market_snapshot(ticker)
+                sections.append(f"## Current Market Snapshot (Ticker)\n\n{snapshot}\n")
+            except Exception as e:
+                sections.append(
+                    f"## Current Market Snapshot (Ticker)\n\n⚠️ Error: {e}\n"
+                )
 
             summary_path.write_text("\n---\n\n".join(sections), encoding="utf-8")
             print(f"[collect] ✅ Saved: {summary_path}")
