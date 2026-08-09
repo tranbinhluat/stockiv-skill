@@ -347,7 +347,18 @@ def fetch_financial_ratios(ticker: str) -> str:
         total_rows = 0
 
         for p in periods_to_fetch:
-            df = finance.ratio(period=p)
+            # NOTE: Finance.ratio()'s public wrapper hardcodes limit=4 and the
+            # underlying VCI API returns periods oldest-first, so the public
+            # call silently returns only the OLDEST 4 periods (e.g. 2018-2019)
+            # instead of the most recent ones. Call the private report method
+            # directly with a generous limit to get the full period range;
+            # fall back to the public method if vnstock's internals change.
+            try:
+                df = finance._get_financial_report(
+                    "ratio", period=p, lang="en", dropna=True, limit=100
+                )
+            except (AttributeError, TypeError):
+                df = finance.ratio(period=p)
 
             if df is None or df.empty:
                 continue

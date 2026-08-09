@@ -62,6 +62,12 @@ def _pivot_eav(df: pd.DataFrame, periods: list) -> str:
     # Drop rows where all values are NaN
     pivot = pivot.dropna(how="all")
 
+    # Drop rows where every period is exactly 0 (not applicable to this
+    # ticker — e.g. bank-only ratios on a non-bank stock, or unused
+    # statement line items). Keeps a row if ANY period has a nonzero value.
+    is_all_zero = pivot.fillna(0).apply(lambda row: (row == 0).all(), axis=1)
+    pivot = pivot[~is_all_zero]
+
     # Reorder rows by sort_order (Vietnam standard format) if available
     if has_sort_order:
         # Filter ordered_items to only those present in pivot after NaN drop
@@ -73,6 +79,8 @@ def _pivot_eav(df: pd.DataFrame, periods: list) -> str:
     def fmt(val):
         if pd.isna(val):
             return "-"
+        if not isinstance(val, (int, float)):
+            return str(val)
         # Force integer formatting for large values (financial statements in VND)
         if abs(val) >= 1_000:
             return f"{int(val):,}"
@@ -104,6 +112,60 @@ def _pivot_eav(df: pd.DataFrame, periods: list) -> str:
 # ---------------------------------------------------------------------------
 # FetchRecentFinancialsTool — NOW with pivot-table output
 # ---------------------------------------------------------------------------
+
+# Key summary lines per statement type (VN standard chart of accounts).
+# Keeps the doc to headline figures — full raw line-item detail remains
+# queryable via query_stock_database() against financial_statements.
+_KEY_STATEMENT_LINES = {
+    "income": [
+        "Doanh thu thuần",
+        "Giá vốn hàng bán",
+        "Lợi nhuận gộp",
+        "Chi phí bán hàng",
+        "Chi phí quản lý doanh nghiệp",
+        "Lãi/(lỗ) từ hoạt động kinh doanh",
+        "Lãi/(lỗ) trước thuế",
+        "Chi phí thuế thu nhập doanh nghiệp",
+        "Lãi/(lỗ) thuần sau thuế",
+        "Lợi nhuận của Cổ đông của Công ty mẹ",
+        "Lãi cơ bản trên cổ phiếu (VND)",
+    ],
+    "balance": [
+        "TÀI SẢN NGẮN HẠN",
+        "Tiền và tương đương tiền",
+        "Các khoản phải thu",
+        "Hàng tồn kho, ròng",
+        "TÀI SẢN DÀI HẠN",
+        "Tài sản cố định",
+        "TỔNG CỘNG TÀI SẢN",
+        "NỢ PHẢI TRẢ",
+        "Nợ ngắn hạn",
+        "Nợ dài hạn",
+        "Vốn chủ sở hữu",
+        "Tổng cộng nguồn vốn",
+    ],
+    "cashflow": [
+        "Lưu chuyển tiền tệ ròng từ các hoạt động sản xuất kinh doanh",
+        "Lưu chuyển tiền thuần từ hoạt động đầu tư",
+        "Lưu chuyển tiền thuần từ hoạt động tài chính",
+        "Lưu chuyển tiền thuần trong kỳ",
+        "Tiền và tương đương tiền đầu kỳ",
+        "Tiền và tương đương tiền cuối kỳ",
+    ],
+}
+
+# Ratio items already covered by ratio_summary_md (English "Ratio Summary
+# (GCCP Metrics)" section) or that are pure metadata/IDs — excluded here to
+# avoid showing the same metric twice in two different languages.
+_EXCLUDE_RATIO_ITEMS = {
+    "Vòng quay tài sản", "Hệ số thanh toán tiền", "Hệ số thanh toán hiện hành",
+    "Hệ số thanh toán nhanh", "Nợ/Vốn chủ", "Nợ trên vốn chủ",
+    "Tỷ suất cổ tức (%)", "EBIT", "Biên EBIT (%)", "EBITDA", "Vốn chủ sở hữu",
+    "EV/EBITDA", "Đòn bẩy tài chính", "Biên LN gộp (%)", "Vốn hóa",
+    "Biên LN sau thuế (%)", "Số CP lưu hành (triệu)", "P/B", "P/E",
+    "Biên LN trước thuế (%)", "Giá/ Dòng tiền", "P/S", "Quý", "Mã TTM",
+    "Loại tỷ lệ", "Mã năm tỷ lệ", "ROA (%)", "ROE (%)", "ROIC", "Năm",
+}
 
 
 def fetch_recent_financials(ticker: str) -> str:
@@ -143,25 +205,30 @@ def fetch_recent_financials(ticker: str) -> str:
         mixed_ratio_periods = r_yearly + r_quarterly
 
         res = f"# Financial Data for {ticker} (Pivot Tables)\n\n"
-        res += "## Financial Statements (Yearly & Quarterly)\n\n"
+        res += "## Financial Statements (Yearly & Quarterly, key lines)\n\n"
         for stmt_type, label in [
             ("income", "Income Statement"),
             ("balance", "Balance Sheet"),
             ("cashflow", "Cash Flow Statement"),
         ]:
             subset = stmts_df[stmts_df["statement_type"] == stmt_type]
+            subset = subset[subset["item_name"].isin(_KEY_STATEMENT_LINES[stmt_type])]
             if not subset.empty:
                 res += f"### {label}\n"
                 res += _pivot_eav(subset, mixed_periods)
                 res += "\n"
+        res += (
+            "*Full raw line-item detail available via query_stock_database() "
+            "against the financial_statements table.*\n\n"
+        )
 
         if not ratios_df.empty:
             res += "### Key Ratios\n"
 
-            # Exclude P/E, P/B from this historical table since the user wants to rely
-            # on the FetchCurrentMarketSnapshotTool / ratio_summary for current valuation ratios.
+            # Exclude ratios already shown (in English) in the Ratio Summary
+            # (GCCP Metrics) section, plus pure metadata/ID fields.
             filtered_ratios = ratios_df[
-                ~ratios_df["item_name"].str.contains("P/E|P/B", regex=True, case=False)
+                ~ratios_df["item_name"].isin(_EXCLUDE_RATIO_ITEMS)
             ]
 
             res += _pivot_eav(filtered_ratios, mixed_ratio_periods)
@@ -340,6 +407,173 @@ def fetch_current_market_snapshot(ticker: str) -> str:
         res += f"| VNINDEX Market Cap | {vnindex_mcap} VND | - |\n"
 
         res += "\n*Source: [SQLite Database — stockiv.db]*\n"
+        return res
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+# ---------------------------------------------------------------------------
+# Section readers for financial_summary.md — pull straight from SQLite
+# (free, no API cost) so a cache hit in the underlying fetch_* tool never
+# forces the CLI to write a "Cache hit: ..." placeholder into the document.
+# ---------------------------------------------------------------------------
+
+
+def fetch_company_overview_md(ticker: str) -> str:
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.read_sql_query(
+            "SELECT industry, company_type, established_year, outstanding_shares, "
+            "charter_capital FROM company_overview WHERE ticker=?",
+            conn,
+            params=(ticker,),
+        )
+        conn.close()
+
+        if df.empty:
+            return f"No company overview found for {ticker}."
+
+        row = df.iloc[0]
+        res = "| Field | Value |\n|-------|-------|\n"
+        res += f"| Industry | {row['industry']} |\n"
+        res += f"| Company Type | {row['company_type']} |\n"
+        res += f"| Established Year | {row['established_year']} |\n"
+        res += f"| Outstanding Shares | {row['outstanding_shares']:,} |\n"
+        res += f"| Charter Capital | {row['charter_capital']:,} |\n"
+        res += "\n*Source: [SQLite Database — stockiv.db]*\n"
+        return res
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+# Curated GCCP-relevant fields shown in the Ratio Summary section. Excludes
+# metadata/ID fields (symbol, organ_code, ratio_ttm_id, ...) and bank-only
+# metrics (NIM, NPL, LDR, loan/deposit growth, ...) which are always 0 for
+# non-bank tickers and, for banks, are shown instead in the Financial Ratios
+# (Vietnamese) section. Working-capital-cycle metrics (days outstanding,
+# cash cycle, fixed asset turnover) also live only in Financial Ratios.
+_KEEP_RATIO_SUMMARY_FIELDS = [
+    "market_cap", "pe", "pb", "ps", "ev_to_ebitda", "price_to_cash_flow",
+    "dividend_yield",
+    "roe", "roa", "roic",
+    "gross_margin", "ebit_margin", "pre_tax_profit_margin",
+    "after_tax_profit_margin",
+    "current_ratio", "quick_ratio", "cash_ratio", "debt_to_equity",
+    "asset_turnover", "ebit", "ebitda",
+]
+
+
+def fetch_ratio_summary_md(ticker: str, years: int = 5) -> str:
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.read_sql_query(
+            "SELECT year_report, metrics_json FROM ratio_summary "
+            "WHERE ticker=? ORDER BY year_report DESC LIMIT ?",
+            conn,
+            params=(ticker, years),
+        )
+        conn.close()
+
+        if df.empty:
+            return f"No ratio summary found for {ticker}."
+
+        # Build {metric: {year: value}} then pivot to a metric-rows table.
+        by_year = {}
+        for _, row in df.iterrows():
+            try:
+                by_year[int(row["year_report"])] = json.loads(row["metrics_json"])
+            except (json.JSONDecodeError, TypeError):
+                continue
+
+        table = pd.DataFrame(by_year)
+        table = table[sorted(table.columns)]  # oldest → newest
+        table = table.reindex(_KEEP_RATIO_SUMMARY_FIELDS).dropna(how="all")
+
+        def fmt(val):
+            if pd.isna(val):
+                return "-"
+            if isinstance(val, (int, float)):
+                if abs(val) >= 1_000:
+                    return f"{val:,.0f}"
+                return f"{val:,.4f}"
+            return str(val)
+
+        res = tabulate(
+            table.applymap(fmt),
+            headers="keys",
+            tablefmt="pipe",
+            showindex=True,
+        )
+        return res + "\n\n*Source: [SQLite Database — stockiv.db]*\n"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def fetch_dividend_history_md(ticker: str, limit: int = 10) -> str:
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.read_sql_query(
+            "SELECT ex_dividend_date, event_desc, amount FROM dividend_history "
+            "WHERE ticker=? ORDER BY ex_dividend_date DESC LIMIT ?",
+            conn,
+            params=(ticker, limit),
+        )
+        conn.close()
+
+        if df.empty:
+            return f"No dividend history found for {ticker}."
+
+        return df.to_markdown(index=False) + "\n\n*Source: [SQLite Database — stockiv.db]*\n"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def fetch_live_vietstock_ratios_md(ticker: str) -> str:
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.read_sql_query(
+            "SELECT date, metrics_json FROM live_vietstock_ratios "
+            "WHERE ticker=? ORDER BY date DESC LIMIT 1",
+            conn,
+            params=(ticker,),
+        )
+        conn.close()
+
+        if df.empty:
+            return f"No live Vietstock ratios found for {ticker}."
+
+        row = df.iloc[0]
+        metrics = json.loads(row["metrics_json"])
+        res = f"Date: {row['date']}\n\n"
+        res += "| Ratio | Value |\n|-------|-------|\n"
+        for key, val in metrics.items():
+            res += f"| {key} | {val} |\n"
+        res += "\n*Source: [Vietstock Web Crawl]*\n"
+        return res
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def fetch_vnindex_snapshot_md() -> str:
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.read_sql_query(
+            "SELECT date, metrics_json FROM live_vietstock_ratios "
+            "WHERE ticker='VNINDEX' ORDER BY date DESC LIMIT 1",
+            conn,
+        )
+        conn.close()
+
+        if df.empty:
+            return "No VNINDEX ratios found."
+
+        row = df.iloc[0]
+        metrics = json.loads(row["metrics_json"])
+        res = f"Date: {row['date']}\n\n"
+        res += "| Ratio | Value |\n|-------|-------|\n"
+        for key, val in metrics.items():
+            res += f"| {key} | {val} |\n"
+        res += "\n*Source: [Simplize.vn Web Crawl]*\n"
         return res
     except Exception as e:
         return f"Error: {str(e)}"
