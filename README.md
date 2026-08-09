@@ -52,7 +52,7 @@ uv run stockiv-scout --scope FPT --query "FPT earnings 2026" --days-back 14
 uv run stockiv-report --ticker FPT --format pdf
 
 # Publish to Discord (summary post + PDF attachment)
-uv run stockiv-publish --file reports/ticker/FPT_GCCP_report.pdf \
+uv run stockiv-publish --file data/report/FPT/FPT_GCCP_report.pdf \
   --channel ticker --message "Your summary text here"
 
 # Dev

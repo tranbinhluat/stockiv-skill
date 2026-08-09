@@ -8,7 +8,8 @@
       "rm *": "deny",
       "grep *": "allow",
       "uv run stockiv-scout *": "allow",
-      "uv run": "allow"
+      "uv run": "allow",
+      "cd" : "allow"
     },
     "read": {
       "*": "allow",
