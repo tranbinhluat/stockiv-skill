@@ -35,8 +35,10 @@ data/
 *.pdf
 
 *.png
-data/stockiv.db
+
 
 .antigravitycli
 
 .omo
+
+data/*
