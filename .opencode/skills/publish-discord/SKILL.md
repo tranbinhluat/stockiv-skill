@@ -68,7 +68,7 @@ Pass the composed summary as `--message` and attach the PDF:
 ### Ticker Report
 ```
 uv run stockiv-publish \
-  --file reports/ticker/{TICKER}_GCCP_report.pdf \
+  --file data/report/{TICKER}/{TICKER}_GCCP_report.pdf \
   --message "{composed summary}" \
   --channel ticker
 ```

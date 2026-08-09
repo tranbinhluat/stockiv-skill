@@ -1,5 +1,6 @@
 ---
-model: opencode-go/deepseek-v4-pro
+model: github-copilot/gpt-5.6-luna
+variant: max
 description: Smart news and market context researcher for Vietnamese stocks. Performs initial broad searches, identifies key storylines (management shifts, margins, risks), and runs dynamic follow-up searches to deep-dive into findings.
 mode: subagent
 user-invocable: false

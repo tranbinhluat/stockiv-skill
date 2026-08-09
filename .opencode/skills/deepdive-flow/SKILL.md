@@ -124,8 +124,8 @@ uv run stockiv-report --ticker {TICKER} --format pdf
 ```
 
 Output files:
-- `reports/ticker/{TICKER}_GCCP_report.md`
-- `reports/ticker/{TICKER}_GCCP_report.pdf`
+- `data/report/{TICKER}/{TICKER}_GCCP_report.md`
+- `data/report/{TICKER}/{TICKER}_GCCP_report.pdf`
 
 ---
 
@@ -137,7 +137,7 @@ Compose a short summary post (see `publish-discord` skill for format), then run:
 
 ```
 uv run stockiv-publish \
-  --file reports/ticker/{TICKER}_GCCP_report.pdf \
+  --file data/report/{TICKER}/{TICKER}_GCCP_report.pdf \
   --message "{composed summary}" \
   --channel ticker
 ```

@@ -1,5 +1,5 @@
 ---
-model: opencode-go/glm-5.2
+model: github-copilot/claude-sonnet-5
 description: Senior GCCP equity analyst for the Vietnamese stock market. Performs analysis tasks delegated by the coordinator.
 mode: primary
 agents: [market-scout, gatekeeper-reviewer]

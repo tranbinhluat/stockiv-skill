@@ -81,30 +81,30 @@ Write in **Vietnamese** as a native equity research analyst would write — not 
 
 ## PDF Export
 
-After writing the markdown to `reports/ticker/{TICKER}_GCCP_report.md`, run:
+After writing the markdown to `data/report/{TICKER}/{TICKER}_GCCP_report.md`, run:
 
 ```
 uv run stockiv-report --ticker {TICKER} --format pdf
 ```
 
-This generates `reports/ticker/{TICKER}_GCCP_report.pdf` with:
+This generates `data/report/{TICKER}/{TICKER}_GCCP_report.pdf` with:
 - A4 portrait for the main report
 - A3 landscape appendix with the full `financial_summary.md` data tables
 
 ## Output Files
 
-- `reports/ticker/{TICKER}_GCCP_report.md`
-- `reports/ticker/{TICKER}_GCCP_report.pdf`
+- `data/report/{TICKER}/{TICKER}_GCCP_report.md`
+- `data/report/{TICKER}/{TICKER}_GCCP_report.pdf`
 
 ## Output to User
 
 ```
 ✅ Report drafted and exported:
-- reports/ticker/{TICKER}_GCCP_report.md
-- reports/ticker/{TICKER}_GCCP_report.pdf
+- data/report/{TICKER}/{TICKER}_GCCP_report.md
+- data/report/{TICKER}/{TICKER}_GCCP_report.pdf
 
 Verdict: {BUY NOW / WAIT / AVOID}
 Target Buy Price: {value} VND | Current Price: {value} VND
 
-Ready to publish? Run: /publish --file reports/ticker/{TICKER}_GCCP_report.md --channel ticker
+Ready to publish? Run: /publish --file data/report/{TICKER}/{TICKER}_GCCP_report.md --channel ticker
 ```
