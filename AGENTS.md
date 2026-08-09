@@ -71,11 +71,13 @@ Project use uv. Always run: `uv run.
 
 ## Git rule
 
-Before coding, create a branch. Do not code directly on `main`.
+Before coding, create a branch. Do not code directly on `main`. 
 
 ```bash
 git checkout -b <type>/<short-desc>
 ```
+
+** During agentic workflow like research: no need branch
 
 ## Communication style
 Talk caveman style, keep it short, concise & direct.

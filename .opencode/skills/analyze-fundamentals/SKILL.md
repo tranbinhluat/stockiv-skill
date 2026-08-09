@@ -105,7 +105,7 @@ print(f'Min ROE: {min(roe_values):.1%}')
 
 ## Forensic Checks
 
-Read annual report markdown at `data/processed/annual_reports/{TICKER}/`. If the file is absent, mark all narrative checks as `ANNUAL_REPORT_NOT_AVAILABLE` and continue.
+Delegate annual report review to the `annual-report-scanner` subagent. If no report exists, the subagent marks all narrative checks as `ANNUAL_REPORT_NOT_AVAILABLE` and the analysis continues.
 
 ### A. Quantitative Anomaly Pre-Scan
 
@@ -129,20 +129,11 @@ for i in range(1, len(revenue)):
 
 ### B. Annual Report Narrative Checks (5 qualitative forensic checks)
 
-Search the annual report markdown for each of the following using semantic / keyword search:
+Invoke `annual-report-scanner` via the `task` tool with:
 
-| # | Check | What to look for | Status |
-|---|---|---|---|
-| 1 | **Auditor Trust** | Qualified opinion, emphasis-of-matter paragraph, auditor change | PASS / FLAG |
-| 2 | **Related Party Transactions** | Loans to affiliates, sales to parent/subsidiary at non-arm's-length | PASS / FLAG |
-| 3 | **Off-Balance-Sheet Risks** | Contingent liabilities, lease commitments, guarantees not on balance sheet | PASS / FLAG |
-| 4 | **Management Remuneration** | Excessive compensation, undisclosed benefits, stock option schemes | PASS / FLAG |
-| 5 | **Revenue Recognition Gimmicks** | Bill-and-hold, channel stuffing, percentage-of-completion abuse, one-time gains recategorized as recurring | PASS / FLAG |
+> "Scan annual report for `{TICKER}`. Read the most recent markdown in `data/processed/annual_reports/{TICKER}/`. Return the exact five-row output contract from your agent instructions."
 
-For each check, report:
-- **Status**: PASS / FLAG
-- **Key Quote**: exact short excerpt from the annual report (copy verbatim)
-- **Summary**: one-sentence interpretation
+Use the returned five-row table in the Forensic Summary. Preserve statuses and key quotes verbatim. Do not re-read the annual report or duplicate these searches in the parent agent.
 
 > **Boundary rule**: These are qualitative/legal forensic checks. Do not calculate ratios here — that belongs to the Quantitative Anomaly Pre-Scan above.
 

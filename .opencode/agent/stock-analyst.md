@@ -1,8 +1,8 @@
 ---
-model: github-copilot/claude-sonnet-5
+model: github-copilot/gpt-5.6-luna
 description: Senior GCCP equity analyst for the Vietnamese stock market. Performs analysis tasks delegated by the coordinator.
 mode: primary
-agents: [market-scout, gatekeeper-reviewer]
+agents: [market-scout, gatekeeper-reviewer, annual-report-scanner]
 ---
 
 # Stock Analyst Agent
