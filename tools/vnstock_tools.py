@@ -1,6 +1,7 @@
 import sqlite3
+import time
 import pandas as pd
-from vnstock import Finance, Quote, Company
+from vnstock import Finance, Quote, Company, Listing
 from datetime import datetime, timedelta
 import os
 
@@ -722,6 +723,73 @@ def crawl_vietstock_ratios(ticker: str) -> str:
     except Exception as e:
         conn.close()
         return f"Error crawling Vietstock for {ticker}: {str(e)}"
+
+
+def fetch_vn100_list() -> list[str]:
+    """
+    Fetches the current VN100 index constituent tickers.
+    Returns:
+        A list of 100 ticker symbols (uppercase strings).
+    """
+    listing = Listing()
+    symbols = listing.symbols_by_group("VN100")
+    return sorted(str(s).strip().upper() for s in symbols.tolist())
+
+
+def batch_fetch_ratio_summaries(
+    tickers: list[str], sleep_sec: float = 1.0, force: bool = False
+) -> dict:
+    """
+    Throttled batch fetch of ratio summaries for a list of tickers, calling the
+    existing fetch_ratio_summary() per ticker with a sleep between calls to
+    respect rate limits. Failures are logged and skipped (not aborted).
+
+    Args:
+        tickers: List of ticker symbols to fetch.
+        sleep_sec: Seconds to sleep between per-ticker calls (default 1.0).
+        force: If True, bypass today's cache and re-fetch even if already stored.
+    Returns:
+        dict with keys: success (int), failed (int), failed_tickers (list[str]).
+    """
+    _ensure_db_exists()
+
+    success = 0
+    failed = 0
+    failed_tickers: list[str] = []
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    for i, ticker in enumerate(tickers):
+        if force:
+            conn = sqlite3.connect(DB_PATH)
+            conn.execute(
+                "DELETE FROM ratio_summary WHERE ticker = ? AND date = ?",
+                (ticker, today_str),
+            )
+            conn.commit()
+            conn.close()
+
+        was_cache_hit = False
+        try:
+            result = fetch_ratio_summary(ticker)
+            if result.startswith("Cache hit"):
+                was_cache_hit = True
+                success += 1
+            elif result.startswith("Successfully fetched"):
+                success += 1
+            else:
+                failed += 1
+                failed_tickers.append(ticker)
+        except Exception:
+            failed += 1
+            failed_tickers.append(ticker)
+
+        # Only throttle after calls that actually hit the network — cache
+        # hits are instant and don't need rate-limit protection.
+        if i < len(tickers) - 1 and sleep_sec > 0 and not was_cache_hit:
+            time.sleep(sleep_sec)
+
+    return {"success": success, "failed": failed, "failed_tickers": failed_tickers}
 
 
 def crawl_vnindex_ratios() -> str:

@@ -2,10 +2,11 @@
 StockIV CLI — entry points for AI skills to call via `uv run`.
 
 Commands:
-    stockiv-collect   Fetch financial + context data for a ticker or macro
-    stockiv-scout     Budget-aware Brave search / budget reset / cache clean
-    stockiv-report    Convert a markdown report to PDF
-    stockiv-publish   Publish a report to Discord
+    stockiv-collect     Fetch financial + context data for a ticker or macro
+    stockiv-scout       Budget-aware Brave search / budget reset / cache clean
+    stockiv-report      Convert a markdown report to PDF
+    stockiv-publish     Publish a report to Discord
+    stockiv-shortlist   GCCP Quality-Value Composite Screener (VN100)
 """
 
 from __future__ import annotations
@@ -27,7 +28,7 @@ DATA_DIR = ROOT / "data"
 RAW_CONTEXT_DIR = DATA_DIR / "raw" / "context"
 RAW_CACHE_DIR = DATA_DIR / "raw" / "cache"
 PROCESSED_SYNTHESIZER_DIR = DATA_DIR / "processed" / "synthesizer"
-REPORT_TICKER_DIR = ROOT / "reports" / "ticker"
+REPORT_TICKER_DIR = DATA_DIR / "report"
 
 FRESHNESS_DAYS = 7  # skip re-fetch if data is newer than this
 
@@ -443,7 +444,7 @@ def report(args: list[str] | None = None) -> None:
         md_path = Path(parsed.input)
     elif parsed.ticker:
         ticker = parsed.ticker.upper()
-        md_path = REPORT_TICKER_DIR / f"{ticker}_GCCP_report.md"
+        md_path = REPORT_TICKER_DIR / ticker / f"{ticker}_GCCP_report.md"
     else:
         parser.error("Provide --ticker TICKER or --input FILE")
         return
@@ -552,3 +553,42 @@ def publish(args: list[str] | None = None) -> None:
     result = send_discord_message(channel_id, content, pdf_path)
     attached = f"+ PDF attached: {Path(pdf_path).name}" if pdf_path else "(no PDF)"
     print(f"[publish] {result} {attached}")
+
+
+# ─── shortlist ───────────────────────────────────────────────────────────────
+
+
+def shortlist(args: list[str] | None = None) -> None:
+    """Entry point for `stockiv-shortlist`. GCCP Quality-Value Composite Screener (VN100)."""
+    parser = argparse.ArgumentParser(
+        prog="stockiv-shortlist",
+        description="Shortlist good-company-cheap-price VN100 stocks via a "
+        "Quality-Value Composite Rank (ROE/ROA + P/E).",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Re-fetch ratio summaries even if already cached for today",
+    )
+    parsed = parser.parse_args(args)
+
+    sys.path.insert(0, str(ROOT / "tools"))
+    from vnstock_tools import fetch_vn100_list, batch_fetch_ratio_summaries
+    from sqlite_tools import compute_shortlist_rankings
+
+    print("[shortlist] Fetching VN100 constituent list...")
+    tickers = fetch_vn100_list()
+    print(f"[shortlist] {len(tickers)} tickers to screen.")
+
+    print("[shortlist] Batch fetching ratio summaries (throttled, ~1s/ticker)...")
+    result = batch_fetch_ratio_summaries(tickers, sleep_sec=1.0, force=parsed.force)
+    print(
+        f"[shortlist] Ratio summaries: {result['success']} succeeded, "
+        f"{result['failed']} failed."
+    )
+    if result["failed_tickers"]:
+        print(f"[shortlist] Skipped tickers: {', '.join(result['failed_tickers'])}")
+
+    print("[shortlist] Computing Quality-Value Composite rankings...")
+    summary = compute_shortlist_rankings()
+    print(summary)

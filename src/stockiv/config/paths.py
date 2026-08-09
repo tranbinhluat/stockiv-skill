@@ -25,7 +25,7 @@ PROCESSED_SYNTHESIZER_DIR = PROCESSED_DIR / "synthesizer"
 
 # Report paths  / Finalize Data
 REPORT_MARKET_DIR = REPORT_DIR / "market"
-REPORT_TICKER_DIR = REPORT_DIR / "ticker"
+REPORT_TICKER_DIR = DATA_DIR / "report"
 
 CONFIG_DIR = ROOT / "src" / "stockiv" / "config"
 LOGS_DIR = ROOT / "logs"

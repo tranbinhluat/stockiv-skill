@@ -1,5 +1,7 @@
 import json
+import os
 import sqlite3
+from datetime import datetime
 
 from tabulate import tabulate
 
@@ -770,3 +772,226 @@ def calculate_framework_metrics(ticker: str) -> str:
         return res
     except Exception as e:
         return f"Error computing framework metrics: {str(e)}"
+
+
+# ---------------------------------------------------------------------------
+# /shortlist — GCCP Quality-Value Composite Screener (VN100)
+# ---------------------------------------------------------------------------
+
+
+def _ensure_screener_table() -> None:
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS screener_rankings (
+            run_date TEXT,
+            ticker TEXT,
+            roe REAL,
+            roa REAL,
+            pe REAL,
+            roe_rank REAL,
+            roa_rank REAL,
+            pe_rank REAL,
+            score_roa_pe REAL,
+            score_roe_pe REAL,
+            rank_score_roa_pe REAL,
+            rank_score_roe_pe REAL,
+            final_rank REAL,
+            PRIMARY KEY (run_date, ticker)
+        )
+        """
+    )
+    conn.commit()
+    conn.close()
+
+
+def _rank_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Pure ranking math for the Quality-Value Composite screener. No I/O.
+
+    Expects df with columns: ticker, roe, roa, pe (pe = live-adjusted P/E).
+    Missing or non-positive pe is forced to the worst-possible rank (last place).
+    Rank 1 = highest ROE/ROA, rank 1 = cheapest (lowest) P/E.
+
+    Returns a new df with roe_rank, roa_rank, pe_rank, score_roa_pe, score_roe_pe,
+    rank_score_roa_pe, rank_score_roe_pe, final_rank columns added.
+    """
+    df = df.copy()
+    n = len(df)
+
+    df["roe_rank"] = df["roe"].rank(method="min", ascending=False)
+    df["roa_rank"] = df["roa"].rank(method="min", ascending=False)
+
+    valid_pe = df["pe"].notna() & (df["pe"] > 0)
+    pe_rank = pd.Series(index=df.index, dtype=float)
+    pe_rank.loc[valid_pe] = df.loc[valid_pe, "pe"].rank(method="min", ascending=True)
+    pe_rank.loc[~valid_pe] = float(n)
+    df["pe_rank"] = pe_rank
+
+    df["score_roa_pe"] = df["roa_rank"] + df["pe_rank"]
+    df["score_roe_pe"] = df["roe_rank"] + df["pe_rank"]
+
+    df["rank_score_roa_pe"] = df["score_roa_pe"].rank(method="min", ascending=True)
+    df["rank_score_roe_pe"] = df["score_roe_pe"].rank(method="min", ascending=True)
+
+    final_score = df["rank_score_roa_pe"] + df["rank_score_roe_pe"]
+    df["final_rank"] = final_score.rank(method="min", ascending=True)
+
+    return df
+
+
+def compute_shortlist_rankings(
+    run_date: str | None = None, tickers: list[str] | None = None
+) -> str:
+    """
+    Computes the GCCP Quality-Value Composite screener rankings for VN100 (or a
+    provided ticker subset), persists to `screener_rankings`, exports a CSV of
+    all rows, and returns a top-5 markdown summary.
+
+    Args:
+        run_date: Date string (YYYY-MM-DD) to tag this run. Defaults to today.
+        tickers: Optional ticker subset to rank instead of the full VN100 list.
+    Returns:
+        A markdown summary of the top 5 tickers by final_rank.
+    """
+    try:
+        from tools.vnstock_tools import fetch_vn100_list
+    except ImportError:
+        from vnstock_tools import fetch_vn100_list
+
+    try:
+        from vnstock import Trading
+    except ImportError as e:
+        return f"Error: vnstock Trading unavailable: {e}"
+
+    _ensure_screener_table()
+
+    if run_date is None:
+        run_date = datetime.now().strftime("%Y-%m-%d")
+
+    if tickers is None:
+        tickers = fetch_vn100_list()
+
+    conn = sqlite3.connect(DB_PATH)
+    rows = []
+    for ticker in tickers:
+        ratio_df = pd.read_sql_query(
+            "SELECT year_report, metrics_json FROM ratio_summary WHERE ticker = ?",
+            conn,
+            params=(ticker,),
+        )
+        if ratio_df.empty:
+            continue
+
+        parsed = []
+        for _, r in ratio_df.iterrows():
+            try:
+                m = json.loads(r["metrics_json"])
+            except (json.JSONDecodeError, TypeError):
+                continue
+            parsed.append(
+                {
+                    "year_report": r["year_report"],
+                    "quarter": m.get("quarter", 0) or 0,
+                    "roe": m.get("roe"),
+                    "roa": m.get("roa"),
+                    "pe": m.get("pe"),
+                    "market_cap": m.get("market_cap"),
+                    "number_of_shares_mkt_cap": m.get("number_of_shares_mkt_cap"),
+                }
+            )
+        if not parsed:
+            continue
+
+        # Latest available: highest year_report, then highest quarter as
+        # tiebreak (quarter=5 marks the annual row within a year_report).
+        parsed.sort(key=lambda x: (x["year_report"], x["quarter"]), reverse=True)
+        rows.append({"ticker": ticker, **parsed[0]})
+    conn.close()
+
+    if not rows:
+        return (
+            "No ratio_summary data available for the requested tickers. "
+            "Run batch_fetch_ratio_summaries first."
+        )
+
+    raw_df = pd.DataFrame(rows)
+
+    # --- Live P/E adjustment via a single bulk price_board call ---
+    live_prices: dict[str, float] = {}
+    try:
+        trading = Trading(source="VCI")
+        price_df = trading.price_board(symbols_list=raw_df["ticker"].tolist())
+        for _, r in price_df.iterrows():
+            sym = r[("listing", "symbol")]
+            price = r[("match", "match_price")]
+            if pd.notna(price) and price > 0:
+                live_prices[sym] = float(price)
+    except Exception:
+        pass  # fall back to static pe below
+
+    def _live_pe(row):
+        static_pe = row["pe"]
+        market_cap = row["market_cap"]
+        shares = row["number_of_shares_mkt_cap"]
+        live_price = live_prices.get(row["ticker"])
+
+        if pd.isna(static_pe) or not market_cap or not shares or live_price is None:
+            return static_pe
+
+        price_at_report = market_cap / shares
+        if price_at_report <= 0:
+            return static_pe
+
+        return static_pe * (live_price / price_at_report)
+
+    raw_df["pe"] = raw_df.apply(_live_pe, axis=1)
+
+    ranked_df = _rank_dataframe(raw_df[["ticker", "roe", "roa", "pe"]])
+    ranked_df.insert(0, "run_date", run_date)
+
+    # --- Persist ---
+    conn = sqlite3.connect(DB_PATH)
+    for _, r in ranked_df.iterrows():
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO screener_rankings
+            (run_date, ticker, roe, roa, pe, roe_rank, roa_rank, pe_rank,
+             score_roa_pe, score_roe_pe, rank_score_roa_pe, rank_score_roe_pe, final_rank)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                r["run_date"],
+                r["ticker"],
+                r["roe"],
+                r["roa"],
+                r["pe"],
+                r["roe_rank"],
+                r["roa_rank"],
+                r["pe_rank"],
+                r["score_roa_pe"],
+                r["score_roe_pe"],
+                r["rank_score_roa_pe"],
+                r["rank_score_roe_pe"],
+                r["final_rank"],
+            ),
+        )
+    conn.commit()
+    conn.close()
+
+    # --- Export CSV (all rows, sorted by final_rank) ---
+    ranked_df = ranked_df.sort_values("final_rank")
+    csv_dir = "data/reports/market"
+    os.makedirs(csv_dir, exist_ok=True)
+    csv_path = f"{csv_dir}/shortlist_{run_date}.csv"
+    ranked_df.to_csv(csv_path, index=False)
+
+    # --- Top-5 summary ---
+    top5 = ranked_df.head(5)
+    summary = f"### Shortlist Top 5 — Quality-Value Composite ({run_date})\n\n"
+    summary += top5[["ticker", "final_rank", "roe", "roa", "pe"]].to_markdown(
+        index=False
+    )
+    summary += f"\n\nFull results ({len(ranked_df)} tickers): `{csv_path}`\n"
+
+    return summary
