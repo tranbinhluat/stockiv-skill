@@ -77,8 +77,8 @@ Evaluate the people running the engine.
 Before valuing the individual stock, the agent MUST determine the overall market phase.
 
 - **Crisis Phase (P/E ~ 10x):** Heavy buying opportunity.
-- **Fair/Expensive (P/E 12-20x):** Selective buying. Higher Margin of Safety required.
-- **Bubble Phase (P/E > 20x):** Extreme caution.
+- **Fair/Expensive (P/E 12-18x):** Selective buying. Higher Margin of Safety required.
+- **Bubble Phase (P/E > 18x):** Extreme caution.
 
 ### 2. Relative Valuation Metrics
 
