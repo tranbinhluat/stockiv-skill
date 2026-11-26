@@ -2,7 +2,7 @@
 
 AI-powered Vietnamese stock analysis using the **GCCP (Good Company, Cheap Price) framework**, powered by GitHub Copilot/Gemini subscription — zero extra API cost.
 
-Interact via **opencode** using slash commands. One primary agent (`stock-analyst`) delegates to two subagents (`market-scout`, `gatekeeper-reviewer`) and orchestrates ten skills backed by plain Python CLI tools.
+Interact via **opencode** or **Claude Code** using slash commands. One primary agent (`stock-analyst`) delegates to two subagents (`market-scout`, `gatekeeper-reviewer`) and orchestrates ten skills backed by plain Python CLI tools.
 
 ## Quick Start
 
@@ -18,6 +18,8 @@ cp .env.example .env
 /deepdive FPT
 /weekly
 ```
+
+In **Claude Code**, run `claude` in the repo root. `stock-analyst` is the default agent (from `.claude/settings.json`) and the same slash commands work: `/deepdive FPT`, `/weekly`.
 
 ---
 
@@ -89,6 +91,18 @@ One primary agent + two subagents + ten skills. No orchestration framework, no p
     └── skill-creator/            # Create/edit/eval skills
 ```
 
+Claude Code mirror (`.claude/`):
+
+```
+.claude/
+├── settings.json                 # "agent": "stock-analyst" default, permissions mirror opencode.json
+├── skills -> ../.opencode/skills # symlink, skills shared with opencode
+├── agents/                       # stock-analyst, market-scout, gatekeeper-reviewer, annual-report-scanner
+└── commands/                     # same 10 slash commands as .opencode/command/
+```
+
+Agent and command bodies mirror `.opencode/`; parity is enforced by `tests/test_claude_parity.py`. Claude models: stock-analyst and market-scout = sonnet, gatekeeper-reviewer = opus, annual-report-scanner = haiku.
+
 | Skill | Slash Command | Purpose |
 |---|---|---|
 | `deepdive-flow` | `/deepdive <TICKER>` | Full analysis pipeline |
@@ -125,6 +139,8 @@ stockiv-skill/
 │   ├── agent/                      # stock-analyst.md, market-scout.md, gatekeeper-reviewer.md
 │   ├── command/                    # slash command definitions
 │   └── skills/                     # ten skills, see Architecture above
+├── .claude/                        # Claude Code mirror (agents, commands, skills symlink)
+├── CLAUDE.md                       # Claude Code entrypoint (imports AGENTS.md)
 ├── src/stockiv/
 │   ├── cli.py                      # stockiv-collect / stockiv-scout / stockiv-report / stockiv-publish
 │   ├── main.py                     # stockiv-run entrypoint
