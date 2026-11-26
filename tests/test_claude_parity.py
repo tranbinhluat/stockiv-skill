@@ -37,7 +37,7 @@ def split_frontmatter(path: Path) -> tuple[str, str]:
 
 
 def field(frontmatter: str, key: str) -> str | None:
-    match = re.search(rf"^{re.escape(key)}:\s*(.*)$", frontmatter, re.MULTILINE)
+    match = re.search(rf"^{re.escape(key)}:[ \t]*(.*)$", frontmatter, re.MULTILINE)
     return match.group(1).strip() if match else None
 
 
@@ -47,7 +47,9 @@ def test_agent_parity(stem):
     cc_fm, cc_body = split_frontmatter(CC_AGENTS / f"{stem}.md")
     assert cc_body == oc_body
     assert field(cc_fm, "name") == stem
-    assert field(cc_fm, "description") == field(oc_fm, "description")
+    oc_description = field(oc_fm, "description")
+    assert oc_description, f"opencode agent {stem} has no description"
+    assert field(cc_fm, "description") == oc_description
     assert field(cc_fm, "model") in {"sonnet", "opus", "haiku"}
 
 
@@ -69,7 +71,9 @@ def test_command_parity(stem):
     oc_fm, oc_body = split_frontmatter(OC_COMMANDS / f"{stem}.md")
     cc_fm, cc_body = split_frontmatter(CC_COMMANDS / f"{stem}.md")
     assert cc_body == oc_body
-    assert field(cc_fm, "description") == field(oc_fm, "description")
+    oc_description = field(oc_fm, "description")
+    assert oc_description, f"opencode command {stem} has no description"
+    assert field(cc_fm, "description") == oc_description
     assert field(cc_fm, "argument-hint") is not None
 
 
