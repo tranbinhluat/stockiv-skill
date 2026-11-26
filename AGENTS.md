@@ -85,6 +85,8 @@ Talk caveman style, keep it short, concise & direct.
 
 **OpenCode layout:** agents in `.opencode/agent/`, skills in `.opencode/skills/`, slash commands in `.opencode/command/`. The routing table below is the single registry — skill frontmatter descriptions carry the trigger patterns.
 
+**Claude Code layout:** agents in `.claude/agents/`, slash commands in `.claude/commands/`, skills via `.claude/skills` → `.opencode/skills` symlink, default agent set in `.claude/settings.json`. Bodies mirror `.opencode/` (enforced by `tests/test_claude_parity.py`).
+
 # Vnstock Vibe Onboarding
 
 Setup uses `uv` (not pip/venv). Steps:
