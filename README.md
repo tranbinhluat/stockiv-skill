@@ -2,7 +2,7 @@
 
 AI-powered Vietnamese stock analysis using the **GCCP (Good Company, Cheap Price) framework**, powered by GitHub Copilot/Gemini subscription — zero extra API cost.
 
-Interact via **opencode** or **Claude Code** using slash commands. One primary agent (`stock-analyst`) delegates to two subagents (`market-scout`, `gatekeeper-reviewer`) and orchestrates ten skills backed by plain Python CLI tools.
+Interact via **opencode** or **Claude Code** using slash commands. One primary agent (`stock-analyst`) delegates to three subagents (`market-scout`, `annual-report-scanner`, `gatekeeper-reviewer`) and orchestrates ten skills backed by plain Python CLI tools.
 
 ## Quick Start
 
@@ -19,7 +19,7 @@ cp .env.example .env
 /weekly
 ```
 
-In **Claude Code**, run `claude` in the repo root. `stock-analyst` is the default agent (from `.claude/settings.json`) and the same slash commands work: `/deepdive FPT`, `/weekly`.
+In **Claude Code**, run `claude` in the repo root. `stock-analyst` is the default agent (from `.claude/settings.json`) and the same slash commands work: `/deepdive FPT`, `/weekly`. To run a session without the analyst persona, start with `claude --agent <other-agent>` or set `"agent"` in the git-ignored `.claude/settings.local.json`. See "Claude Code harness notes" in `CLAUDE.md` (subagents can't nest; flows adapt).
 
 ---
 
@@ -66,7 +66,7 @@ uv run pytest tests/ -v
 
 ## Architecture
 
-One primary agent + two subagents + ten skills. No orchestration framework, no paid API. Runs on **opencode** (`.opencode/`).
+One primary agent + three subagents + ten skills. No orchestration framework, no paid API. Runs on **opencode** (`.opencode/`) or **Claude Code** (`.claude/`).
 
 ```
 .opencode/
@@ -95,7 +95,7 @@ Claude Code mirror (`.claude/`):
 
 ```
 .claude/
-├── settings.json                 # "agent": "stock-analyst" default, permissions mirror opencode.json
+├── settings.json                 # "agent": "stock-analyst" default, permissions similar to opencode.json
 ├── skills -> ../.opencode/skills # symlink, skills shared with opencode
 ├── agents/                       # stock-analyst, market-scout, gatekeeper-reviewer, annual-report-scanner
 └── commands/                     # same 10 slash commands as .opencode/command/
