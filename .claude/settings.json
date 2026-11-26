@@ -5,13 +5,17 @@
     "allow": [
       "Bash",
       "Read",
+      "Edit",
+      "Write",
       "WebSearch",
       "WebFetch"
     ],
     "deny": [
       "Bash(rm *)",
       "Read(./.env)",
-      "Read(./**/.env)"
+      "Read(./**/.env)",
+      "Edit(./.env)",
+      "Edit(./**/.env)"
     ]
   }
 }
